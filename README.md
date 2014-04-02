@@ -25,7 +25,11 @@ A comprehensive step by step install guide for the daemons and the mysql instanc
 
 # Notes
 
-(*) In the current design the servers do not share any state and there is no critical state associated with any of them. This means that even properly received background jobs are in no way guaranteed to be executed in case of failure. Adding even a small critical state component would complicate the server maintenance requirements substantially and would have a severe impact on the performance of the daemon. 
+(*) In the current design the servers do not share any state and there is no critical state associated with any of them. This means that even properly received background jobs are in no way guaranteed to be executed in case of some failures. There have been some work to enable "persistent delayed jobs" in the gearman through modules but adding even a small critical state component would complicate the server maintenance requirements substantially and would have a severe impact on the performance of the daemon. Here are some problems of the persistent delayed jobs architecture:
+
+* The persistence logic is embedded in the gearman server and must be compiled in as modules. This makes deployment, tuning and development of the persistence logic more complicated and more prone to cause issues that affect normal operation of the gearman server.
+* Possibly tue do the difficulty and high stability requirements for developing them, the modules and especially their maintenance documentation seems to be poorly documented and hard to understand. For example the following questions are unsanswered in most persistence modules: What happens to your tasks and what are you supposed to do if your module backend database goes offline for a while during normal operation? How do you recover if this outage is a long one or a short one? Can several servers use the same external backend and carry the tasks of a missing server? How can you make sure the data is stored on two separate locations before client is informed that the task is properly recorded? How does the client receive information of problems in the persistence layer and how is the logging of these problems handled?
+* The functionality of the modules is limited to the hooks provided by the Gearman server. For example you can not alter the state of a delayed job retry logic using the modules. Providing additional hooks would furter complicate writing the modules and expose the server to more potential instability due to code in modules.
 
 # SPECIFIC ADDITIONAL INFO FOR OHTU PROJECT
 
