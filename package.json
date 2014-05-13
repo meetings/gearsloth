@@ -4,7 +4,7 @@
   "description": "Delayed task workers and persistent storage schemes for Gearman",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "make test"
   },
   "repository": {
     "type": "git",
@@ -19,8 +19,15 @@
   ],
   "author": "",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/meetings/gearman-delayed-task/issues"
+  },
   "homepage": "https://github.com/meetings/gearman-delayed-task",
   "dependencies": {
     "gearman-js": "^0.1.2"
+  },
+  "devDependencies": {
+    "mocha": "*",
+    "chai": "*"
   }
 }
