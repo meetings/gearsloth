@@ -10,15 +10,17 @@
     "type": "git",
     "url": "git://github.com/meetings/gearman-delayed-task.git"
   },
-  "bugs": "https://github.com/meetings/gearman-delayed-task/issues",
+  "bugs": {
+    "url": "https://github.com/meetings/gearman-delayed-task/issues"
+  },
   "keywords": [
     "gearman",
     "background"
   ],
   "author": "",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/meetings/gearman-delayed-task/issues"
-  },
-  "homepage": "https://github.com/meetings/gearman-delayed-task"
+  "homepage": "https://github.com/meetings/gearman-delayed-task",
+  "dependencies": {
+    "gearman-js": "^0.1.2"
+  }
 }
