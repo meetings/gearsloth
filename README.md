@@ -1,12 +1,11 @@
-gearman-delayed-task
-====================
+# gearman-delayed-task
 
 Delayed task workers and persistent storage schemes for Gearman
 
-# Getting started
+## Getting started
 
 $ make test
 
-# Links
+## Links
 
 * [description.md](Original project description)
