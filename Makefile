@@ -1,7 +1,6 @@
-.PHONY: run
-test:
-	@gearmand -d > /dev/null 2>&1
-	@node reverse.js &
-	@echo client: `echo "reverse this" | gearman -f reverse`
-	@pkill node
-	@pkill gearmand
+test: unit-test
+
+unit-test:
+		./node_modules/.bin/mocha --ui tdd
+
+.PHONY: test unit-test
