@@ -4,7 +4,7 @@ Delayed task workers and persistent storage schemes for Gearman
 
 ## Getting started
 
-$ make test
+    $ make test
 
 ## Links
 
