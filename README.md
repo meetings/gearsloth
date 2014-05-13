@@ -2,13 +2,13 @@
 
 Delayed task workers and persistent storage schemes for Gearman
 
-## Getting started
-
-    $ ./demo.sh
-
 ## Running tests
 
     $ npm test
+
+## Running example worker/client
+
+    $ make reverse-test
 
 or use make targets `test` or `unit-test`.
 
