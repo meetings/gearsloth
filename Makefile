@@ -7,19 +7,22 @@ unit-test:
 reverse-test: reverse-test-cli reverse-test-js
 
 .PHONY: reverse-test-cli
-reverse-test-cli:
+reverse-test-cli: node_modules
 	@gearmand -d > /dev/null 2>&1
 	@node reverse.js &
-	@echo client: `echo "reverse this" | gearman -f reverse`
+	@echo client: `echo "kitteh" | gearman -f reverse`
 	@pkill node
 	@pkill gearmand
 
 .PHONY: reverse-test-js
-reverse-test-js:
+reverse-test-js: node_modules
 	@gearmand -d > /dev/null 2>&1
 	@node reverse.js &
 	@echo client: `node reverse-client.js`
 	@pkill node
 	@pkill gearmand
+
+node_modules:
+	npm install
 
 .PHONY: test unit-test

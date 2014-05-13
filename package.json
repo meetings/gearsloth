@@ -22,7 +22,6 @@
   "homepage": "https://github.com/meetings/gearman-delayed-task",
   "dependencies": {
     "gearman-coffee": "^1.1.1",
-    "gearman-js": "^0.1.2"
   },
   "devDependencies": {
     "mocha": "*",
