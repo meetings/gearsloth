@@ -20,5 +20,9 @@
   "bugs": {
     "url": "https://github.com/meetings/gearman-delayed-task/issues"
   },
-  "homepage": "https://github.com/meetings/gearman-delayed-task"
+  "homepage": "https://github.com/meetings/gearman-delayed-task",
+  "devDependencies": {
+    "mocha": "*",
+    "chai": "*"
+  }
 }
