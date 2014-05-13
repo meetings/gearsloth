@@ -1,0 +1,24 @@
+{
+  "name": "gearman-delayed-task",
+  "version": "0.0.0",
+  "description": "Delayed task workers and persistent storage schemes for Gearman",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/meetings/gearman-delayed-task.git"
+  },
+  "bugs": "https://github.com/meetings/gearman-delayed-task/issues",
+  "keywords": [
+    "gearman",
+    "background"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/meetings/gearman-delayed-task/issues"
+  },
+  "homepage": "https://github.com/meetings/gearman-delayed-task"
+}
