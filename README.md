@@ -1,17 +1,19 @@
-# gearman-delayed-task
 
-Delayed task workers and persistent storage schemes for Gearman
+## gearsloth
 
-## Running tests
+Delayed task workers and persistent storage schemes for Gearman.
+
+### Running tests
 
     $ npm test
 
-## Running example worker/client
+### Running example worker/client
 
     $ make log-delayed-test
 
 or use make targets `test` or `unit-test`.
 
-## Links
+### Links
 
-* [description.md](Original project description)
+ * [Gearman project](http://gearman.org)
+ * [Original project description](description.md)
