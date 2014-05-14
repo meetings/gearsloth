@@ -14,4 +14,4 @@ var worker = new Worker('submitJobDelayed', function(payload, worker) {
     client.submitJob(task.func_name, task.payload);
   }, timeout);
   return worker.complete();
-})
+});
