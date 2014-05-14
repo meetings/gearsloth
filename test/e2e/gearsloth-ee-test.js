@@ -2,7 +2,7 @@ var gearman = require('gearman-coffee');
 var assert = require("assert");
 var chai = require("chai");
 var expect = chai.expect;
-var gearsloth = require('../lib/gearsloth');
+var gearsloth = require('../../lib/gearsloth');
 
 // this test file assumes that a gearman server and a gearsloth worker are
 // running
