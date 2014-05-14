@@ -1,8 +1,4 @@
-test: unit-test e2e-test
-
-.PHONY: unit-test
-unit-test: node_modules
-	./node_modules/.bin/mocha --ui tdd test/unit
+MOCHA := ./node_modules/.bin/mocha --recursive --ui tdd
 
 # run local gearman server and gearsloth worker
 define start-local
@@ -13,11 +9,17 @@ define start-local
 	pkill gearmand;
 endef
 
+.PHONY: test
+test: node_modules
+	$(call start-local, $(MOCHA))
+
+.PHONY: unit-test
+unit-test: node_modules
+	$(call start-local, $(MOCHA) test/unit)
+
 .PHONY: e2e-test
 e2e-test: node_modules
-	$(call start-local,\
-		./node_modules/.bin/mocha --ui tdd test/e2e \
-	)
+	$(call start-local, $(MOCHA) test/e2e)
 
 .PHONY: log-delayed-test
 log-delayed-test: node_modules
