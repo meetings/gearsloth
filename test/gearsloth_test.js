@@ -1,4 +1,6 @@
 var assert = require("assert");
+var chai = require("chai");
+var expect = chai.expect;
 var gearsloth = require('../lib/gearsloth');
 describe('Array', function(){
   var at = 'a';
@@ -7,25 +9,27 @@ describe('Array', function(){
   var testBuffer = new Buffer('a\0b\0c', 'utf8');
   setup(function(){
   });
-  describe('#encodeTask()', function(){
+  suite('encodeTask()', function(){
     test('should return buffer with null byte delimiters', function(){
-      assert.deepEqual(testBuffer, gearsloth.encodeTask(at, func_name, payload));
+      expect(gearsloth.encodeTask(at, func_name, payload))
+      .to.deep.equal(testBuffer);
     });
-  });    
-  describe('#encodeTask()', function(){
     test('should not fail with payload containing null bytes', function(){
       var payload = new Buffer('c\0d', 'utf8');
       var testBuffer = new Buffer('a\0b\0c\0d', 'utf8');
-      assert.deepEqual(testBuffer, gearsloth.encodeTask(at, func_name, payload));
+      expect(gearsloth.encodeTask(at, func_name, payload))
+      .to.deep.equal(testBuffer);
     });
+//    test('should throw an error on unorthodox input', function(){
+//      a
   });
-
-  describe('#decodeTask()', function(){
+  suite('decodeTask()', function(){
     test('should return correct JSON object', function(){
       var shouldBe = {at:at,
         func_name:func_name,
         payload:payload};
-      assert.deepEqual(shouldBe, gearsloth.decodeTask(testBuffer));
+      expect(gearsloth.decodeTask(testBuffer))
+      .to.deep.equal(shouldBe);
     });
   });
 });
