@@ -61,10 +61,22 @@ describe('Array', function(){
         gearsloth.decodeTask(testBuffer)
       }).to.throw(Error);
     });
+    test('should throw an error when task contains no func_name', function(){
+      var testBuffer = new Buffer('a\0\0a');
+      expect(function() {
+        gearsloth.decodeTask(testBuffer)
+      }).to.throw(Error);
+    });
+    test('should throw an error when task contains no at', function(){
+      var testBuffer = new Buffer('\0a\0a');
+      expect(function() {
+        gearsloth.decodeTask(testBuffer)
+      }).to.throw(Error);
+    });
     test('should work with no payload', function(){
       var testBuffer = new Buffer('a\0a\0');
       expect(gearsloth.decodeTask(testBuffer).payload)
-      .to.have.length(0);;
+      .to.have.length(0);
     });
   });
 });
