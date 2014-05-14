@@ -8,7 +8,7 @@ Delayed task workers and persistent storage schemes for Gearman
 
 ## Running example worker/client
 
-    $ make reverse-test
+    $ make log-delayed-test
 
 or use make targets `test` or `unit-test`.
 
