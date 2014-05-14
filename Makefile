@@ -4,7 +4,7 @@ MOCHA := ./node_modules/.bin/mocha --recursive --ui tdd
 define start-local
 	(node gearsloth.js &) && \
 	$1 ; \
-	pkill node; \
+	pkill node;
 endef
 
 .PHONY: test
