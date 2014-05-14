@@ -2,11 +2,9 @@ MOCHA := ./node_modules/.bin/mocha --recursive --ui tdd
 
 # run local gearman server and gearsloth worker
 define start-local
-	gearmand -d > /dev/null 2>&1 && \
 	(node gearsloth.js &) && \
 	$1 ; \
 	pkill node; \
-	pkill gearmand;
 endef
 
 .PHONY: test
