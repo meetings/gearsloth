@@ -1,8 +1,9 @@
-MOCHA := ./node_modules/.bin/mocha --recursive --ui tdd
+REPORTER ?= dot
+MOCHA := ./node_modules/.bin/mocha --recursive --ui tdd --reporter $(REPORTER)
 
 # run local gearman server and gearsloth worker
 define start-local
-	(node gearsloth.js &) && \
+	@(node gearsloth.js &) && \
 	$1 ; \
 	pkill node;
 endef
