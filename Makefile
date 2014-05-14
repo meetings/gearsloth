@@ -1,7 +1,12 @@
 test: unit-test
 
-unit-test:
+.PHONY: unit-test
+unit-test: node_modules
+	gearmand -d > /dev/null 2>&1
+	node gearsloth.js &
 	./node_modules/.bin/mocha --ui tdd
+	pkill node
+	pkill gearmand
 
 .PHONY: reverse-test
 reverse-test: reverse-test-cli reverse-test-js
