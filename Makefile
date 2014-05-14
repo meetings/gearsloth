@@ -1,7 +1,7 @@
 test: unit-test
 
 unit-test:
-		./node_modules/.bin/mocha --ui tdd
+	./node_modules/.bin/mocha --ui tdd
 
 .PHONY: reverse-test
 reverse-test: reverse-test-cli reverse-test-js
