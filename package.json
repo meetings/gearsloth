@@ -21,7 +21,8 @@
   "license": "MIT",
   "homepage": "https://github.com/meetings/gearman-delayed-task",
   "dependencies": {
-    "gearman-coffee": "^1.1.1"
+    "gearman-coffee": "^1.1.1",
+    "yargs": "^1.2.2"
   },
   "devDependencies": {
     "mocha": "*",

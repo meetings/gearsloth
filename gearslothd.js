@@ -1,8 +1,12 @@
-var gearman = require('gearman-coffee');
-var gearsloth = require('./lib/gearsloth');
+var gearman     = require('gearman-coffee');
+var gearsloth   = require('./lib/gearsloth');
+var config      = require('./config');
+var database    = require('./lib/adapters/sqlite');
+
+console.log(config);
+
 var Worker = gearman.Worker;
 var Client = gearman.Client;
-var database = require('./lib/adapters/sqlite.js');
 
 var client = new Client();
 

@@ -1,21 +1,19 @@
 {
+  "README": [
+    "This is an example configuration for Gearsloth.",
+    "",
+    "This MUST be valid JSON data."
+  ],
 
-"README": [
-  "This is an example configuration for Gearsloth.",
-  "",
-  "This MUST be valid JSON data."
-],
+  "mode": "worker",
 
-"gearsloth_mode": "daemon | client | both | * | jotain...",
+  "adapter": "sqlite",
 
-"database_adapter": "e.g. mysql",
-
-"database_conf":    {
-  "host":     "localhost",
-  "port":     "3306",
-  "user":     "test",
-  "password": "secret",
-  "database": "gearsloth"
-}
-
+  "db_options": {
+    "host":     "localhost",
+    "port":     "3306",
+    "user":     "test",
+    "password": "secret",
+    "database": "gearsloth"
+  }
 }
