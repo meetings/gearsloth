@@ -1,8 +1,10 @@
-var gearman = require('gearman-coffee');
-var gearsloth = require('./lib/gearsloth');
+var gearman     = require('gearman-coffee');
+var gearsloth   = require('./lib/gearsloth');
+var config      = require('./config');
+var database    = require('./lib/adapters/sqlite');
+
 var Worker = gearman.Worker;
 var Client = gearman.Client;
-var database = require('./lib/adapters/sqlite');
 
 var client = new Client();
 
@@ -10,7 +12,6 @@ var worker = new Worker('submitJobDelayed', function(payload, worker) {
   var task = gearsloth.decodeTask(payload);
   var dbconn = database.initializeWithHandle("DelayedTasks.sqlite");
   database.saveTask(task);
-
 
   var timeout = new Date(task.at) - new Date();
   if (timeout < 0)
