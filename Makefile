@@ -24,8 +24,8 @@ unit-test: node_modules
 e2e-test: node_modules
 	$(call start-local, $(MOCHA) test/e2e)
 
-.PHONY: log-delayed-test
-log-delayed-test: node_modules
+.PHONY: ./examples/log-delayed-test
+./examples/log-delayed-test: node_modules
 	$(call start-local,\
 		node log-worker.js & GW_PID=$$!; \
 		node log-delayed-client.js ; \
