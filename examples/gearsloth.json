@@ -1,0 +1,21 @@
+{
+
+"README": [
+  "This is an example configuration for Gearsloth.",
+  "",
+  "This MUST be valid JSON data."
+],
+
+"gearsloth_mode": "daemon | client | both | * | jotain...",
+
+"database_adapter": "e.g. mysql",
+
+"database_conf":    {
+  "host":     "localhost",
+  "port":     "3306",
+  "user":     "test",
+  "password": "secret",
+  "database": "gearsloth"
+}
+
+}
