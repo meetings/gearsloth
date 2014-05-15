@@ -1,5 +1,5 @@
 // require the db adapter
-var db = require('..lib/adapters/sqlite.js');
+var db = require('../lib/adapters/sqlite');
 
 // initialize with a handle into a regular file, empty for in-memory
 var dbconn = db.initalizeWithHandle("random");
