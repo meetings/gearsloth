@@ -9,11 +9,11 @@ Delayed task workers and persistent storage schemes for Gearman.
 
 ### Running example worker/client
 
-    $ make log-delayed-test
+    $ make ./examples/log-delayed-test
 
 ### Running sqlite adapter example
 
-    $ node sqlite-adapter-example.js
+    $ node ./examples/sqlite-adapter-example.js
 
 or use make targets `test` or `unit-test`.
 
