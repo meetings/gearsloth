@@ -63,12 +63,13 @@ describe('Gearsloth', function() {
         gearsloth.decodeTask(testBuffer)
       }).to.throw(Error);
     });
-    test('should throw an error when task contains no func_name', function() {
-      var testBuffer = new Buffer('a\0\0a');
-      expect(function() {
-        gearsloth.decodeTask(testBuffer)
-      }).to.throw(Error);
-    });
+    // This is actually legit gearman protocol
+//    test('should throw an error when task contains no func_name', function() {
+//      var testBuffer = new Buffer('a\0\0a');
+//      expect(function() {
+//        gearsloth.decodeTask(testBuffer)
+//      }).to.throw(Error);
+//    });
     test('should throw an error when task contains no at', function() {
       var testBuffer = new Buffer('\0a\0a');
       expect(function() {
