@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "mocha": "*",
-    "chai": "*"
+    "chai": "*",
+    "sqlite3": "*"
   }
 }

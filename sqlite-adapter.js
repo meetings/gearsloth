@@ -11,51 +11,80 @@ function initTable(error) {
   }
 
   database.serialize(function() {
-    database.run("CREATE TABLE IF NOT EXISTS sloths (", [table], function(error) {
-	console.log(error.toString());
-    });
-  });
-}
+    var query = "CREATE TABLE \
+      IF NOT EXISTS sloths ( \
+        id INTEGER PRIMARY KEY, \
+        at DATETIME, \
+        func_name VARCHAR(60), \
+        payload BLOB)";
 
-// initialize database connection from handle or into memory
-function initializeWithHandle(db_handle) {
-  if (!db_handle) {
-    database = new sqlite3.Database(':memory:', initTable );
-  } else {
-    database = new sqlite3.Database(db_handle, initTable );
+    database.run(query, function(error) {
+      if(error)
+        console.log(error.toString());
+      });
+  });
   }
 
-  return database;
-}
+  // initialize database connection from handle or into memory
+  function initializeWithHandle(db_handle) {
+    if (!db_handle) {
+      database = new sqlite3.Database(':memory:', initTable );
+    } else {
+      database = new sqlite3.Database(db_handle, initTable );
+    }
 
-// initialize database connections from configuration file
-function initializeFromFile(configuration) {
-}
+    return database;
+  }
 
-// save the given task into the database
-function saveTask(func_name, at, payload) {
-  database.serialize(function() {
-  });
-}
+  // initialize database connections from configuration file
+  function initializeFromFile(configuration) {
+  }
 
-function readSingle(id) {
-}
+  // save the given task into the database
+  function saveTask(func_name, at, payload) {
+    database.serialize(function() {
+      var query = "INSERT INTO sloths \
+              (at, func_name, payload) \
+              VALUES (?, ?, ?)";
 
-function readMatching(fieldtype, value) {
-}
+      database.run(query, func_name, at, payload, function(error) {
+        if(error)
+          console.log(error.toString());
+        });
+    });
+  }
 
-function update(id) {
-}
+  // reads tasks whose scheduled time has passed and calls
+  // callback for each of them
+  function readNextTasks(callback) {
+    database.serialize(function() {
+      var query = "SELECT * FROM sloths WHERE at < DATETIME()";
+      database.each(query, function(error, row) {
+        if(error) {
+          console.log(error.toString());
+          return
+        }
+        row.at = new Date(row.at);
+        callback(row);
+      });
+    });
+  }
 
-function deleteSingle(id) {
-}
+  function readMatching(fieldtype, value) {
+  }
 
-function deleteMatching(fieldtype, value) {
-}
+  function updateTask(id) {
+  }
 
-// methods visible to the outside
-exports.initalizeWithHandle = initializeWithHandle;
-exports.saveTask = saveTask;
-exports.readSingle = readSingle;
-exports.update = update;
-exports.deleteSingle = deleteSingle;
+  function deleteTask(id) {
+  }
+
+  function deleteMatching(fieldtype, value) {
+  }
+
+  // methods visible to the outside
+  exports.initalizeWithHandle = initializeWithHandle;
+  exports.saveTask = saveTask;
+  exports.readNextTasks = readNextTasks;
+//  exports.update = update;
+//  exports.deleteSingle = deleteSingle;
