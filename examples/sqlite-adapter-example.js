@@ -2,7 +2,7 @@
 var db = require('../lib/adapters/sqlite');
 
 // initialize with a handle into a regular file, empty for in-memory
-var dbconn = db.initalizeWithHandle("random");
+var dbconn = db.initializeWithHandle("random");
 
 // check what is the status of the database connection
 console.log(dbconn);
