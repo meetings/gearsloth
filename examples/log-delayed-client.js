@@ -1,4 +1,4 @@
-var gearsloth = require('./lib/gearsloth.js');
+var gearsloth = require('../lib/gearsloth.js');
 var Client = require('gearman-coffee').Client;
 
 var client = new Client();
