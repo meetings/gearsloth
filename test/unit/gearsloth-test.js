@@ -3,7 +3,7 @@ var gearsloth = require('../../lib/gearsloth');
 
 var expect = chai.expect;
 
-describe('Array', function() {
+describe('Gearsloth', function() {
   var at = 'a';
   var func_name = 'b';
   var payload = new Buffer('c', 'utf8');
