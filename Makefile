@@ -6,7 +6,7 @@ define start-local
 	GM_EXISTS=; FAIL=; GS_PID=; \
 	pgrep gearmand > /dev/null && GM_EXISTS=1 ; \
 	[ -z $$GM_EXISTS ] && gearmand -d > /dev/null 2>&1 ; \
-	node gearsloth.js & GS_PID=$$!; $1 || FAIL=1 ; \
+	node gearslothd.js & GS_PID=$$!; $1 || FAIL=1 ; \
 	[ ! -z $$GS_PID ] && kill $$GS_PID; \
 	[ -z $$GM_EXISTS ] && pkill gearmand ; \
 	[ -z $$FAIL ]
