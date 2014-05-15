@@ -8,7 +8,7 @@ var client = new Client();
 
 var worker = new Worker('submitJobDelayed', function(payload, worker) {
   var task = gearsloth.decodeTask(payload);
-  var dbconn = database.initalizeWithHandle("DelayedTasks.sqlite");
+  var dbconn = database.initializeWithHandle("DelayedTasks.sqlite");
   database.saveTask(task);
 
 
