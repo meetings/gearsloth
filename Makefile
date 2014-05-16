@@ -42,6 +42,7 @@ log-delayed-test: node_modules
 
 node_modules: package.json
 	npm install
+	touch node_modules
 
 .PHONY: clean
 clean:
