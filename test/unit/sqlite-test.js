@@ -16,7 +16,7 @@ describe('sqlite-adapter', function() {
   var testdb;
   var conn;
   setup(function() {
-    adapter.initializeWithHandle();
+    adapter.initialize();
   });
   suite('saveTask() and readNextTasks()', function() {
     test('should insert JSON task into database', function() {
@@ -55,3 +55,4 @@ describe('sqlite-adapter', function() {
     });
   });
 });
+
