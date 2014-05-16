@@ -12,6 +12,7 @@ var worker = new Worker('submitJobDelayed', function(payload, worker) {
   var task = gearsloth.decodeTask(payload);
   var dbconn = database.initializeWithHandle("DelayedTasks.sqlite");
   database.saveTask(task);
+  dbconn.close();
 
   var timeout = new Date(task.at) - new Date();
   if (timeout < 0)
