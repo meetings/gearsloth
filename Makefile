@@ -42,3 +42,8 @@ log-delayed-test: node_modules
 
 node_modules:
 	npm install
+
+.PHONY: clean
+clean:
+	-rm -r coverage
+	-rm -r node_modules
