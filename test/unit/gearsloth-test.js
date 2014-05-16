@@ -11,7 +11,7 @@ describe('Gearsloth', function() {
   var testBuffer = new Buffer(at_str + '\0b\0c');
   var testJSON = {
     at: at,
-    func_name: func_name,
+    func_name: new Buffer(func_name),
     payload: payload
   };
   suite('encodeTask()', function() {
@@ -58,11 +58,11 @@ describe('Gearsloth', function() {
         gearsloth.decodeTask(testBuffer)
       }).to.throw(Error);
     });
-    test('should not throw an error when task contains one null byte', function() {
+    test('should throw an error when task contains one null byte', function() {
       var testBuffer = new Buffer(at_str + '\0a');
       expect(function() {
         gearsloth.decodeTask(testBuffer)
-      }).to.not.throw(Error);
+      }).to.throw(Error);
     });
     test('should not throw an error when func_name is zero length', function() {
       var testBuffer = new Buffer(at_str + '\0\0a');
@@ -79,7 +79,7 @@ describe('Gearsloth', function() {
     test('should work with payload with zero length', function() {
       var testBuffer = new Buffer(at_str + '\0a\0');
       expect(gearsloth.decodeTask(testBuffer).payload)
-      .to.have.length(0);
+      .to.be.undefined;
     });
   });
 });
