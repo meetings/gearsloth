@@ -14,11 +14,14 @@ var worker = new Worker('submitJobDelayed', function(payload, worker) {
   database.saveTask(task);
   dbconn.close();
 
-  var timeout = new Date(task.at) - new Date();
-  if (timeout < 0)
-    timeout = 0;
-  setTimeout(function() {
-    client.submitJob(task.func_name, task.payload);
-  }, timeout);
   return worker.complete();
+  
+
+//  var timeout = new Date(task.at) - new Date();
+//  if (timeout < 0)
+//    timeout = 0;
+//  setTimeout(function() {
+//    client.submitJob(task.func_name, task.payload);
+//  }, timeout);
+
 });
