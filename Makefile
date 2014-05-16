@@ -29,7 +29,7 @@ e2e-test: node_modules
 
 .PHONY: coverage
 coverage: node_modules
-	-$(call start-local, $(ISTANBUL) cover --report cobertura $(MOCHA_ALT) -- $(MOCHA_PARAMS))
+	-$(call start-local, $(ISTANBUL) cover --report cobertura $(MOCHA_ALT) -- $(MOCHA_PARAMS) test/)
 
 .PHONY: log-delayed-test
 log-delayed-test: node_modules
@@ -40,7 +40,7 @@ log-delayed-test: node_modules
 		kill $$GW_PID \
 	)
 
-node_modules:
+node_modules: package.json
 	npm install
 
 .PHONY: clean
