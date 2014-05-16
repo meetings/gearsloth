@@ -29,8 +29,7 @@ e2e-test: node_modules
 
 .PHONY: coverage
 coverage: node_modules
-	-$(call start-local, $(ISTANBUL) cover $(MOCHA_ALT) -- $(MOCHA_PARAMS))
-	-$(ISTANBUL) report cobertura
+	-$(call start-local, $(ISTANBUL) cover --report cobertura $(MOCHA_ALT) -- $(MOCHA_PARAMS))
 
 .PHONY: log-delayed-test
 log-delayed-test: node_modules
