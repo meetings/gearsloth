@@ -40,7 +40,7 @@ log-delayed-test: node_modules
 		kill $$GW_PID \
 	)
 
-node_modules:
+node_modules: package.json
 	npm install
 
 .PHONY: clean
