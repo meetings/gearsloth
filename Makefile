@@ -17,15 +17,15 @@ endef
 
 .PHONY: test
 test: node_modules
-	$(call start-local, $(MOCHA))
+	$(call start-local, $(MOCHA) $(MOCHA_PARAMS))
 
 .PHONY: unit-test
 unit-test: node_modules
-	$(MOCHA) test/unit
+	$(MOCHA) $(MOCHA_PARAMS) test/unit
 
 .PHONY: e2e-test
 e2e-test: node_modules
-	$(call start-local, $(MOCHA) test/e2e)
+	$(call start-local, $(MOCHA) $(MOCHA_PARAMS) test/e2e)
 
 .PHONY: coverage
 coverage: node_modules
