@@ -28,6 +28,7 @@
     "mocha": "*",
     "chai": "*",
     "chai-as-promised": "*",
-    "sqlite3": "*"
+    "sqlite3": "*",
+    "istanbul": "*"
   }
 }

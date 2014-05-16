@@ -1,5 +1,8 @@
 REPORTER ?= dot
-MOCHA := ./node_modules/.bin/mocha --recursive --ui tdd --reporter $(REPORTER)
+MOCHA_PARAMS ?= --recursive --ui tdd --reporter $(REPORTER)
+MOCHA := ./node_modules/.bin/mocha
+MOCHA_ALT := ./node_modules/.bin/_mocha
+ISTANBUL := ./node_modules/.bin/istanbul
 
 # run local gearman server and gearsloth worker
 define start-local
@@ -23,6 +26,10 @@ unit-test: node_modules
 .PHONY: e2e-test
 e2e-test: node_modules
 	$(call start-local, $(MOCHA) test/e2e)
+
+.PHONY: coverage
+coverage: node_modules
+	$(call start-local, $(ISTANBUL) cover $(MOCHA_ALT) -- $(MOCHA_PARAMS))
 
 .PHONY: log-delayed-test
 log-delayed-test: node_modules
