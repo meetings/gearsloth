@@ -33,3 +33,6 @@ node_modules
 
 # Database temp files
 *.sqlite
+
+# Test environment
+.vagrant

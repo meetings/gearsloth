@@ -17,6 +17,14 @@ Delayed task workers and persistent storage schemes for Gearman.
 
 or use make targets `test` or `unit-test`.
 
+### Running tests in virtualized environment
+
+    $ vagrant up
+    $ vagrant ssh
+
+    sloth:~$ cd /vagrant
+    sloth:~$ make test
+
 ### Links
 
  * [Gearman project](http://gearman.org)
