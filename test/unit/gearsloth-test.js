@@ -108,6 +108,13 @@ describe('Gearsloth', function() {
       var decoded = putJsonThroughDecodeJsonTask(test_json_only_func_name);
       expect(decoded).to.be.empty;
     });
+    test('should return an empty array if func_name is missing', function() {
+      var test_json_only_at = {
+        at: at
+      };
+      var decoded = putJsonThroughDecodeJsonTask(test_json_only_at);
+      expect(decoded).to.be.empty;
+    });
   });
 });
 function putJsonThroughDecodeJsonTask(json) {
