@@ -1,6 +1,11 @@
 var chai = require("chai");
 var gearsloth = require('../../lib/gearsloth');
 
+require('../../lib/log').setOutput({
+  error: function() {},
+  print: function() {}
+});
+
 var expect = chai.expect;
 
 describe('Gearsloth', function() {
