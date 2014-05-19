@@ -44,6 +44,9 @@ node_modules: package.json
 	npm install
 	touch node_modules
 
+.PHONY: build
+build: node_modules
+
 .PHONY: clean
 clean:
 	-rm -r coverage

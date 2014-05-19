@@ -82,4 +82,25 @@ describe('Gearsloth', function() {
       .to.be.undefined;
     });
   });
+  // ENTER JSON DECODE
+  suite('decodeJsonTask()', function() {
+    var payload_string = 'payload';
+    var test_json_string = {
+      at: at,
+      func_name: func_name,
+      payload: payload_string
+    };
+    var test_buffer = new Buffer(JSON.stringify(test_json_string));
+    var decoded = gearsloth.decodeJsonTask(test_buffer);
+    test('should decode a task with no encoding specified', function() {
+      expect(decoded)
+        .to.have.property('at');
+      expect(decoded.at.getTime()).to.equal(at.getTime());
+      expect(decoded)
+        .to.have.property('func_name', func_name);
+      expect(decoded)
+        .to.have.property('payload', payload_string);
+    });
+
+  });
 });
