@@ -51,6 +51,16 @@ describe('Gearsloth', function() {
       expect(gearsloth.encodeTask(date, func_name, payload))
       .to.deep.equal(testBuffer);
     });
+    test('should raise an error on invalid date parameter', function() {
+      var fn = gearsloth.encodeTask.bind(
+        undefined,
+        "invalid date string",
+        func_name,
+        payload
+      );
+
+      expect(fn).to.throw('invalid date');
+    });
   });
   suite('decodeTask()', function() {
     test('should return correct JSON object', function() {
