@@ -2,6 +2,9 @@
 logs
 *.log
 
+# Temp files
+*~
+
 # Runtime data
 pids
 *.pid
@@ -33,3 +36,6 @@ node_modules
 
 # Database temp files
 *.sqlite
+
+# Test environment
+.vagrant

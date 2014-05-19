@@ -2,18 +2,34 @@
 var db = require('../lib/adapters/sqlite');
 
 // initialize with a handle into a regular file, empty for in-memory
-var dbconn = db.initialize("DelayedTasks.sqlite");
+db.initialize("DelayedTasks.sqlite", afterInit );
+
+function afterInit(err, dbconn) {
+
+	var stop = dbconn.listenTask(function (err, task) {
+  		console.log(task);
+		stop();
+	});
+
+	dbconn.saveTask(new Date(), 'log', 'kittehs', function() {});
+	
+	
+}
+
+
+
+
 
 // check what is the status of the database connection
-console.log(dbconn);
+// console.log(dbconn);
 
 // save a task with current date
-db.saveTask(new Date(), 'log', 'kittehs');
+// dbconn.saveTask(new Date(), 'log', 'kittehs');
 
 // read all expired tasks from db and print them
-db.readNextTasks(function (err, task) {
-  console.log(task);
-});
+// dbconn.readNextTasks(function (err, task) {
+//   console.log(task);
+// });
 
 // close the connection
-dbconn.close();
+// dbconn.close();

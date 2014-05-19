@@ -100,7 +100,7 @@ exports.initialize = function(callback) {
   if (!require.resolve(db_module))
     errorExit('Adapter does not exist');
   conf.db_module = require(db_module);
-  conf.db_module.initialize(conf.db_options, function (err, db) {
+  conf.db_module.initialize(conf, function (err, db) {
     if (err)
       errorExit('Cannot establish database connection');
     conf.db = db;
