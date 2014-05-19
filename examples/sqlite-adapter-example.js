@@ -1,12 +1,15 @@
 // require the db adapter
-var db = require('../lib/adapters/sqlite_2');
+var db = require('../lib/adapters/sqlite');
 
 // initialize with a handle into a regular file, empty for in-memory
 db.initialize("DelayedTasks.sqlite", afterInit );
 
 function afterInit(err, dbconn) {
 
+  if (err) console.log(err);
+
 	var stop = dbconn.listenTask(function (err, task) {
+	    if (err) console.log(err);
   		console.log(task);
       stop();
 	});
