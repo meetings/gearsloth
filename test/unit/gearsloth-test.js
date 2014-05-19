@@ -101,6 +101,16 @@ describe('Gearsloth', function() {
       expect(decoded)
         .to.have.property('payload', payload_string);
     });
-
+    test('should return an empty array if at is missing', function() {
+      var test_json_only_func_name = {
+        func_name: func_name
+      };
+      var decoded = putJsonThroughDecodeJsonTask(test_json_only_func_name);
+      expect(decoded).to.be.empty;
+    });
   });
 });
+function putJsonThroughDecodeJsonTask(json) {
+    var test_buffer = new Buffer(JSON.stringify(json));
+    return gearsloth.decodeJsonTask(test_buffer);
+}
