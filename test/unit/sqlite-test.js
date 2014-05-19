@@ -1,6 +1,5 @@
 var chai = require("chai");
 var adapter = require('../../lib/adapters/sqlite');
-var sqlite3 = require('sqlite3').verbose();
 
 var expect = chai.expect;
 describe('sqlite-adapter', function() {
@@ -15,63 +14,116 @@ describe('sqlite-adapter', function() {
     func_name: func_name,
     payload: payload
   };
-  var testdb;
-  var conn;
+
   setup(function() {
-    adapter.initialize();
   });
+  
   suite('saveTask() and readNextTasks()', function() {
     test('should insert JSON task into database', function(done) {
-      adapter.saveTask(test_json);
-      adapter.readNextTasks(function(err, task) {
-        try {
-          expect(task).to.have.property('at');
-          expect(task).to.have.property('func_name');
-          expect(task).to.have.property('payload');
-        } catch(err) {
-          return done(err);
-        }
-        done();
-      });
+    
+      adapter.initialize(null, testScript );
+
+      function testScript(err, dbconn) {
+        var stop = dbconn.listenTask(function (err, task) {
+          stop();
+          
+          try {
+            expect(task).to.have.property('at');
+            expect(task).to.have.property('func_name');
+            expect(task).to.have.property('payload');
+          } catch(err) {
+            return done(err);
+          }
+          done();
+        
+    	  });
+
+    	  dbconn.saveTask(test_json, function() {});
+      }
+    
     });
+    
     test('should insert task parameters into database', function(done) {
-      adapter.saveTask(second_ago, func_name, payload);
-      adapter.readNextTasks(function(err, task) {
-        try {
-          expect(task).to.have.property('at');
-          expect(task).to.have.property('func_name');
-          expect(task).to.have.property('payload');
-        } catch(err) {
-          return done(err);
-        }
-        done();
-      });
-    });
-    test('should give unique ids to tasks', function(done) {
-      adapter.saveTask(test_json);
-      adapter.saveTask(test_json);
-      adapter.saveTask(test_json);
-      var countdown = 3;
-      adapter.readNextTasks(function(err, task) {
-        --countdown;
-        if(countdown === 0)
+    
+      adapter.initialize(null, testScript );
+
+      function testScript(err, dbconn) {
+        var stop = dbconn.listenTask(function (err, task) {
+          stop();
+          
+          try {
+            expect(task).to.have.property('at');
+            expect(task).to.have.property('func_name');
+            expect(task).to.have.property('payload');
+          } catch(err) {
+            return done(err);
+          }
           done();
-      });
+        
+    	  });
+
+    	  dbconn.saveTask(second_ago, func_name, payload, function() {});
+      }
+
     });
+    
     test('should give unique ids to tasks', function(done) {
-      adapter.saveTask(test_json);
-      adapter.saveTask(test_json);
+    
+      adapter.initialize(null, testScript );
+      
+      var items = 3;
+
+      function testScript(err, dbconn) {
+        var stop = dbconn.listenTask(function (err, task) {
+          --items;
+          stop();
+          
+          try {
+            expect(task).to.have.property('at');
+            expect(task).to.have.property('func_name');
+            expect(task).to.have.property('payload');
+          } catch(err) {
+            return done(err);
+          }
+          
+          if (items <= 0) done();
+        
+    	  });
+
+    	  dbconn.saveTask(test_json, function() {});
+    	  dbconn.saveTask(test_json, function() {});
+    	  dbconn.saveTask(test_json, function() {});
+    	      	      	  
+      }
+    });
+    
+    
+    test('should give unique ids to tasks', function(done) {
+    
+      adapter.initialize(null, testScript );
+      
       var id = -1;
-      adapter.readNextTasks(function(err, task) {
-        try {
-          expect(id).to.not.equal(task.id);
-        } catch(err) {
-          return done(err);
-        }
-        if(id != -1)
-          done();
-        id = task.id;
-      });
+      
+      function testScript(err, dbconn) {
+        var stop = dbconn.listenTask(function (err, task) {
+          stop();
+          
+          try {
+            expect(id).to.not.equal(task.id);
+          } catch(err) {
+            return done(err);
+          }
+          
+          if(id != -1)
+            done();
+          id = task.id;
+        
+    	  });
+
+    	  dbconn.saveTask(test_json, function() {});
+    	  dbconn.saveTask(test_json, function() {});
+    	      	      	  
+      }
     });
   });
 });
