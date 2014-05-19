@@ -101,24 +101,24 @@ describe('Gearsloth', function() {
       expect(decoded)
         .to.have.property('at');
       expect(decoded.at.getTime()).to.equal(at.getTime());
-      expect(decoded)
-        .to.have.property('func_name', func_name);
-      expect(decoded)
-        .to.have.property('payload', payload_string);
+      expect(decoded.func_name).to.equal(func_name);
+      expect(decoded.payload).to.equal(payload_string);
     });
-    test('should return an empty array if at is missing', function() {
+    test('should throw if at is missing', function() {
       var test_json_only_func_name = {
         func_name: func_name
       };
-      var decoded = putJsonThroughDecodeJsonTask(test_json_only_func_name);
-      expect(decoded).to.be.empty;
+      expect(function() {
+        putJsonThroughDecodeJsonTask(test_json_only_func_name);
+      }).to.throw(Error);
     });
-    test('should return an empty array if func_name is missing', function() {
+    test('should throw if func_name is missing', function() {
       var test_json_only_at = {
         at: at
       };
-      var decoded = putJsonThroughDecodeJsonTask(test_json_only_at);
-      expect(decoded).to.be.empty;
+      expect(function() {
+        putJsonThroughDecodeJsonTask(test_json_only_at);
+      }).to.throw(Error);
     });
   });
 });
