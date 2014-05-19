@@ -53,5 +53,5 @@ build: node_modules
 
 .PHONY: clean
 clean:
-	-rm -r coverage
-	-rm -r node_modules
+	-rm -rf coverage
+	-rm -rf node_modules
