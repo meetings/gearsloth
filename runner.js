@@ -3,7 +3,7 @@ var Client = gearman.Client;
 
 module.exports = function(config) {
   var client = new Client();
-  config.db.listenTask(function(err, task) {
+  config.dbconn.listenTask(function(err, task) {
     if (err) return console.error('error reading task');
     var timeout = task.at - new Date();
     if (timeout < 0)
