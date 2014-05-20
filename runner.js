@@ -7,11 +7,14 @@ module.exports = function(config) {
     if (err) return console.error('error reading task');
     var timeout = task.at - new Date();
     if (timeout < 0)
-      timeout = 0;
-    setTimeout(function() {
-      client.submitJob(task.func_name, task.payload).
-      on('complete', function() {}); // do nothing
-    }, timeout);
+    timeout = 0;
+  setTimeout(function() {
+    if(task.payload.constructor === {}.constructor) { // check if data is JSON
+      task.payload = JSON.stringify(task.payload);
+    }
+    client.submitJob(task.worker, task.payload).
+    on('complete', function() {}); // do nothing
+  }, timeout);
   });
 
 };
