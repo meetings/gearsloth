@@ -1,0 +1,28 @@
+{
+  "readme": "this is a test file",
+  "mode": "worker",
+  "db": "mem",
+  "dbopt": {
+    "there": "could",
+    "be": {
+      "anything": [ 1, 2, 3 ]
+    },
+    "here": 1337
+  },
+  "servers": [
+    {
+      "host": "localhost",
+      "port": 4830
+    },
+    {
+      "host": "132.234.23.1",
+      "port": "5433"
+    },
+    {
+      "port": "4000"
+    },
+    {
+      "host": "gearman.meetin.gs"
+    }
+  ]
+}
