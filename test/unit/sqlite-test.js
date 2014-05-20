@@ -45,7 +45,7 @@ describe('sqlite-adapter', function() {
       function testScript(err, dbconn) {
         var stop = dbconn.listenTask(function (err, task) {
           stop();
-
+          
           try {
             expect(task).to.have.property('at');
             expect(task).to.have.property('worker');
@@ -97,7 +97,6 @@ describe('sqlite-adapter', function() {
       function testScript(err, dbconn) {
         var stop = dbconn.listenTask(function (err, task) {
           stop();
-
           try {
             expect(id).to.not.equal(task.id);
           } catch(err) {
@@ -116,25 +115,29 @@ describe('sqlite-adapter', function() {
       adapter.initialize(null, testScript);
     });
     
-    test('should update task status to pending upon poll'), function() {
-      var pollCount = 1;
-      
+    test('should update statusfield upon poll', function(done) {
+
+      var poll_count = 2;
+
       function testScript(err, dbconn) {
-        var stop = dbconn.listenTask(function(err, task) {
-          if (pollCount===0) {
+        var stop = dbconn.listenTask(function (err, task) {
+          if (poll_count === 0 ) {
             stop();
-          }
-          
-          try {
-          
-          } catch (err) {
+           try {
+            expect(task.status).to.equal("pending");  
+           } catch(err) {
             return done(err);
-          }
-          
-          --pollCount;
-        }
+           }
+
+           if(poll_count === 0)
+             done();
+           }
+          --poll_count;
+        });
+
+        dbconn.saveTask(test_json, function() {});
+        dbconn.saveTask(test_json, function() {});
       }
-      
       adapter.initialize(null, testScript);
     });
   });
