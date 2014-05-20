@@ -17,9 +17,8 @@ describe('sqlite-adapter', function() {
   setup(function() {
   });
 
-  suite('saveTask() and readNextTasks()', function() {
+  suite('saveTask() and listenTask()', function() {
     test('should insert JSON task into database', function(done) {
-      adapter.initialize(null, testScript);
 
       function testScript(err, dbconn) {
         var stop = dbconn.listenTask(function (err, task) {
@@ -38,10 +37,10 @@ describe('sqlite-adapter', function() {
 
         dbconn.saveTask(test_json, function() {});
       }
+      adapter.initialize(null, testScript);
     });
 
     test('should insert task parameters into database', function(done) {
-      adapter.initialize(null, testScript);
 
       function testScript(err, dbconn) {
         var stop = dbconn.listenTask(function (err, task) {
@@ -60,10 +59,10 @@ describe('sqlite-adapter', function() {
 
         dbconn.saveTask(second_ago, worker, payload, function() {});
       }
+      adapter.initialize(null, testScript);
     });
 
-    test('should give unique ids to tasks', function(done) {
-      adapter.initialize(null, testScript);
+    test('should give unique ids to tasks, part 1', function(done) {
 
       var items = 3;
 
@@ -88,10 +87,10 @@ describe('sqlite-adapter', function() {
         dbconn.saveTask(test_json, function() {});
         dbconn.saveTask(test_json, function() {});
       }
+      adapter.initialize(null, testScript);
     });
 
-    test('should give unique ids to tasks', function(done) {
-      adapter.initialize(null, testScript);
+    test('should give unique ids to tasks, part 2', function(done) {
 
       var id = -1;
 
@@ -114,6 +113,29 @@ describe('sqlite-adapter', function() {
         dbconn.saveTask(test_json, function() {});
         dbconn.saveTask(test_json, function() {});
       }
+      adapter.initialize(null, testScript);
+    });
+    
+    test('should update task status to pending upon poll'), function() {
+      var pollCount = 1;
+      
+      function testScript(err, dbconn) {
+        var stop = dbconn.listenTask(function(err, task) {
+          if (pollCount===0) {
+            stop();
+          }
+          
+          try {
+          
+          } catch (err) {
+            return done(err);
+          }
+          
+          --pollCount;
+        }
+      }
+      
+      adapter.initialize(null, testScript);
     });
   });
 });
