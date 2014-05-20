@@ -6,11 +6,11 @@ var expect = chai.expect;
 describe('sqlite-adapter', function() {
   var second_ago = new Date() - 1000;
 
-  var func_name = 'log';
+  var worker = 'log';
   var payload = new Buffer(10);
   var test_json = {
     at: second_ago,
-    func_name: func_name,
+    worker: worker,
     payload: payload
   };
 
@@ -27,7 +27,7 @@ describe('sqlite-adapter', function() {
 
           try {
             expect(task).to.have.property('at');
-            expect(task).to.have.property('func_name');
+            expect(task).to.have.property('worker');
             expect(task).to.have.property('payload');
           } catch(err) {
             return done(err);
@@ -49,7 +49,7 @@ describe('sqlite-adapter', function() {
 
           try {
             expect(task).to.have.property('at');
-            expect(task).to.have.property('func_name');
+            expect(task).to.have.property('worker');
             expect(task).to.have.property('payload');
           } catch(err) {
             return done(err);
@@ -58,7 +58,7 @@ describe('sqlite-adapter', function() {
 
         });
 
-        dbconn.saveTask(second_ago, func_name, payload, function() {});
+        dbconn.saveTask(second_ago, worker, payload, function() {});
       }
     });
 
@@ -74,7 +74,7 @@ describe('sqlite-adapter', function() {
 
           try {
             expect(task).to.have.property('at');
-            expect(task).to.have.property('func_name');
+            expect(task).to.have.property('worker');
             expect(task).to.have.property('payload');
           } catch(err) {
             return done(err);
