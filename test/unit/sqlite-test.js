@@ -73,34 +73,6 @@ describe('sqlite-adapter', function() {
       }
       adapter.initialize(null, testScript);
     });
-
-    test('should give unique ids to tasks, part 2', function(done) {
-
-      var id = -1;
-
-      function testScript(err, dbconn) {
-        var stop = dbconn.listenTask(function (err, task_id) {
-          stop();
-          
-          dbconn.grabTask(task_id, function(task) {
-            try {
-             expect(id).to.not.equal(task.id);
-            } catch(err) {
-             return done(err);
-            }
-            
-          });
-          
-          if(id != -1)
-            done();
-          id = task_id;
-        });
-
-        dbconn.saveTask(test_json, function() {});
-        dbconn.saveTask(test_json, function() {});
-      }
-      adapter.initialize(null, testScript);
-    });
     
   });
   
@@ -110,14 +82,21 @@ describe('sqlite-adapter', function() {
       var id = -1;
 
       function testScript(err, dbconn) {
-        var stop = dbconn.listenTask(function (err, task) {
-
+        var stop = dbconn.listenTask(function (err, task_id) {
+            stop();
+            dbconn.grabTask(task_id, function(task) {
+              try {
+                expect(task).not.to.equal('undefined');
+                done();
+              } catch (err) {
+                done(err);
+              }
+            });
             
         });
 
         dbconn.saveTask(test_json, function() {});
-        dbconn.saveTask(test_json, function() {});
-        done();
+
       }
       adapter.initialize(null, testScript);
     });
