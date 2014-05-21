@@ -21,44 +21,23 @@ describe('sqlite-adapter', function() {
     test('should insert JSON task into database', function(done) {
 
       function testScript(err, dbconn) {
-        var stop = dbconn.listenTask(function (err, task) {
+        var stop = dbconn.listenTask(function (err, task_id) {
           stop();
-
-          try {
-            expect(task).to.have.property('at');
-            expect(task).to.have.property('func_name');
-            expect(task).to.have.property('payload');
-          } catch(err) {
-            return done(err);
-          }
-          done();
+          
+          dbconn.grabTask(task_id, function(task) {
+            try {
+              expect(task).to.have.property('at');
+              expect(task).to.have.property('func_name');
+              expect(task).to.have.property('payload');
+            } catch(err) {
+              return done(err);
+            }
+            done();
+          });
 
         });
 
         dbconn.saveTask(test_json, function() {});
-      }
-      adapter.initialize(null, testScript);
-    });
-
-    test('should insert task parameters into database', function(done) {
-
-      function testScript(err, dbconn) {
-        var stop = dbconn.listenTask(function (err, task) {
-          stop();
-          
-          try {
-            expect(task).to.have.property('at');
-            expect(task).to.have.property('func_name');
-            expect(task).to.have.property('payload');
-          } catch(err) {
-            return done(err);
-          }
-          done();
-
-        });
-
-        //dbconn.saveTask(second_ago, worker, payload, function() {});
-        done();
       }
       adapter.initialize(null, testScript);
     });
@@ -68,20 +47,24 @@ describe('sqlite-adapter', function() {
       var items = 3;
 
       function testScript(err, dbconn) {
-        var stop = dbconn.listenTask(function (err, task) {
+        var stop = dbconn.listenTask(function (err, task_id) {
           --items;
           stop();
 
-          try {
-            expect(task).to.have.property('at');
-            expect(task).to.have.property('func_name');
-            expect(task).to.have.property('payload');
-          } catch(err) {
-            return done(err);
+          dbconn.grabTask(task_id, function(task) {
+            try {
+              expect(task).to.have.property('at');
+              expect(task).to.have.property('func_name');
+              expect(task).to.have.property('payload');
+            } catch(err) {
+              return done(err);
+            }
+            
+          });
+          
+          if (items <= 0) {
+            done();
           }
-
-          if (items <= 0) done();
-
         });
 
         dbconn.saveTask(test_json, function() {});
@@ -96,18 +79,21 @@ describe('sqlite-adapter', function() {
       var id = -1;
 
       function testScript(err, dbconn) {
-        var stop = dbconn.listenTask(function (err, task) {
+        var stop = dbconn.listenTask(function (err, task_id) {
           stop();
-          try {
-            expect(id).to.not.equal(task.id);
-          } catch(err) {
-            return done(err);
-          }
-
+          
+          dbconn.grabTask(task_id, function(task) {
+            try {
+             expect(id).to.not.equal(task.id);
+            } catch(err) {
+             return done(err);
+            }
+            
+          });
+          
           if(id != -1)
             done();
-          id = task.id;
-
+          id = task_id;
         });
 
         dbconn.saveTask(test_json, function() {});
@@ -116,30 +102,24 @@ describe('sqlite-adapter', function() {
       adapter.initialize(null, testScript);
     });
     
-//    test('should update statusfield upon poll', function(done) {
-//
-//      var poll_count = 2;
-//
-//      function testScript(err, dbconn) {
-//        var stop = dbconn.listenTask(function (err, task) {
-//          if (poll_count === 0 ) {
-//            stop();
-//           try {
-//            expect(task.status).to.equal("pending");  
-//           } catch(err) {
-//            return done(err);
-//           }
-//
-//           if(poll_count === 0)
-//             done();
-//           }
-//          --poll_count;
-//        });
+  });
+  
+  suite('grabTask()', function() {
+    test('should give new task on grab', function(done) {
 
-//        dbconn.saveTask(test_json, function() {});
-//        dbconn.saveTask(test_json, function() {});
-//      }
-//      adapter.initialize(null, testScript);
-//    });
+      var id = -1;
+
+      function testScript(err, dbconn) {
+        var stop = dbconn.listenTask(function (err, task) {
+
+            
+        });
+
+        dbconn.saveTask(test_json, function() {});
+        dbconn.saveTask(test_json, function() {});
+        done();
+      }
+      adapter.initialize(null, testScript);
+    });
   });
 });

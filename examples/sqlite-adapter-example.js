@@ -8,10 +8,12 @@ function afterInit(err, dbconn) {
 
   if (err) console.log(err);
 
-	var stop = dbconn.listenTask(function (err, task) {
+	var stop = dbconn.listenTask(function (err, task_id) {
 	    if (err) console.log(err);
-  		console.log(task);
       stop();
+      dbconn.grabTask(task_id, function(task) {
+        console.log(task);
+      });
 	});
 	
 	var example_task = {
@@ -21,24 +23,4 @@ function afterInit(err, dbconn) {
 	}
 
 	dbconn.saveTask(example_task, function() {});
-	
-	
 }
-
-
-
-
-
-// check what is the status of the database connection
-// console.log(dbconn);
-
-// save a task with current date
-// dbconn.saveTask(new Date(), 'log', 'kittehs');
-
-// read all expired tasks from db and print them
-// dbconn.readNextTasks(function (err, task) {
-//   console.log(task);
-// });
-
-// close the connection
-// dbconn.close();
