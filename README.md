@@ -3,13 +3,17 @@
 
 Delayed task workers and persistent storage schemes for Gearman.
 
+### Documentation
+
+* [Documentation](doc.md)
+
 ### Running tests
 
     $ npm test
 
 ### Running example worker/client
 
-    $ make ./examples/log-delayed-test
+    $ make log-delayed-test
 
 ### Running sqlite adapter example
 
