@@ -1,0 +1,83 @@
+#!/usr/bin/env node
+
+/**
+ * This file demostrates three ways to call gearsloth in Javascript.
+ */
+
+var events = require('events');
+var gearman = require('gearman-coffee');
+var gearsloth = require('../../lib/gearsloth.js');
+
+// timer
+
+var started;
+
+/**
+ * Print arguments to output with elapsed time in seconds since the first call
+ * to this function.
+ */
+
+function log() {
+  if (!started)
+    started = Date.now();
+  var elapsed = Math.round((Date.now() - started) / 1000);
+  console.log.
+    bind(undefined, '[' + elapsed + 's]').
+    apply(undefined, arguments);
+}
+
+// start gearman log worker
+
+var log_worker = new gearman.Worker('log', function(payload, worker) {
+  var str = payload.toString("utf-8");
+  log('worker:', str);
+  return worker.complete();
+});
+
+// keep track of succesful calls to gearsloth
+// yeah, this sucks...
+
+var client = new gearman.Client();
+var i = 1;
+function disconnect() {
+  if (--i === 0) {
+    log_worker.disconnect();
+    client.disconnect();
+  }
+}
+
+// using high level API with gearsloth.encodeTask
+
+var msg1 = 'than never';
+var delay1 = 1000;
+var task1 = gearsloth.encodeTask(Date.now() + delay1, 'log', msg1);
+
+log('client1:', msg1);
+client.submitJob('submitJobDelayed', task1).
+on('complete', disconnect);
+
+// using low level API with regular gearman arguments
+
+var msg2 = 'is better';
+var delay2 = 2000;
+
+var job = new events.EventEmitter();
+job.on('complete', disconnect);
+client.queue.push(job);
+
+log('client2:', msg2);
+client.sendCommand('SUBMIT_JOB', 'submitJobDelayed', false,
+  new Date(Date.now() + delay2).toISOString(), 'log', msg2);
+
+// using JSON API
+
+var msg3 = 'late';
+var delay3 = 1000;
+
+log('client3:', msg3);
+client.submitJob('submitJobDelayedJson', JSON.stringify({
+  at: new Date(Date.now() + delay3).toISOString(),
+  func_name: 'log',
+  payload: msg3
+})).
+on('complete', disconnect);

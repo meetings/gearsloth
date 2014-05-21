@@ -23,18 +23,34 @@ var worker = new gearman.Worker('test', function(payload, worker) {
 var client = new gearman.Client();
 
 describe('gearsloth worker', function() {
+
+  // common stuff
+  var test_string = 'test string';
+  function setTestFunction(done) {
+    testFunction = function(payload) {
+      if (payload.toString('utf8') === test_string) {
+        return done();
+      };
+      done(new Error('test string is not equal to the payload'));
+    }
+  }
+
   suite('submitJobDelayed()', function() {
     test('should not alter the payload', function(done) {
-      var test_string = 'test string';
-      testFunction = function(payload) {
-        if (payload.toString('utf8') === test_string) {
-          return done();
-        }
-        done(new Error('test string is not equal to the payload'));
-      }
+      setTestFunction(done);
       client.submitJob('submitJobDelayed', gearsloth.encodeTask(
         new Date(Date.now() + delay).toISOString(), 'test', test_string
       ));
+    });
+  });
+  suite('submitJobDelayedJson()', function() {
+    test('should not alter the payload', function(done) {
+      setTestFunction(done);
+      client.submitJob('submitJobDelayedJson', JSON.stringify({
+        at: new Date(Date.now() + delay).toISOString(),
+        func_name: 'test',
+        payload: test_string
+      }));
     });
   });
 });
