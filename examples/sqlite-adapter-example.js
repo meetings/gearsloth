@@ -13,8 +13,14 @@ function afterInit(err, dbconn) {
   		console.log(task);
       stop();
 	});
+	
+	var example_task = {
+	  at: new Date(),
+	  func_name: 'log',
+	  payload: 'kittehs'
+	}
 
-	dbconn.saveTask(new Date(), 'log', 'kittehs', function() {});
+	dbconn.saveTask(example_task, function() {});
 	
 	
 }
