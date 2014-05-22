@@ -6,12 +6,12 @@ ISTANBUL := ./node_modules/.bin/istanbul
 
 # run local gearman server and gearsloth worker
 define start-local
-	GM_EXISTS=; FAIL=; GS_PID=; \
-	pgrep gearmand > /dev/null && GM_EXISTS=1 ; \
-	[ -z $$GM_EXISTS ] && gearmand -d > /dev/null 2>&1 ; \
-	node gearslothd.js & GS_PID=$$!; $1 || FAIL=1 ; \
-	[ ! -z $$GS_PID ] && kill $$GS_PID; \
-	[ -z $$GM_EXISTS ] && pkill gearmand ; \
+	FAIL=; GM_PID=; GS_PID=;\
+	gearmand 2> /dev/null & GM_PID=$$!;\
+	./bin/gearslothd & GS_PID=$$!;\
+	$1 || FAIL=1;\
+	[ ! -z $$GS_PID ] && kill $$GS_PID;\
+	[ ! -z $$GM_PID ] && kill $$GM_PID;\
 	[ -z $$FAIL ]
 endef
 
@@ -29,20 +29,16 @@ e2e-test: node_modules
 
 .PHONY: coverage
 coverage: node_modules
-	-$(call start-local, $(ISTANBUL) cover --report cobertura $(MOCHA_ALT) -- $(MOCHA_PARAMS) test/)
+	-$(call start-local,\
+		$(ISTANBUL) cover --report cobertura $(MOCHA_ALT) -- $(MOCHA_PARAMS) test/)
 
 .PHONY: html-coverage
 html-coverage: coverage
 	-$(ISTANBUL) report html
 
-.PHONY: log-delayed-test
-log-delayed-test: node_modules
-	$(call start-local,\
-		node ./examples/log-worker.js & GW_PID=$$!; \
-		node ./examples/log-delayed-client.js ; \
-		sleep 2 ; \
-		kill $$GW_PID \
-	)
+.PHONY: log-delayed
+log-delayed: node_modules
+	-@$(call start-local, ./examples/bin/log-delayed)
 
 node_modules: package.json
 	npm install
