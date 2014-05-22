@@ -8,7 +8,7 @@ require('../../lib/log').setOutput({
 
 var expect = chai.expect;
 
-describe('Gearsloth', function() {
+suite('Gearsloth', function() {
   var at = new Date('2014-05-15T13:05:21.612Z');
   var at_str = at.toISOString();
   var func_name = 'b';
@@ -204,11 +204,43 @@ describe('Gearsloth', function() {
       }).to.throw.Error;
     });
   });
+  suite('encodeWithBinaryPayload()', function() {
+    var payload = new Buffer(10);
+    var test_json = {
+      at: at,
+      func_name: func_name,
+    };
+    test('should return a buffer with a null byte', function() {
+      expect(has(gearsloth.encodeWithBinaryPayload(test_json, payload), 0))
+      .to.be.true;
+    });
+    test('should be decodable with decodeJsonTask()', function() {
+      var decoded = gearsloth.decodeJsonTask(
+        gearsloth.encodeWithBinaryPayload(test_json, payload));
+      expect(decoded).to.have.property('at');
+      expect(decoded).to.have.property('func_name', func_name);
+      expect(decoded).to.have.property('payload');
+      expect(buffersEqual(payload, decoded.payload)).to.be.true;
+    });
+    test('should work with stringified JSON', function() {
+      expect(function() {
+        gearsloth.decodeJsonTask(
+          gearsloth.encodeWithBinaryPayload(json_string, payload))
+      }).to.not.throw.Error;
+    });
+    test('should throw if JSON is malformed', function() {
+      expect(function() {
+          gearsloth.encodeWithBinaryPayload("hihihaaa", payload);
+      }).to.throw.Error;
+    });
+  });
 });
+
 function putJsonThroughDecodeJsonTask(json) {
     var test_buffer = new Buffer(JSON.stringify(json));
     return gearsloth.decodeJsonTask(test_buffer);
 }
+
 function buffersEqual(buf1, buf2) {
   if(buf1.length !== buf2.length) {
     return false;
@@ -217,4 +249,11 @@ function buffersEqual(buf1, buf2) {
     if(buf1[i] !== buf2[i]) return false;
   }
   return true;
+}
+
+function has(buf, val) {
+  for(var i = 0; i < buf.length; ++i) {
+    if(buf[i] === val) return true;
+  }
+  return false;
 }
