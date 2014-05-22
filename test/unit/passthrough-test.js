@@ -5,6 +5,14 @@ var gearman = require('gearman-coffee');
 var adapter = {
   grabTask: function() {}
 };
+var client = {
+  submitJob: function() {}
+};
+var worker = {
+  error: function() {},
+  complete: function() {}
+}
+
 var Passthrough = require("../../lib/strategies/passthrough");
 
 chai.should();
@@ -25,11 +33,22 @@ suite('passthrough strategy', function() {
       func_name: "func_to_call",
       payload: "payload"
     }
+    var sandbox = sinon.sandbox.create();
+    var workerStub;
+    var clientStub;
 
-    test('should try to grab work', sinon.test(function() {
-      this.stub(gearman);
-      this.stub(adapter);
+    setup(function() {
+      sandbox.stub(gearman);
+      sandbox.stub(adapter);
+      workerStub = sandbox.stub(worker);
+      clientStub = sandbox.stub(client);
+    });
 
+    teardown(function() {
+      sandbox.restore();
+    });
+
+    test('should try to grab work', function() {
       var p = new Passthrough(gearman, adapter);
 
       var workHandler = gearman.Worker.firstCall.args[1];
@@ -37,60 +56,34 @@ suite('passthrough strategy', function() {
 
       adapter.grabTask.calledOnce.should.be.true;
       adapter.grabTask.firstCall.args[0].should.equal(666);
-    }));
-    test('should send complete packet after grabbing work successfully', sinon.test(function() {
-      this.stub(gearman);
-      this.stub(adapter);
-
+    });
+    test('should send complete packet after grabbing work successfully', function() {
       adapter.grabTask.callsArgWith(1, null, grabbedTask);
-      var clientStub = this.stub({
-        submitJob: function() {}
-      });
+
       var p = new Passthrough(gearman, adapter);
       p._client = clientStub;
 
       var workHandler = gearman.Worker.firstCall.args[1];
-      var workerStub = this.stub({
-        complete: function() {}
-      });
-      p._client = this.stub({
-        submitJob: function() {}
-      })
       workHandler.call(p, 666, workerStub);
 
       workerStub.complete.calledOnce.should.be.true;
-    }));
-    test("should send error packet if there's an error", sinon.test(function() {
-      this.stub(gearman);
-      this.stub(adapter);
-
+    });
+    test("should send error packet if there's an error", function() {
       adapter.grabTask.callsArgWith(1, "Errore'd", {});
 
       var p = new Passthrough(gearman, adapter);
 
       var workHandler = gearman.Worker.firstCall.args[1];
-      var workerStub = this.stub({
-        error: function() {}
-      });
       workHandler.call(p, 666, workerStub);
 
       workerStub.error.calledOnce.should.be.true;
-    }));
-    test('calls correct function after grabbing', sinon.test(function() {
-      this.stub(gearman);
-      this.stub(adapter);
-
+    });
+    test('calls correct function after grabbing', function() {
       adapter.grabTask.callsArgWith(1, null, grabbedTask);
-      var clientStub = this.stub({
-        submitJob: function() {}
-      });
       var p = new Passthrough(gearman, adapter);
       p._client = clientStub;
 
       var workHandler = gearman.Worker.firstCall.args[1];
-      var workerStub = this.stub({
-        complete: function() {}
-      });
       workHandler.call(p, 666, workerStub)
 
       workerStub.complete.calledOnce.should.be.true;
@@ -98,6 +91,6 @@ suite('passthrough strategy', function() {
       clientStub.submitJob
         .calledWith(grabbedTask.func_name, grabbedTask.payload)
         .should.be.true;
-    }));
+    });
   });
 });
