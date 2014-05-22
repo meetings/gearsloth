@@ -13,7 +13,7 @@ Delayed task workers and persistent storage schemes for Gearman.
 
 ### Running example worker/client
 
-    $ make log-delayed-test
+    $ make log-delayed
 
 ### Running sqlite adapter example
 
