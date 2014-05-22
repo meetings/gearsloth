@@ -23,7 +23,6 @@
   "dependencies": {
     "gearman-coffee": "^1.1.1",
     "jsonschema": "^0.4.0",
-    "posix-getopt": "^1.0.0",
     "yargs": "^1.2.2"
   },
   "devDependencies": {
