@@ -15,7 +15,7 @@ var worker = {
   complete: function() {}
 }
 
-var Passthrough = require("../../lib/strategies/passthrough");
+var Passthrough = require("../../lib/strategies/passthrough").Passthrough;
 
 chai.should();
 
@@ -29,23 +29,24 @@ suite('passthrough strategy', function() {
   }
 
   suite('construction', function() {
-    test('can create Passthrough strategy', sinon.test(function() {
-      this.stub(gearman);
-      var p = new Passthrough(gearman);
-      gearman.Worker.calledWithNew().should.be.true;
-      gearman.Worker.calledOnce.should.be.true;
-    }));
+    test('can create Passthrough strategy', function() {
+      var p = new Passthrough(function(a) {return null;}, null, null);
+    });
   });
   suite('accepting work', function() {
     var sandbox = sinon.sandbox.create();
-    var workerStub;
-    var clientStub;
+    var p, workerStub, clientStub, workHandler;
 
     setup(function() {
       sandbox.stub(gearman);
       sandbox.stub(adapter);
       workerStub = sandbox.stub(worker);
+      workerParameter = function(handler) {
+        workHandler = handler;
+        return workerStub;
+      };
       clientStub = sandbox.stub(client);
+      p = new Passthrough(workerParameter, clientStub, adapter);
       client.submitJob.returns(new EventEmitter());
     });
 
@@ -54,9 +55,6 @@ suite('passthrough strategy', function() {
     });
 
     test('should try to grab work', function() {
-      var p = new Passthrough(gearman, adapter);
-
-      var workHandler = gearman.Worker.firstCall.args[1];
       workHandler.call(p, 666);
 
       adapter.grabTask.calledOnce.should.be.true;
@@ -65,10 +63,6 @@ suite('passthrough strategy', function() {
     test('should send complete packet after grabbing work successfully', function() {
       adapter.grabTask.callsArgWith(1, null, sampleTask);
 
-      var p = new Passthrough(gearman, adapter);
-      p._client = clientStub;
-
-      var workHandler = gearman.Worker.firstCall.args[1];
       workHandler.call(p, 666, workerStub);
 
       workerStub.complete.calledOnce.should.be.true;
@@ -76,19 +70,13 @@ suite('passthrough strategy', function() {
     test("should send error packet if there's an error", function() {
       adapter.grabTask.callsArgWith(1, "Errore'd", {});
 
-      var p = new Passthrough(gearman, adapter);
-
-      var workHandler = gearman.Worker.firstCall.args[1];
       workHandler.call(p, 666, workerStub);
 
       workerStub.error.calledOnce.should.be.true;
     });
     test('calls correct function after grabbing', function() {
       adapter.grabTask.callsArgWith(1, null, sampleTask);
-      var p = new Passthrough(gearman, adapter);
-      p._client = clientStub;
 
-      var workHandler = gearman.Worker.firstCall.args[1];
       workHandler.call(p, 666, workerStub)
 
       workerStub.complete.calledOnce.should.be.true;
@@ -99,12 +87,26 @@ suite('passthrough strategy', function() {
     });
   });
   suite('_runTask', function() {
+    var sandbox = sinon.sandbox.create();
+    var p, workerStub, clientStub;
+
+    setup(function() {
+      sandbox.stub(gearman);
+      sandbox.stub(adapter);
+      workerStub = sandbox.stub(worker);
+      clientStub = sandbox.stub(client);
+      workerParameter = function(handler) {
+        workHandler = handler;
+        return workerStub;
+      };
+      p = new Passthrough(workerParameter, clientStub, adapter);
+    });
+
+    teardown(function() {
+      sandbox.restore();
+    });
+
     test('sets task state on complete', sinon.test(function() {
-      this.stub(gearman);
-      this.stub(adapter);      
-
-      var p = new Passthrough(gearman, adapter);
-
       var emitter = new EventEmitter();
       p._client.submitJob = function(func_name, payload) {
         return emitter;
@@ -116,11 +118,6 @@ suite('passthrough strategy', function() {
       adapter.updateTask.calledWith(sampleTask.id, 'DONE').should.be.true;
     }));
     test('sets task state on failure', sinon.test(function() {
-      this.stub(gearman);
-      this.stub(adapter);
-
-      var p = new Passthrough(gearman, adapter);
-
       var emitter = new EventEmitter();
       p._client.submitJob = function(func_name, payload) {
         return emitter;
