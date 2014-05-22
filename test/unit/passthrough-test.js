@@ -1,9 +1,11 @@
 var chai = require("chai");
 var sinon = require('sinon');
 var gearman = require('gearman-coffee');
+var EventEmitter = require('events').EventEmitter;
 // TODO: change to use sqlite adapter as basis
 var adapter = {
-  grabTask: function() {}
+  grabTask: function() {},
+  updateTask: function() {}
 };
 var client = {
   submitJob: function() {}
@@ -18,6 +20,14 @@ var Passthrough = require("../../lib/strategies/passthrough");
 chai.should();
 
 suite('passthrough strategy', function() {
+
+  var sampleTask = {
+    id: 666,
+    at: 0,
+    func_name: "func_to_call",
+    payload: "payload"
+  }
+
   suite('construction', function() {
     test('can create Passthrough strategy', sinon.test(function() {
       this.stub(gearman);
@@ -27,12 +37,6 @@ suite('passthrough strategy', function() {
     }));
   });
   suite('accepting work', function() {
-
-    var grabbedTask = {
-      at: 0,
-      func_name: "func_to_call",
-      payload: "payload"
-    }
     var sandbox = sinon.sandbox.create();
     var workerStub;
     var clientStub;
@@ -42,6 +46,7 @@ suite('passthrough strategy', function() {
       sandbox.stub(adapter);
       workerStub = sandbox.stub(worker);
       clientStub = sandbox.stub(client);
+      client.submitJob.returns(new EventEmitter());
     });
 
     teardown(function() {
@@ -58,7 +63,7 @@ suite('passthrough strategy', function() {
       adapter.grabTask.firstCall.args[0].should.equal(666);
     });
     test('should send complete packet after grabbing work successfully', function() {
-      adapter.grabTask.callsArgWith(1, null, grabbedTask);
+      adapter.grabTask.callsArgWith(1, null, sampleTask);
 
       var p = new Passthrough(gearman, adapter);
       p._client = clientStub;
@@ -79,7 +84,7 @@ suite('passthrough strategy', function() {
       workerStub.error.calledOnce.should.be.true;
     });
     test('calls correct function after grabbing', function() {
-      adapter.grabTask.callsArgWith(1, null, grabbedTask);
+      adapter.grabTask.callsArgWith(1, null, sampleTask);
       var p = new Passthrough(gearman, adapter);
       p._client = clientStub;
 
@@ -89,8 +94,43 @@ suite('passthrough strategy', function() {
       workerStub.complete.calledOnce.should.be.true;
       clientStub.submitJob.calledOnce.should.be.true;
       clientStub.submitJob
-        .calledWith(grabbedTask.func_name, grabbedTask.payload)
+        .calledWith(sampleTask.func_name, sampleTask.payload)
         .should.be.true;
     });
+  });
+  suite('_runTask', function() {
+    test('sets task state on complete', sinon.test(function() {
+      this.stub(gearman);
+      this.stub(adapter);      
+
+      var p = new Passthrough(gearman, adapter);
+
+      var emitter = new EventEmitter();
+      p._client.submitJob = function(func_name, payload) {
+        return emitter;
+      };
+
+      p._runTask(sampleTask);
+      emitter.emit('complete');
+
+      adapter.updateTask.calledWith(sampleTask.id, 'DONE').should.be.true;
+    }));
+    test('sets task state on failure', sinon.test(function() {
+      this.stub(gearman);
+      this.stub(adapter);
+
+      var p = new Passthrough(gearman, adapter);
+
+      var emitter = new EventEmitter();
+      p._client.submitJob = function(func_name, payload) {
+        return emitter;
+      };
+
+      p._runTask(sampleTask);
+      emitter.emit('fail');
+
+      adapter.updateTask.calledWith(sampleTask.id, 'FAIL').should.be.true;
+
+    }));
   });
 });
