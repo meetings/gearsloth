@@ -59,7 +59,7 @@ Gearsloth injector daemon adds the following functions to the gearman server:
 
 ### submitJobDelayed
 
-Submits a task to be performed at a specified time.
+Submits a task to be executed at a specified time.
 
 Arguments:
 
@@ -71,7 +71,8 @@ Arguments:
 
 ### submitJobDelayedJson
 
-Submits a task in UTF-8 encoded JSON format to be performed at a specified time.
+Submits a task to be executed at a specified time. The task is given as a
+UTF-8 encoded JSON object.
 
 JSON fields:
 
@@ -97,19 +98,18 @@ JSON fields:
 The file 'lib/gearsloth.js' includes some helper functions for Javascript
 clients which aid in encoding, decoding and validating gearsloth tasks.
 
-### `encodeTask(String|Date|Number|Object at [, String|Buffer func_name]
-[, String|Buffer payload])` -> `Buffer`
+### `encodeTask(String|Date|Number|Object at [, String|Buffer func_name] [, String|Buffer payload])` -> `Buffer`
 
 Encode and validate a task to be used as a payload with 'submitJobDelayed'
 gearman function.
 
 ### `decodeTask(Buffer task)` -> `Object`
 
-Decode a binary coded delayed task to a JSON task object.
+Decode and validate a delayed task in binary format to a JSON task object.
 
-### `decodeJsonTask(Buffer task)` -> `Object`
+### `decodeJsonTask(String|Buffer task)` -> `Object`
 
-Decode a utf8-encoded delayed task to a JSON task object.
+Decode and validate a utf8-encoded delayed task to a JSON task object.
 
 ## Configuration
 

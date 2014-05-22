@@ -22,17 +22,24 @@ suite('MemAdapter', function() {
   suite('saveTask', function() {
     test('adds task to internal list', function() {
       var task = "some task";
-      adapter.saveTask(task);
-      adapter._tasks.should.include(task);
+      adapter.saveTask(task, function() {});
+      adapter._tasks.should.include(task, function() {});
     });
     test('sends task to listener', function() {
       var task = "some task";
       var callback = sinon.spy();
       adapter.listenTask(callback);
-      adapter.saveTask(task);
+      adapter.saveTask(task, function() {});
 
       callback.calledOnce.should.be.true;
       callback.calledWith(null, task).should.be.true;
+    });
+    test('calls provided callback', function(done) {
+      var task = "some task";
+      adapter.listenTask(function() {});
+      adapter.saveTask(task, function() {
+        done();
+      });
     });
   });
   suite('listenTask', function() {
