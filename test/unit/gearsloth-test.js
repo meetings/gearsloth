@@ -130,9 +130,58 @@ describe('Gearsloth', function() {
         putJsonThroughDecodeJsonTask(test_json_only_at);
       }).to.throw(Error);
     });
+    test('should not fail when task contains a null byte', function() {
+      expect(gearsloth.decodeJsonTask(
+          new Buffer(JSON.stringify(test_json_string) + "\0" + 'jeesus')))
+        .to.be.ok;
+    });
+    test('should return everything after null byte as payload if payload_after_null_byte was set', function() {
+      var test_buffer = new Buffer(100);
+      var test_json = {
+        at:new Date(),
+        func_name:'jesse',
+        payload_after_null_byte: true
+      };
+      var decoded = gearsloth.decodeJsonTask(
+          Buffer.concat([new Buffer(JSON.stringify(test_json) + "\0"), 
+          test_buffer]));
+      expect(buffersEqual(test_buffer, decoded.payload)).to.be.true;
+    });
+    test('should ignore everything after null byte if payload_after_null_byte was not set', function() {
+      expect(gearsloth.decodeJsonTask(
+          new Buffer(JSON.stringify(test_json_string) + "\0" + 'jeesus')))
+        .to.deep.equal(test_json_string);
+    });
+    test('should not fail when task contains a null byte', function() {
+      expect(gearsloth.decodeJsonTask(
+          new Buffer(JSON.stringify(test_json_string) + "\0" + 'jeesus')))
+        .to.be.ok;
+    });
+    test('should overwrite existing payload if payload_after_null_byte was set', function() {
+      var test_buffer = new Buffer(20);
+      var test_json = {
+        at:new Date(),
+        func_name:'jesse',
+        payload:'jumal x10 lavis',
+        payload_after_null_byte: true
+      };
+      var decoded = gearsloth.decodeJsonTask(
+          Buffer.concat([new Buffer(JSON.stringify(test_json) + "\0"), 
+          test_buffer]));
+    expect(buffersEqual(test_buffer, decoded.payload)).to.be.true;
+    });
   });
 });
 function putJsonThroughDecodeJsonTask(json) {
     var test_buffer = new Buffer(JSON.stringify(json));
     return gearsloth.decodeJsonTask(test_buffer);
+}
+function buffersEqual(buf1, buf2) {
+  if(buf1.length !== buf2.length) {
+    return false;
+  }
+  for(var i = 0; i < buf1.length; ++i) {
+    if(buf1[i] !== buf2[i]) return false;
+  }
+  return true;
 }
