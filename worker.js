@@ -1,15 +1,21 @@
 var gearman = require('gearman-coffee');
 var gearsloth = require('./lib/gearsloth');
+var logger = require('./lib/log');
 var Worker = gearman.Worker;
 
 module.exports = function(config) {
 
   // adapter backend
   function save(task, worker) {
-    config.dbconn.saveTask(task, function(err) {
-      if (err) console.error(err);
-      return worker.complete();
-    });
+    try {
+      config.dbconn.saveTask(task, function(err) {
+        if (err) logger.err(err);
+        return worker.complete();
+      });
+    }
+    catch(err) {
+      logger.err(err);
+    };
   }
 
   // gearman interface
