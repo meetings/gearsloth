@@ -31,30 +31,23 @@ function log() {
 var log_worker = new gearman.Worker('log', function(payload, worker) {
   var str = payload.toString("utf-8");
   log('worker:', str);
+  worker_called();
   return worker.complete();
 });
 
-// keep track of succesful calls to gearsloth
-// yeah, this sucks...
+// client
 
 var client = new gearman.Client();
-var i = 1;
-function disconnect() {
-  if (--i === 0) {
-    log_worker.disconnect();
-    client.disconnect();
-  }
-}
 
 // using high level API with gearsloth.encodeTask
 
 var msg1 = 'than never';
-var delay1 = 1000;
+var delay1 = 3000;
 var task1 = gearsloth.encodeTask(Date.now() + delay1, 'log', msg1);
 
 log('client1:', msg1);
 client.submitJob('submitJobDelayed', task1).
-on('complete', disconnect);
+on('complete', client_called);
 
 // using low level API with regular gearman arguments
 
@@ -62,7 +55,7 @@ var msg2 = 'is better';
 var delay2 = 2000;
 
 var job = new events.EventEmitter();
-job.on('complete', disconnect);
+job.on('complete', client_called);
 client.queue.push(job);
 
 log('client2:', msg2);
@@ -80,4 +73,19 @@ client.submitJob('submitJobDelayedJson', JSON.stringify({
   func_name: 'log',
   payload: msg3
 })).
-on('complete', disconnect);
+on('complete', client_called);
+
+// a hackish way to keep track of succesful calls
+
+var wi = 3;
+function worker_called() {
+  if (!--wi)
+    log_worker.disconnect();
+}
+
+var ci = 3;
+function client_called() {
+  if (!--ci)
+    client.disconnect();
+}
+
