@@ -153,9 +153,10 @@ describe('Gearsloth', function() {
         .to.deep.equal(test_json_string);
     });
     test('should not fail when task contains a null byte', function() {
-      expect(gearsloth.decodeJsonTask(
-          new Buffer(JSON.stringify(test_json_string) + "\0" + 'jeesus')))
-        .to.be.ok;
+      expect(function() {
+        gearsloth.decodeJsonTask(
+          new Buffer(JSON.stringify(test_json_string) + "\0" + 'jeesus'))
+      }).to.not.throw.Error;
     });
     test('should overwrite existing payload if payload_after_null_byte was set', function() {
       var test_buffer = new Buffer(20);
@@ -169,6 +170,38 @@ describe('Gearsloth', function() {
           Buffer.concat([new Buffer(JSON.stringify(test_json) + "\0"), 
           test_buffer]));
     expect(buffersEqual(test_buffer, decoded.payload)).to.be.true;
+    });
+    test('should work with null byte in json', function() {
+      var test_buffer = new Buffer(20);
+      var test_json = {
+        at:new Date(),
+        func_name:'jesse',
+        random_data: new Buffer(20),
+        payload_after_null_byte: true
+      };
+      var decoded = gearsloth.decodeJsonTask(
+          Buffer.concat([new Buffer(JSON.stringify(test_json) + "\0"), 
+          test_buffer]));
+    expect(buffersEqual(test_buffer, decoded.payload)).to.be.true;
+    });
+    test('should throw if task not buffer nor string', function() {
+      expect(function() {
+        gearsloth.decodeJsonTask(1);
+      }).to.throw.Error;
+    });
+    test('should throw if JSON is invalid', function() {
+      expect(function() {
+        gearsloth.decodeJsonTask("{hesburger}");
+      }).to.throw.Error;
+    });
+    test('should throw if date is invalid', function() {
+      test_json = {
+        at: 'huomenna klo 26',
+        func_name: 'kuolema'
+      };
+      expect(function() {
+        gearsloth.decodeJsonTask(test_json);
+      }).to.throw.Error;
     });
   });
 });
