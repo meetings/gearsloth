@@ -100,10 +100,9 @@ describe('Gearsloth', function() {
   // ENTER JSON DECODE
   suite('decodeJsonTask()', function() {
     var payload_string = 'payload';
-    var worker = func_name;
     var test_json_string = {
       at: at,
-      worker: worker,
+      func_name: func_name,
       payload: payload_string
     };
     var test_buffer = new Buffer(JSON.stringify(test_json_string));
@@ -112,18 +111,18 @@ describe('Gearsloth', function() {
       expect(decoded)
         .to.have.property('at');
       expect(decoded.at.getTime()).to.equal(at.getTime());
-      expect(decoded.worker).to.equal(worker);
+      expect(decoded.func_name).to.equal(func_name);
       expect(decoded.payload).to.equal(payload_string);
     });
     test('should throw if at is missing', function() {
       var test_json_only_worker = {
-        worker: worker
+        func_name: func_name
       };
       expect(function() {
         putJsonThroughDecodeJsonTask(test_json_only_worker);
       }).to.throw(Error);
     });
-    test('should throw if worker is missing', function() {
+    test('should throw if func_name is missing', function() {
       var test_json_only_at = {
         at: at
       };
