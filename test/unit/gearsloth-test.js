@@ -197,9 +197,10 @@ suite('Gearsloth', function() {
       };
       expect(function() {
         gearsloth.decodeJsonTask(test_json);
-      }).to.throw.Error;
+      }).to.throw(Error);
     });
   });
+
   suite('encodeWithBinaryPayload()', function() {
     var payload = new Buffer(10);
     var test_json = {
@@ -221,13 +222,13 @@ suite('Gearsloth', function() {
     test('should work with stringified JSON', function() {
       expect(function() {
         gearsloth.decodeJsonTask(
-          gearsloth.encodeWithBinaryPayload(json_string, payload))
-      }).to.not.throw.Error;
+          gearsloth.encodeWithBinaryPayload(JSON.stringify(test_json), payload))
+      }).to.not.throw(Error);
     });
     test('should throw if JSON is malformed', function() {
       expect(function() {
           gearsloth.encodeWithBinaryPayload("hihihaaa", payload);
-      }).to.throw.Error;
+      }).to.throw(Error);
     });
   });
 });
