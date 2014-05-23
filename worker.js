@@ -22,13 +22,5 @@ module.exports = function(config) {
       logger.err(err);     
     }
   });
-
-  var w_json = new Worker('submitJobDelayedJson', function(payload, worker) {
-    try {
-      var task = gearsloth.decodeJsonTask(payload);  
-      save(task, worker);
-    } catch(err) {
-      logger.err(err);
-    }
-  });
 };
+

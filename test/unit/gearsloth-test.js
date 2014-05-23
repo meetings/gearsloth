@@ -1,11 +1,6 @@
 var chai = require("chai");
 var gearsloth = require('../../lib/gearsloth');
 
-require('../../lib/log').setOutput({
-  error: function() {},
-  print: function() {}
-});
-
 var expect = chai.expect;
 
 suite('Gearsloth', function() {
@@ -19,86 +14,8 @@ suite('Gearsloth', function() {
     func_name: new Buffer(func_name),
     payload: payload
   };
-  suite('encodeTask()', function() {
-    test('should return buffer with null byte delimiters', function() {
-      expect(gearsloth.encodeTask(at, func_name, payload))
-      .to.deep.equal(testBuffer);
-    });
-    test('should not fail with payload containing null bytes', function() {
-      var payload = new Buffer('c\0d', 'utf8');
-      var testBuffer = new Buffer(at_str + '\0b\0c\0d', 'utf8');
-      expect(gearsloth.encodeTask(at, func_name, payload))
-      .to.deep.equal(testBuffer);
-    });
-    test('should not fail with humongous payload', function() {
-      var payload_length = 2048;
-      var payload = new Buffer(payload_length);
-      expect(gearsloth.encodeTask(at, func_name, payload))
-      .to.have.length.within(payload_length, payload_length + 100);
-    });
-    test('should accept JSON object as a parameter', function() {
-      expect(gearsloth.encodeTask(testJSON))
-      .to.deep.equal(testBuffer);
-    });
-    test('should accept string as a payload', function() {
-      var testBuffer = new Buffer(at_str + '\0b\0kisse');
-      expect(gearsloth.encodeTask(at, func_name, 'kisse'))
-      .to.deep.equal(testBuffer);
-    });
-    test('should accept date type parameter', function() {
-      var date = new Date(2023);
-      var testBuffer = new Buffer(date.toISOString()+'\0b\0c');
-      expect(gearsloth.encodeTask(date, func_name, payload))
-      .to.deep.equal(testBuffer);
-    });
-    test('should raise an error on invalid date parameter', function() {
-      var fn = gearsloth.encodeTask.bind(
-        undefined,
-        "invalid date string",
-        func_name,
-        payload
-      );
-
-      expect(fn).to.throw('invalid date');
-    });
-  });
-  suite('decodeTask()', function() {
-    test('should return correct JSON object', function() {
-      expect(gearsloth.decodeTask(testBuffer))
-      .to.deep.equal(testJSON);
-    });
-    test('should throw an error when task contains no null bytes', function() {
-      var testBuffer = new Buffer(at_str);
-      expect(function() {
-        gearsloth.decodeTask(testBuffer)
-      }).to.throw(Error);
-    });
-    test('should throw an error when task contains one null byte', function() {
-      var testBuffer = new Buffer(at_str + '\0a');
-      expect(function() {
-        gearsloth.decodeTask(testBuffer)
-      }).to.throw(Error);
-    });
-    test('should not throw an error when func_name is zero length', function() {
-      var testBuffer = new Buffer(at_str + '\0\0a');
-      expect(function() {
-        gearsloth.decodeTask(testBuffer)
-      }).to.not.throw(Error);
-    });
-    test('should throw an error when task contains no at', function() {
-      var testBuffer = new Buffer('\0a\0a');
-      expect(function() {
-        gearsloth.decodeTask(testBuffer)
-      }).to.throw(Error);
-    });
-    test('should work with payload with zero length', function() {
-      var testBuffer = new Buffer(at_str + '\0a\0');
-      expect(gearsloth.decodeTask(testBuffer).payload)
-      .to.be.undefined;
-    });
-  });
   // ENTER JSON DECODE
-  suite('decodeJsonTask()', function() {
+  suite('decodeTask()', function() {
     var payload_string = 'payload';
     var test_json_string = {
       at: at,
@@ -106,7 +23,7 @@ suite('Gearsloth', function() {
       payload: payload_string
     };
     var test_buffer = new Buffer(JSON.stringify(test_json_string));
-    var decoded = gearsloth.decodeJsonTask(test_buffer);
+    var decoded = gearsloth.decodeTask(test_buffer);
     test('should decode a task with no encoding specified', function() {
       expect(decoded)
         .to.have.property('at');
@@ -119,7 +36,7 @@ suite('Gearsloth', function() {
         func_name: func_name
       };
       expect(function() {
-        putJsonThroughDecodeJsonTask(test_json_only_worker);
+        putJsonThroughDecodeTask(test_json_only_worker);
       }).to.throw(Error);
     });
     test('should throw if func_name is missing', function() {
@@ -127,12 +44,12 @@ suite('Gearsloth', function() {
         at: at
       };
       expect(function() {
-        putJsonThroughDecodeJsonTask(test_json_only_at);
+        putJsonThroughDecodeTask(test_json_only_at);
       }).to.throw(Error);
     });
     test('should throw if task contains a null byte but no payload_after_null_byte', function() {
       expect(function() {
-        gearsloth.decodeJsonTask(
+        gearsloth.decodeTask(
           new Buffer(JSON.stringify(test_json_string) + "\0" + 'jeesus'));
       }).to.throw(Error);
     });
@@ -143,14 +60,14 @@ suite('Gearsloth', function() {
         func_name:'jesse',
         payload_after_null_byte: true
       };
-      var decoded = gearsloth.decodeJsonTask(
+      var decoded = gearsloth.decodeTask(
           Buffer.concat([new Buffer(JSON.stringify(test_json) + "\0"), 
           test_buffer]));
       expect(buffersEqual(test_buffer, decoded.payload)).to.be.true;
     });
     test('should throw if null byte was received and payload_after_null_byte was not set', function() {
       expect(function() {
-        gearsloth.decodeJsonTask(
+        gearsloth.decodeTask(
           new Buffer(JSON.stringify(test_json_string) + "\0" + 'jeesus'))
       }).to.throw(Error);
     });
@@ -162,7 +79,7 @@ suite('Gearsloth', function() {
         payload:'jumal x10 lavis',
         payload_after_null_byte: true
       };
-      var decoded = gearsloth.decodeJsonTask(
+      var decoded = gearsloth.decodeTask(
           Buffer.concat([new Buffer(JSON.stringify(test_json) + "\0"), 
           test_buffer]));
     expect(buffersEqual(test_buffer, decoded.payload)).to.be.true;
@@ -175,19 +92,19 @@ suite('Gearsloth', function() {
         random_data: new Buffer(20),
         payload_after_null_byte: true
       };
-      var decoded = gearsloth.decodeJsonTask(
+      var decoded = gearsloth.decodeTask(
           Buffer.concat([new Buffer(JSON.stringify(test_json) + "\0"), 
           test_buffer]));
     expect(buffersEqual(test_buffer, decoded.payload)).to.be.true;
     });
     test('should throw if task not buffer nor string', function() {
       expect(function() {
-        gearsloth.decodeJsonTask(1);
+        gearsloth.decodeTask(1);
       }).to.throw(Error);
     });
     test('should throw if JSON is invalid', function() {
       expect(function() {
-        gearsloth.decodeJsonTask("{hesburger}");
+        gearsloth.decodeTask("{hesburger}");
       }).to.throw(Error);
     });
     test('should throw if date is invalid', function() {
@@ -196,7 +113,7 @@ suite('Gearsloth', function() {
         func_name: 'kuolema'
       };
       expect(function() {
-        gearsloth.decodeJsonTask(test_json);
+        gearsloth.decodeTask(test_json);
       }).to.throw(Error);
     });
   });
@@ -211,8 +128,8 @@ suite('Gearsloth', function() {
       expect(has(gearsloth.encodeWithBinaryPayload(test_json, payload), 0))
       .to.be.true;
     });
-    test('should be decodable with decodeJsonTask()', function() {
-      var decoded = gearsloth.decodeJsonTask(
+    test('should be decodable with decodeTask()', function() {
+      var decoded = gearsloth.decodeTask(
         gearsloth.encodeWithBinaryPayload(test_json, payload));
       expect(decoded).to.have.property('at');
       expect(decoded).to.have.property('func_name', func_name);
@@ -221,7 +138,7 @@ suite('Gearsloth', function() {
     });
     test('should work with stringified JSON', function() {
       expect(function() {
-        gearsloth.decodeJsonTask(
+        gearsloth.decodeTask(
           gearsloth.encodeWithBinaryPayload(JSON.stringify(test_json), payload))
       }).to.not.throw(Error);
     });
@@ -233,9 +150,9 @@ suite('Gearsloth', function() {
   });
 });
 
-function putJsonThroughDecodeJsonTask(json) {
+function putJsonThroughDecodeTask(json) {
     var test_buffer = new Buffer(JSON.stringify(json));
-    return gearsloth.decodeJsonTask(test_buffer);
+    return gearsloth.decodeTask(test_buffer);
 }
 
 function buffersEqual(buf1, buf2) {
