@@ -130,10 +130,11 @@ suite('Gearsloth', function() {
         putJsonThroughDecodeJsonTask(test_json_only_at);
       }).to.throw(Error);
     });
-    test('should not fail when task contains a null byte', function() {
-      expect(gearsloth.decodeJsonTask(
-          new Buffer(JSON.stringify(test_json_string) + "\0" + 'jeesus')))
-        .to.be.ok;
+    test('should throw if task contains a null byte but no payload_after_null_byte', function() {
+      expect(function() {
+        gearsloth.decodeJsonTask(
+          new Buffer(JSON.stringify(test_json_string) + "\0" + 'jeesus'));
+      }).to.throw(Error);
     });
     test('should return everything after null byte as payload if payload_after_null_byte was set', function() {
       var test_buffer = new Buffer(100);
@@ -147,16 +148,11 @@ suite('Gearsloth', function() {
           test_buffer]));
       expect(buffersEqual(test_buffer, decoded.payload)).to.be.true;
     });
-    test('should ignore everything after null byte if payload_after_null_byte was not set', function() {
-      expect(gearsloth.decodeJsonTask(
-          new Buffer(JSON.stringify(test_json_string) + "\0" + 'jeesus')))
-        .to.deep.equal(test_json_string);
-    });
-    test('should not fail when task contains a null byte', function() {
+    test('should throw if null byte was received and payload_after_null_byte was not set', function() {
       expect(function() {
         gearsloth.decodeJsonTask(
           new Buffer(JSON.stringify(test_json_string) + "\0" + 'jeesus'))
-      }).to.not.throw.Error;
+      }).to.throw(Error);
     });
     test('should overwrite existing payload if payload_after_null_byte was set', function() {
       var test_buffer = new Buffer(20);
@@ -187,12 +183,12 @@ suite('Gearsloth', function() {
     test('should throw if task not buffer nor string', function() {
       expect(function() {
         gearsloth.decodeJsonTask(1);
-      }).to.throw.Error;
+      }).to.throw(Error);
     });
     test('should throw if JSON is invalid', function() {
       expect(function() {
         gearsloth.decodeJsonTask("{hesburger}");
-      }).to.throw.Error;
+      }).to.throw(Error);
     });
     test('should throw if date is invalid', function() {
       test_json = {

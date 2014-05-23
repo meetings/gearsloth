@@ -29,7 +29,18 @@ function getDelay() {
   return new Date(Date.now() + delay).toISOString();
 }
 
-describe('gearsloth worker', function() {
+function buffersEqual(buf1, buf2) {
+  if(buf1.length !== buf2.length) {
+    return false;
+  }
+  for(var i = 0; i < buf1.length; ++i) {
+    if(buf1[i] !== buf2[i])
+      return false;
+  }
+  return true;
+}
+
+suite('gearsloth worker', function() {
 
   // common stuff
   var test_string = 'test string';
@@ -56,6 +67,18 @@ describe('gearsloth worker', function() {
     }
   }
 
+  function testPayload(msg, expected, buffer) {
+    test(msg, function(done) {
+      testFunction = function(payload) {
+        if(buffersEqual(expected, payload)) {
+          return done();
+        }
+        done(new Error('received payload differed from the one sent'));
+      }
+      client.submitJob('submitJobDelayedJson', buffer);
+    });
+  }
+
   suite('submitJobDelayed()', function() {
     test('should not alter the payload', function(done) {
       setTestFunction(done);
@@ -72,6 +95,16 @@ describe('gearsloth worker', function() {
     });
   });
   suite('submitJobDelayedJson()', function() {
+    var valid_json = {
+      at: new Date(),
+      func_name:'test',
+      payload_after_null_byte:true
+    };
+    var invalid_json = {
+      at: new Date(),
+      func_name: 'test',
+    };
+    var buffer = new Buffer(20);
     test('should not alter the payload', function(done) {
       setTestFunction(done);
       client.submitJob('submitJobDelayedJson', JSON.stringify({
@@ -89,5 +122,10 @@ describe('gearsloth worker', function() {
         payload: test_string
       }));
     });
+    testPayload('should handle binary payload',
+        buffer,
+        Buffer.concat([new Buffer(JSON.stringify(valid_json) + "\0"),
+          buffer]));
   });
 });
+
