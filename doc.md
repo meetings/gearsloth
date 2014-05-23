@@ -96,15 +96,6 @@ JSON fields:
 The file 'lib/gearsloth.js' includes some helper functions for Javascript
 clients which aid in encoding, decoding and validating gearsloth tasks.
 
-**`encodeTask(String|Date|Number|Object at [, String|Buffer func_name] [, String|Buffer payload])` -> `Buffer`**
-
-Encodes and validates a task to be used as a payload with 'submitJobDelayed'
-gearman function.
-
-**`decodeTask(Buffer task)` -> `Object`**
-
-Decodes and validates a delayed task in binary format to a JSON task object.
-
 **`encodeWithBinaryPayload(String|Object task, Buffer payload)` -> `Buffer`**
 
 Encodes a task and binary payload to a buffer, and sets `task.payload_after_null_byte` to true
