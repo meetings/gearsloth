@@ -23,7 +23,8 @@
   "dependencies": {
     "gearman-coffee": "^1.1.1",
     "jsonschema": "^0.4.0",
-    "yargs": "^1.2.2"
+    "yargs": "^1.2.2",
+    "underscore": "*"
   },
   "devDependencies": {
     "mocha": "*",
