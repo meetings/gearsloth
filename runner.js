@@ -18,6 +18,5 @@ module.exports = function(config) {
   }
   catch(err) {
     logger.err(err);
-  }
+  };
 };
-  

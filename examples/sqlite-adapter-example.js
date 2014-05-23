@@ -14,12 +14,17 @@ function afterInit(err, dbconn) {
         console.log(task);
       });
   });
-
-  var example_task = {
-    at: new Date(),
-    func_name: 'log',
-    payload: 'kittehs'
-  };
+	
+	var example_task = {
+	  at: new Date(),
+	  func_name: 'log',
+	  payload: 'kittehs',
+	  strategy:'special',
+	  strategy_options:{
+	    retry:true,
+	    times:3
+	  }
+	};
 
   dbconn.saveTask(example_task, function() {});
 }

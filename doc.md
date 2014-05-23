@@ -72,25 +72,23 @@ Arguments:
 ### submitJobDelayedJson
 
 Submits a task to be executed at a specified time. The task is given as a
-UTF-8 encoded JSON object.
+UTF-8 encoded JSON object. Optionally, binary payload can be sent by separating
+it from the JSON object with a null byte. See `.payload_after_null_byte` from below.
 
 JSON fields:
 
 * `.at`: Timestamp string in RFC 2822 or ISO 8601 extended formats.
 * `.func_name`: Name of the function that will be performed at a specified time.
-  This is interpreted as a MIME base64-encoded binary string if the field
-  `.func_name_encoding` is set to 'base64'.
-* `.payload (optional)`: Payload that is sent to the specified function. This is
-  interpreted as a MIME base64-encoded binary string if the field
-  `.payload_encoding` is set to 'base64'.
-* `.func_name_encoding (optional)`: A string specifying the binary-to-text
-  encoding used in `.func_name` field.
-* `.payload_encoding (optional)`: A string specifying the binary-to-text
-  encoding used in `.payload` field.
-* `.controller (optional, not implemented)`: String specifying the controller
-  function to be used when sending the task from runner to controller. By
-  default the controller defined by gearslothd daemon is used.
-* `.controller_options (optional, not implemented)`: Controller-dependent
+* `.payload (optional)`: Payload (parameters) for the scheduled function.
+* `.payload_after_null_byte (optional)`: If true, everything after the first null
+  byte after the JSON object will be interpreted as the payload for the scheduled function.
+  If this key is not set, but the JSON object is followed by extra data, an error
+  will occur. If there is a payload defined in the JSON, and `.payload_after_null_byte` is true,
+  the payload in the JSON will get overwritten.
+* `.strategy (optional)`: String specifying the strategy
+  function to be used when sending the task from runner. By
+  default the strategy defined by gearslothd daemon is used.
+* `.strategy_options (optional)`: Strategy-dependent
   JSON configuration object.
 
 ## Client helper library (subject to change, strategies not implemented)
@@ -98,18 +96,23 @@ JSON fields:
 The file 'lib/gearsloth.js' includes some helper functions for Javascript
 clients which aid in encoding, decoding and validating gearsloth tasks.
 
-### `encodeTask(String|Date|Number|Object at [, String|Buffer func_name] [, String|Buffer payload])` -> `Buffer`
+**`encodeTask(String|Date|Number|Object at [, String|Buffer func_name] [, String|Buffer payload])` -> `Buffer`**
 
-Encode and validate a task to be used as a payload with 'submitJobDelayed'
+Encodes and validates a task to be used as a payload with 'submitJobDelayed'
 gearman function.
 
-### `decodeTask(Buffer task)` -> `Object`
+**`decodeTask(Buffer task)` -> `Object`**
 
-Decode and validate a delayed task in binary format to a JSON task object.
+Decodes and validates a delayed task in binary format to a JSON task object.
 
-### `decodeJsonTask(String|Buffer task)` -> `Object`
+**`encodeWithBinaryPayload(String|Object task, Buffer payload)` -> `Buffer`**
 
-Decode and validate a utf8-encoded delayed task to a JSON task object.
+Encodes a task and binary payload to a buffer, and sets `task.payload_after_null_byte` to true
+in order to send them over gearman.
+
+**`decodeJsonTask(String|Buffer task)` -> `Object`**
+
+Decodes and validates a delayed task to a JSON task object.
 
 ## Configuration
 

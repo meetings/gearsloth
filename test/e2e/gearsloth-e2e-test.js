@@ -126,6 +126,15 @@ suite('gearsloth worker', function() {
         buffer,
         Buffer.concat([new Buffer(JSON.stringify(valid_json) + "\0"),
           buffer]));
+    test('should execute given function', function(done) {
+      testFunction = function (payload) {
+        done();
+      };
+      client.submitJob('submitJobDelayedJson', JSON.stringify ({
+        at: getDelay(),
+        func_name: 'test'
+      }));
+    });
   });
 });
 
