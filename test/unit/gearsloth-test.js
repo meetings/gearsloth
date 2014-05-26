@@ -31,14 +31,6 @@ suite('Gearsloth', function() {
       expect(decoded.func_name).to.equal(func_name);
       expect(decoded.payload).to.equal(payload_string);
     });
-    test('should throw if at is missing', function() {
-      var test_json_only_worker = {
-        func_name: func_name
-      };
-      expect(function() {
-        putJsonThroughDecodeTask(test_json_only_worker);
-      }).to.throw(Error);
-    });
     test('should throw if func_name is missing', function() {
       var test_json_only_at = {
         at: at
@@ -113,7 +105,7 @@ suite('Gearsloth', function() {
         func_name: 'kuolema'
       };
       expect(function() {
-        gearsloth.decodeTask(test_json);
+        gearsloth.decodeTask(JSON.stringify(test_json));
       }).to.throw(Error);
     });
   });
