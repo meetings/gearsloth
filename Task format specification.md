@@ -9,9 +9,10 @@ var task = {
        after: seconds after which this task is to be executed (optional),
   controller: name of the controller function that is to handle execution of the task (optional),
      payload: the payload that is to be passed to the function (task) (optional),
-  runner_retry_timeout: seconds after which the runner will retry executing the task in case the runner was unable to pass the task on for
-  execution (optional),
-    runner_retry_count: number of times the runner is to retry executing the task if it fails to pass the task on for execution (optional)
+  runner_retry_timeout: seconds after which the runner will retry executing the task in case 
+                        the runner was unable to pass the task on for execution (optional),
+    runner_retry_count: number of times the runner is to retry executing the task if 
+                        it fails to pass the task on for execution (optional)
 }
 ```
 
