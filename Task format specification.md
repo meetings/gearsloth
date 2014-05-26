@@ -2,7 +2,7 @@
 
 Task is to be a JavaScript JSON object with the following format:
 
-```JSON
+```
 var task = {
    func_name: name of the function (task) to be executed,
           at: Datetime as JavaScript object (optional),
