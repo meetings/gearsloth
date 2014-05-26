@@ -2,7 +2,8 @@
 
 Task is to be a JavaScript JSON object with the following format:
 
-`var task = {
+```JSON
+var task = {
    func_name: name of the function (task) to be executed,
           at: Datetime as JavaScript object (optional),
        after: seconds after which this task is to be executed (optional),
@@ -11,7 +12,8 @@ Task is to be a JavaScript JSON object with the following format:
   runner_retry_timeout: seconds after which the runner will retry executing the task in case the runner was unable to pass the task on for
   execution (optional),
     runner_retry_count: number of times the runner is to retry executing the task if it fails to pass the task on for execution (optional)
-}`
+}
+```
 
 ### Desctription of fields
 
