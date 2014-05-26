@@ -2,9 +2,9 @@
 
 The database adapters implement the interface that should be used from within *injectors*, *runners* and *controllers*. Each adapter implements the following functions in accordance with their specified database type:
 
-* `initialize(configuration, callback)`: Initializes the database connection(s) with given configuration, then calls the callback whilst exporting the actual API into the database.
-* `saveTask(task, callback)`: Saves the given JavaScript object into the database, then calls the callback.
-* `listenTask(callback)`: Listens to (or polls, depending on database type) expiring tasks and calls the callback function with each *task id* returned by the database query.
+* `initialize(configuration, callback)`: Initializes the database connection(s) with given configuration, then calls the callback whilst exporting the actual API into the database. All operations must thus be done inside the callback. See "Examples".
+* `saveTask(task, callback)`: Saves the given JavaScript object into the database with the status *NEW*, then calls the callback.
+* `listenTask(callback)`: Listens to (or polls, depending on database type) expiring tasks with the *NEW* status and calls the callback function with each *task id* returned by the database query.
 * `updateTask(task_id, status, callback)`: Updates the task with the given *id* to have the provided *status*, then calls the callback.
 * `grabTask(task_id, callback)`: Queries the database for the task with the given *id* and if the task was available with the *NEW* status, updates it's status to *PENDING* and calls the callback with the task as JavaScrtipt object.
 * `deleteTask(task_id, callback)`: Deletes the task with the given id from the database.
