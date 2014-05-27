@@ -15,11 +15,11 @@ var worker = {
   complete: function() {}
 }
 
-var Passthrough = require("../../lib/strategies/passthrough").Passthrough;
+var Passthrough = require("../../lib/controllers/passthrough").Passthrough;
 
 chai.should();
 
-suite('passthrough strategy', function() {
+suite('passthrough controller', function() {
 
   var sampleTask = {
     id: 666,
@@ -54,30 +54,13 @@ suite('passthrough strategy', function() {
       sandbox.restore();
     });
 
-    test('should try to grab work', function() {
-      workHandler.call(p, 666);
-
-      adapter.grabTask.calledOnce.should.be.true;
-      adapter.grabTask.firstCall.args[0].should.equal(666);
-    });
     test('should send complete packet after grabbing work successfully', function() {
-      adapter.grabTask.callsArgWith(1, null, sampleTask);
-
-      workHandler.call(p, 666, workerStub);
+      workHandler.call(p, sampleTask, workerStub);
 
       workerStub.complete.calledOnce.should.be.true;
     });
-    test("should send error packet if there's an error", function() {
-      adapter.grabTask.callsArgWith(1, "Errore'd", {});
-
-      workHandler.call(p, 666, workerStub);
-
-      workerStub.error.calledOnce.should.be.true;
-    });
     test('calls correct function after grabbing', function() {
-      adapter.grabTask.callsArgWith(1, null, sampleTask);
-
-      workHandler.call(p, 666, workerStub)
+      workHandler.call(p, sampleTask, workerStub)
 
       workerStub.complete.calledOnce.should.be.true;
       clientStub.submitJob.calledOnce.should.be.true;
