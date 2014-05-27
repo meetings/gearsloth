@@ -20,7 +20,7 @@ function afterInit(err, dbconn) {
 	
 	var example_task = {
 //	  at: new Date(),
-	  after: 5,
+	  after: 0,
 	  func_name: 'log',
 	  payload: 'kittehs',
 	  controller:'special',
@@ -31,6 +31,7 @@ function afterInit(err, dbconn) {
 	};
 
   dbconn.saveTask(example_task, function(err) {
+  log.debug(err); 
     log.debug("Task saved: " + new Date());
   });
   

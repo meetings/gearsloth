@@ -5,26 +5,41 @@ var fs = require('fs');
 var expect = chai.expect;
 
 suite('sqlite-adapter', function() {
-  var second_ago = new Date() - 1000;
 
   var worker = 'log';
   var payload = new Buffer(10);
   var test_json = {
-    at: second_ago,
+    at: new Date(),
     func_name: worker,
     payload: payload,
     strategy:'default'
   };
   
+  var test_config = {
+    db_opt:{
+      db_name:null,
+      table_name:"sloth",
+      poll_timeout:0
+    }
+  };
+  
+  var test_config_with_file = {
+    db_opt:{
+      db_name:'test-database.sqlite',
+      table_name:"sloth",
+      poll_timeout:1000
+    }
+  };
+  
   var test_json_with_unset_strategy = {
-    at: second_ago,
+    at: new Date(),
     func_name: worker,
     payload: payload,
     strategy:null
-  }
+  };
   
   var test_json_with_strategy_options = {
-    at: second_ago,
+    at: new Date(),
     func_name: worker,
     payload: payload,
     strategy:'specialized',
@@ -39,14 +54,12 @@ suite('sqlite-adapter', function() {
   teardown(function() {
   });
 
-  suite('saveTask() and listenTask()', function() {
+  suite('sqlite adapter saveTask() and listenTask()', function() {
     test('should insert JSON task into database', function(done) {
 
       function testScript(err, dbconn) {
-        var stop = dbconn.listenTask(function (err, task_id) {
+        var stop = dbconn.listenTask(function (err, task) {
           stop();
-
-          dbconn.grabTask(task_id, function(task) {
             try {
               expect(task).to.have.property('at');
               expect(task).to.have.property('func_name');
@@ -56,24 +69,21 @@ suite('sqlite-adapter', function() {
               return done(err);
             }
             done();
-          });
-
         });
 
         dbconn.saveTask(test_json, function() {});
       }
-      adapter.initialize(null, testScript);
+      adapter.initialize(test_config, testScript);
     });
 
     test('should give unique ids to tasks, part 1', function(done) {
       var items = 3;
 
       function testScript(err, dbconn) {
-        var stop = dbconn.listenTask(function (err, task_id) {
+        var stop = dbconn.listenTask(function (err, task) {
           --items;
           stop();
 
-          dbconn.grabTask(task_id, function(task) {
             try {
               expect(task).to.have.property('at');
               expect(task).to.have.property('func_name');
@@ -87,8 +97,6 @@ suite('sqlite-adapter', function() {
               return done(err);
             }
 
-          });
-
           if (items <= 0) {
             done();
           }
@@ -98,7 +106,7 @@ suite('sqlite-adapter', function() {
         dbconn.saveTask(test_json, function() {});
         dbconn.saveTask(test_json, function() {});
       }
-      adapter.initialize(null, testScript);
+      adapter.initialize(test_config, testScript);
     });
 
   });
@@ -106,52 +114,42 @@ suite('sqlite-adapter', function() {
   suite('grabTask()', function() {
     test('should return correct strategy when set', function(done) {
       function testScript(err, dbconn) {
-        var stop = dbconn.listenTask(function (err, task_id) {
+        var stop = dbconn.listenTask(function (err, task) {
           stop();
-
-          dbconn.grabTask(task_id, function(task) {
             try {
               expect(task.strategy).to.equal(test_json.strategy);
             } catch(err) {
               return done(err);
             }
             done();
-          });
-
         });
 
         dbconn.saveTask(test_json, function() {});
       }
-      adapter.initialize(null, testScript);
+      adapter.initialize(test_config, testScript);
     });
     
     test('should return correct strategy when unset', function(done) {
       function testScript(err, dbconn) {
         var stop = dbconn.listenTask(function (err, task_id) {
           stop();
-
-          dbconn.grabTask(task_id, function(task) {
             try {
               expect(task.strategy).to.equal(null);
             } catch(err) {
               return done(err);
             }
             done();
-          });
-
         });
 
         dbconn.saveTask(test_json_with_unset_strategy, function() {});
       }
-      adapter.initialize(null, testScript);
+      adapter.initialize(test_config, testScript);
     });
     
     test('should return correct strategy and strategy options when set', function(done) {
       function testScript(err, dbconn) {
         var stop = dbconn.listenTask(function (err, task_id) {
           stop();
-
-          dbconn.grabTask(task_id, function(task) {
             try {
               expect(task.strategy).to.equal(test_json_with_strategy_options.strategy);
               expect(task.strategy_options).to.deep.equal(test_json_with_strategy_options.strategy_options);
@@ -159,13 +157,11 @@ suite('sqlite-adapter', function() {
               return done(err);
             }
             done();
-          });
-
         });
         
         dbconn.saveTask(test_json_with_strategy_options, function() {});
       }
-      adapter.initialize(null, testScript);
+      adapter.initialize(test_config, testScript);
     });
   });
   
@@ -177,7 +173,7 @@ suite('sqlite-adapter', function() {
           if(err) return done();
         });
       }
-      adapter.initialize(null, testScript);
+      adapter.initialize(test_config, testScript);
     });
     
     test('should call callback with error if task is missing at', function(done) {
@@ -186,7 +182,7 @@ suite('sqlite-adapter', function() {
           if(err) done();
         });
       }
-      adapter.initialize(null, testScript);
+      adapter.initialize(test_config, testScript);
     });
     
     test('should call callback with error if task is missing func_name', function(done) {
@@ -195,49 +191,15 @@ suite('sqlite-adapter', function() {
           if(err) done();
         });
       }
-      adapter.initialize(null, testScript);
+      adapter.initialize(test_config, testScript);
     });
 
-  });
-
-  suite('grabTask()', function() {
-    test('should give new task on grab', function(done) {
-      var id = -1;
-
-      function testScript(err, dbconn) {
-        var stop = dbconn.listenTask(function (err, task_id) {
-          stop();
-          dbconn.grabTask(task_id, function(task) {
-            try {
-              expect(task).not.to.equal('undefined');
-              done();
-            } catch (err) {
-              done(err);
-            }
-          });
-
-        });
-
-        dbconn.saveTask(test_json, function() {});
-
-      }
-      adapter.initialize(null, testScript);
-    });
-    
-    test('should call callback with no parameters if task does not exist', function(done) {
-      function testScript(err, dbconn) {
-        dbconn.grabTask(1, function(err) {
-          if(!err) return done();
-        });
-      }
-      adapter.initialize(null, testScript);
-    });
   });
   
   suite('updateTask()', function() {
     test('should update task correctly', function(done) {
       function testScript(err, dbconn) {
-        var stop = dbconn.listenTask(function (err, task_id) {
+        var stop = dbconn.listenTask(function (err, task) {
           stop();
           dbconn.updateTask(task_id, "FAIL", function() {
             dbconn.grabTask(task_id, function(task) {
@@ -248,7 +210,7 @@ suite('sqlite-adapter', function() {
         });
         dbconn.saveTask(test_json, function() {});
       }
-      adapter.initialize(null, testScript);
+      adapter.initialize(test_config, testScript);
     });
   });
   
@@ -266,13 +228,13 @@ suite('sqlite-adapter', function() {
         });
         dbconn.saveTask(test_json, function() {});
       }
-      adapter.initialize(null, testScript);
+      adapter.initialize(test_config, testScript);
     });
   });
 
   suite('initialize()', function() {
     test('should create a database to a file', function(done) {
-      adapter.initialize('test-database.sqlite', function() {
+      adapter.initialize(test_config_with_file, function() {
         fs.open('test-database.sqlite', 'r', function(err) {
           if(!err) done();
           else done(new Error('file does not exist'));
