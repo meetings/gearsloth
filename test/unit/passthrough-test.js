@@ -3,7 +3,6 @@ var expect = chai.expect;
 var sinon = require('sinon');
 chai.use(require('sinon-chai'));
 
-var gearman = require('gearman-coffee');
 var EventEmitter = require('events').EventEmitter;
 
 var client = {
@@ -31,7 +30,7 @@ suite('passthrough controller', function() {
   });
   suite('initialize()', function() {
     test('exists', function() {
-      expect(require("../../lib/controllers/passthrough").initialize())
+      expect(require("../../lib/controllers/passthrough"))
       .to.be.ok;
     });
   });
@@ -40,7 +39,6 @@ suite('passthrough controller', function() {
     var p, workerStub, clientStub, workHandler;
 
     setup(function() {
-      sandbox.stub(gearman);
       workerStub = sandbox.stub(worker);
       workerParameter = function(handler) {
         workHandler = handler;
@@ -75,7 +73,6 @@ suite('passthrough controller', function() {
     var p, workerStub, clientStub, emitter;
 
     setup(function() {
-      sandbox.stub(gearman);
       workerStub = sandbox.stub(worker);
       clientStub = sandbox.stub(client);
       workerParameter = function(handler) {
