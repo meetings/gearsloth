@@ -30,7 +30,7 @@ function afterInit(err, dbconn) {
 	  }
 	};
 
-  dbconn.saveTask(example_task, function() {
+  dbconn.saveTask(example_task, function(err) {
     log.debug("Task saved: " + new Date());
   });
   
