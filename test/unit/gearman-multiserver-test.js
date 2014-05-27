@@ -22,10 +22,20 @@ suite("gearman-multiserver", function() {
     var sandbox = sinon.sandbox.create();
     var m, workerStub;
 
+    var servers = [{
+      host:'localhost',
+      port:2
+    }, {
+      host:'melkki',
+      port:715517
+    }];
+
     setup(function() {
       workerStub = sandbox.stub(gearman);
+      m = new Multiserver(
     }
     test("should spawn as many worker instances", function() {
+      
       
     });
   });
