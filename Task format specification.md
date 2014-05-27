@@ -33,4 +33,4 @@ In addition the `task` JSON object may contain any number of fields (for example
 ### Marking jobs as done
 
 After a job is done, a controller should send a JSON object with the following fields to the ejector in order to remove it from the task database:
-* `.id`: a string that identifies the task in the database
+* `id`: a string that identifies the task in the database
