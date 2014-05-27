@@ -1,19 +1,3 @@
-## Daemon demo time
-
-    $ gearmand & GEARMAN_PID=$!
-    $ ./bin/gearslothd & GEARSLOTH_PID=$!
-    $ ./examples/bin/log-delayed
-
-    [0s] client 1: submitJobDelayed 3s 'log' 'than never'
-    [0s] client 2: submitJobDelayed 2s 'log' 'is better'
-    [0s] client 3: submitJobDelayedJson 1s 'log' 'late'
-    [1s] worker: 'late'
-    [2s] worker: 'is better'
-    [3s] worker: 'than never'
-
-    $ kill $GEARMAN_PID
-    $ kill $GEARSLOTH_PID
-
 ## Introduction
 
 Gearsloth is a system that enables delayed tasks and persistent storage schemes
@@ -26,13 +10,11 @@ tasks to a database.
 ## Gearslothd daemon roles
 
 Gearslothd daemon running as *injector* receives delayed tasks sent by gearsloth
-clients. These are saved to a persistent store. Gearsloth *runners* then
-receive pending tasks from the persistent store and send these forward at a
+clients. These are saved to a persistent storage. Gearsloth *runners* then
+receive pending tasks from the persistent storage and send these forward at a
 specified time to *controllers* whose job is to submit the task to the final
-destination, wait for the completion/failure of the task and update the state
-of the task to the persistent store. The single gearsloth daemon can function in
-any of these three roles in any combination. Any number of daemons in any roles
-can use the same database and function in the same gearman queue system.
+destination, wait for the completion/failure of the task and rely this
+information to *ejectors*, which in turn will remove the task from the persistent store.
 
 ### Controllers
 
@@ -53,43 +35,16 @@ the task to the database on completion/failure, so implementors need to use the
 database adapter in a compatible manner and provide a way for users to select
 the appropriate adapter!
 
-## Client interface (subject to change, strategies not implemented)
+## Client interface (subject to change, controllers not implemented)
 
 Gearsloth injector daemon adds the following functions to the gearman server:
 
 ### submitJobDelayed
 
-Submits a task to be executed at a specified time.
-
-Arguments:
-
-* NULL byte terminated ascii timestamp string in RFC 2822 or ISO 8601 extended
-  formats.
-* NULL byte terminated name of the function that will be performed at a
-  specified time.
-* Payload that is sent to the specified function.
-
-### submitJobDelayedJson
-
 Submits a task to be executed at a specified time. The task is given as a
-UTF-8 encoded JSON object. Optionally, binary payload can be sent by separating
-it from the JSON object with a null byte. See `.payload_after_null_byte` from below.
+UTF-8 encoded JSON object.
 
-JSON fields:
-
-* `.at`: Timestamp string in RFC 2822 or ISO 8601 extended formats.
-* `.func_name`: Name of the function that will be performed at a specified time.
-* `.payload (optional)`: Payload (parameters) for the scheduled function.
-* `.payload_after_null_byte (optional)`: If true, everything after the first null
-  byte after the JSON object will be interpreted as the payload for the scheduled function.
-  If this key is not set, but the JSON object is followed by extra data, an error
-  will occur. If there is a payload defined in the JSON, and `.payload_after_null_byte` is true,
-  the payload in the JSON will get overwritten.
-* `.strategy (optional)`: String specifying the strategy
-  function to be used when sending the task from runner. By
-  default the strategy defined by gearslothd daemon is used.
-* `.strategy_options (optional)`: Strategy-dependent
-  JSON configuration object.
+See the [task format specification](Task format specification.md)
 
 ## Client helper library (subject to change, strategies not implemented)
 
@@ -101,7 +56,7 @@ clients which aid in encoding, decoding and validating gearsloth tasks.
 Encodes a task and binary payload to a buffer, and sets `task.payload_after_null_byte` to true
 in order to send them over gearman.
 
-**`decodeJsonTask(String|Buffer task)` -> `Object`**
+**`decodeTask(String|Buffer task)` -> `Object`**
 
 Decodes and validates a delayed task to a JSON task object.
 

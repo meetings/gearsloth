@@ -16,7 +16,7 @@ var task = {
 }
 ```
 
-### Desctription of fields
+### Description of fields
 
 The only required field for task is `func_name`.
 
@@ -29,3 +29,8 @@ The only required field for task is `func_name`.
 * `payload`: if defined it is to be any string that is parseable into a JavaScript JSON object. Will be passed on to the `func_name` function that is submitted as a delayed task.
 
 In addition the `task` JSON object may contain any number of fields (for example to be passed to the `controller`) These additional fields will not be taken into account in any way in the control flow other than in the custom `controller` if it is to do so.
+
+### Marking jobs as done
+
+After a job is done, a controller should send a JSON object with the following fields to the ejector in order to remove it from the task database:
+* `id`: a string that identifies the task in the database
