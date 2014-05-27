@@ -1,12 +1,11 @@
 var chai = require("chai");
+var expect = chai.expect;
 var sinon = require('sinon');
+chai.use(require('sinon-chai'));
+
 var gearman = require('gearman-coffee');
 var EventEmitter = require('events').EventEmitter;
-// TODO: change to use sqlite adapter as basis
-var adapter = {
-  grabTask: function() {},
-  updateTask: function() {}
-};
+
 var client = {
   submitJob: function() {}
 };
@@ -17,8 +16,6 @@ var worker = {
 
 var Passthrough = require("../../lib/controllers/passthrough").Passthrough;
 
-chai.should();
-
 suite('passthrough controller', function() {
 
   var sampleTask = {
@@ -27,9 +24,8 @@ suite('passthrough controller', function() {
     func_name: "func_to_call",
     payload: "payload"
   }
-
   suite('construction', function() {
-    test('can create Passthrough strategy', function() {
+    test('can create Passthrough controller', function() {
       var p = new Passthrough(function(a) {return null;}, null, null);
     });
   });
@@ -39,14 +35,13 @@ suite('passthrough controller', function() {
 
     setup(function() {
       sandbox.stub(gearman);
-      sandbox.stub(adapter);
       workerStub = sandbox.stub(worker);
       workerParameter = function(handler) {
         workHandler = handler;
         return workerStub;
       };
       clientStub = sandbox.stub(client);
-      p = new Passthrough(workerParameter, clientStub, adapter);
+      p = new Passthrough(workerParameter, clientStub);
       client.submitJob.returns(new EventEmitter());
     });
 
@@ -57,60 +52,53 @@ suite('passthrough controller', function() {
     test('should send complete packet after grabbing work successfully', function() {
       workHandler.call(p, sampleTask, workerStub);
 
-      workerStub.complete.calledOnce.should.be.true;
+      expect(workerStub.complete).to.have.been.calledOnce;
     });
-    test('calls correct function after grabbing', function() {
+    test('calls correct functions after grabbing', function() {
       workHandler.call(p, sampleTask, workerStub)
 
-      workerStub.complete.calledOnce.should.be.true;
-      clientStub.submitJob.calledOnce.should.be.true;
-      clientStub.submitJob
+      expect(workerStub.complete).to.have.been.calledOnce;
+      expect(clientStub.submitJob).to.have.been.called;
+      expect(clientStub.submitJob)
+        .to.have.been
         .calledWith(sampleTask.func_name, sampleTask.payload)
-        .should.be.true;
     });
   });
   suite('_runTask', function() {
     var sandbox = sinon.sandbox.create();
-    var p, workerStub, clientStub;
+    var p, workerStub, clientStub, emitter;
 
     setup(function() {
       sandbox.stub(gearman);
-      sandbox.stub(adapter);
       workerStub = sandbox.stub(worker);
       clientStub = sandbox.stub(client);
       workerParameter = function(handler) {
         workHandler = handler;
         return workerStub;
       };
-      p = new Passthrough(workerParameter, clientStub, adapter);
+      p = new Passthrough(workerParameter, clientStub);
+      emitter = new EventEmitter();
+      clientStub.submitJob.returns(emitter);
     });
+
+    test('calls ejector if task succeeds', function() {
+      p._runTask(sampleTask);
+      emitter.emit('complete');
+
+      expect(clientStub.submitJob).to.have.been.calledTwice;
+      expect(clientStub.submitJob).to.have.been
+        .calledWith('delayedJobDone', sampleTask);
+    });
+    test('does nothing if task fails', sinon.test(function() {
+      p._runTask(sampleTask);
+      emitter.emit('fail');
+
+      expect(clientStub.submitJob).to.have.been.calledOnce;
+    }));
 
     teardown(function() {
       sandbox.restore();
     });
 
-    test('sets task state on complete', sinon.test(function() {
-      var emitter = new EventEmitter();
-      p._client.submitJob = function(func_name, payload) {
-        return emitter;
-      };
-
-      p._runTask(sampleTask);
-      emitter.emit('complete');
-
-      adapter.updateTask.calledWith(sampleTask.id, 'DONE').should.be.true;
-    }));
-    test('sets task state on failure', sinon.test(function() {
-      var emitter = new EventEmitter();
-      p._client.submitJob = function(func_name, payload) {
-        return emitter;
-      };
-
-      p._runTask(sampleTask);
-      emitter.emit('fail');
-
-      adapter.updateTask.calledWith(sampleTask.id, 'FAIL').should.be.true;
-
-    }));
   });
 });
