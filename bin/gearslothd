@@ -7,7 +7,7 @@ try {
   config.initializeDb(conf, function(err, conf) {
     if (conf.injector)    require('../lib/daemon/injector')    (conf);
     if (conf.runner)      require('../lib/daemon/runner')      (conf);
-    if (conf.controller)  require('../lib/daemon/controller')  (conf);
+    // TODO: launch default controller
     if (conf.ejector)     require('../lib/daemon/ejector')     (conf);
   });
 } catch (e) {
