@@ -46,7 +46,7 @@ suite('passthrough controller', function() {
         return workerStub;
       };
       clientStub = sandbox.stub(client);
-      p = new Passthrough(workerParameter, clientStub);
+      p = new Passthrough(clientStub, workerParameter);
       client.submitJob.returns(new EventEmitter());
     });
 
@@ -80,7 +80,7 @@ suite('passthrough controller', function() {
         workHandler = handler;
         return workerStub;
       };
-      p = new Passthrough(workerParameter, clientStub);
+      p = new Passthrough(clientStub, workerParameter);
       emitter = new EventEmitter();
       clientStub.submitJob.returns(emitter);
     });

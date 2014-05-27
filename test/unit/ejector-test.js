@@ -26,6 +26,7 @@ suite('Ejector', function() {
   
   var sandbox = sinon.sandbox.create();
   var e, workerStub, adapterStub, workHandler;
+  workHandler = 
 
   setup(function() {
     workerStub = sandbox.stub(worker);
@@ -34,7 +35,7 @@ suite('Ejector', function() {
       workHandler = handler;
       return workerStub;
     };
-    e = new Ejector(workerParameter, adapterStub);
+    e = new Ejector(adapterStub, workerParameter);
   });
 
   teardown(function() {
