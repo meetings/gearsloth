@@ -5,11 +5,7 @@ CREATE DATABASE IF NOT EXISTS gearsloth
 
 CREATE TABLE gearsloth.gearsloth (
   id         INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  at         DATETIME NOT NULL,
-  func_name  VARCHAR(128) NOT NULL,
-  payload    BLOB,
-  strategy   VARCHAR(128),
-  stra_opts  BLOB,
-  status     TINYINT NOT NULL,
+  at         DATETIME,
+  task       TEXT, -- FIXME Upgrade to LONGTEXT before production
   INDEX      at (at)
 ) ENGINE = InnoDB;
