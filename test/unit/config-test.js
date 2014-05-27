@@ -1,5 +1,5 @@
 var util = require('util');
-var config = require('../../config');
+var config = require('../../lib/config');
 var log = require('../../lib/log');
 var chai = require('chai');
 var expect = chai.expect;
@@ -17,59 +17,50 @@ describe('config', function() {
     function testThrow(msg, argv) {
       test(msg, function() {
         expect(function() {
-          config.initialize(args(argv), nop);
+          config.initialize(args(argv));
         }).to.throw(Error);
       });
     }
     function testConf(msg, argv, key, val) {
-      test(msg, function(done) {
-        config.initialize(args(argv), function(err, conf) {
-          if (conf[key] === val)
-            done();
-          else
-            done(new Error(conf[key] + ' !== ' + val));
-        });
+      test(msg, function() {
+        var conf = config.initialize(args(argv));
+        if (conf[key] !== val)
+          throw new Error(conf[key] + ' !== ' + val);
       });
     }
     function testServ(msg, argv, serv) {
-      test(msg, function(done) {
-        config.initialize(args(argv), function(err, conf) {
-          if (conf.servers[0].host === serv.host &&
-              conf.servers[0].port === serv.port)
-            done();
-          else
-            done(new Error(util.inspect(conf.servers[0]) + ' !== ' +
-                util.inspect(serv)));
-        });
+      test(msg, function() {
+        var conf = config.initialize(args(argv));
+        if (!(conf.servers[0].host === serv.host &&
+              conf.servers[0].port === serv.port))
+        throw new Error(util.inspect(conf.servers[0]) + ' !== ' +
+          util.inspect(serv));
       });
     }
     function testRet(msg, argv) {
       test(msg, function() {
-        var ret = config.initialize(args(argv), nop);
-        if (!(ret && ret.length > 0))
-          throw new Error('Returned empty string or undefined');
+        var ret = config.initialize(args(argv));
+        if (ret)
+          throw new Error('Returned something');
       });
     }
     function testdbopt(msg, argv, key, val) {
       test(msg, function(done) {
-        config.initialize(args(argv), function(err, conf) {
-          if (conf.dbopt[key] === val)
-            done();
-          else
-            done(new Error(conf.dbopt[key] + ' !== ' + val));
-        });
+        var conf = config.initialize(args(argv));
+        if (conf.dbopt[key] !== val)
+          throw new Error(conf.dbopt[key] + ' !== ' + val);
       });
     }
 
     // legal configuration options
     testRet('should return help string with -h',
       [ '-h' ]);
-    testRet('should return help string with -wrh',
-      [ '-wrh' ]);
+    testRet('should return help string with -irce',
+      [ '-irce' ]);
     testRet('should return help string with --help',
       [ '--help' ]);
-    testRet('should return help string with --worker --help',
-      [ '--worker', '--help' ]);
+    testRet('should return help string with --injector --help',
+      [ '--injector', '--help' ]);
     testConf('should set worker with -wr',
       [ '-wr' ], 'worker', true);
     testConf('should set runner with -wr',
