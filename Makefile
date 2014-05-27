@@ -17,7 +17,7 @@ endef
 
 .PHONY: test
 test: node_modules
-	$(call start-local, $(MOCHA) $(MOCHA_PARAMS))
+	$(MOCHA) $(MOCHA_PARAMS) test/
 
 .PHONY: unit-test
 unit-test: node_modules
@@ -25,12 +25,11 @@ unit-test: node_modules
 
 .PHONY: e2e-test
 e2e-test: node_modules
-	$(call start-local, $(MOCHA) $(MOCHA_PARAMS) test/e2e)
+	$(MOCHA) $(MOCHA_PARAMS) test/e2e
 
 .PHONY: coverage
 coverage: node_modules
-	-$(call start-local,\
-		$(ISTANBUL) cover --report cobertura $(MOCHA_ALT) -- $(MOCHA_PARAMS) test/)
+	-$(ISTANBUL) cover --report cobertura $(MOCHA_ALT) -- $(MOCHA_PARAMS) test/
 
 .PHONY: html-coverage
 html-coverage: coverage
