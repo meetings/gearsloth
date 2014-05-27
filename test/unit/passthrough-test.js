@@ -29,6 +29,12 @@ suite('passthrough controller', function() {
       var p = new Passthrough(function(a) {return null;}, null, null);
     });
   });
+  suite('initialize()', function() {
+    test('exists', function() {
+      expect(require("../../lib/controllers/passthrough").initialize())
+      .to.be.ok;
+    });
+  });
   suite('accepting work', function() {
     var sandbox = sinon.sandbox.create();
     var p, workerStub, clientStub, workHandler;
@@ -64,7 +70,7 @@ suite('passthrough controller', function() {
         .calledWith(sampleTask.func_name, sampleTask.payload)
     });
   });
-  suite('_runTask', function() {
+  suite('_runTask()', function() {
     var sandbox = sinon.sandbox.create();
     var p, workerStub, clientStub, emitter;
 
