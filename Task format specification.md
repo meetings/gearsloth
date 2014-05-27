@@ -16,7 +16,7 @@ var task = {
 }
 ```
 
-#### Description of fields
+### Description of fields
 
 The only required field for task is `func_name`.
 
