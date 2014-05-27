@@ -13,7 +13,7 @@ function afterInit(err, dbconn) {
 	
 	var example_task = {
 //	  at: new Date(),
-	  after: 200,
+	  after: 3,
 	  func_name: 'log',
 	  payload: 'kittehs',
 	  controller:'special',
@@ -36,6 +36,6 @@ function afterInit(err, dbconn) {
       stop();
       log.debug("Recieved task:");
       console.log(task);
- //     dbconn.deleteTask(task.task_id, function () {} );
+      dbconn.deleteTask(task.task_id, function () {} );
   });
 }
