@@ -56,13 +56,13 @@ on('complete', client_called);
 
 // a hackish way to keep track of succesful calls
 
-var wi = 3;
+var wi = 1;
 function worker_called() {
   if (!--wi)
     log_worker.disconnect();
 }
 
-var ci = 3;
+var ci = 1;
 function client_called() {
   if (!--ci)
     client.disconnect();
