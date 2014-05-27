@@ -5,10 +5,10 @@ var config = require('../lib/config');
 try {
   var conf = config.initialize(process.argv);
   config.initializeDb(conf, function(err, conf) {
-    if (conf.injector)    require('../lib/daemon/injector')    (conf);
-    if (conf.runner)      require('../lib/daemon/runner')      (conf);
-    // TODO: launch default controller
-    if (conf.ejector)     require('../lib/daemon/ejector')     (conf);
+    if (conf.injector)    require('../lib/daemon/injector')         (conf);
+    if (conf.runner)      require('../lib/daemon/runner')           (conf);
+    if (conf.controller)  require('../lib/controllers/passthrough') (conf);
+    if (conf.ejector)     require('../lib/daemon/ejector')          (conf);
   });
 } catch (e) {
   console.error('gearslothd:', e.message);
