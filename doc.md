@@ -35,7 +35,7 @@ the task to the database on completion/failure, so implementors need to use the
 database adapter in a compatible manner and provide a way for users to select
 the appropriate adapter!
 
-## Client interface (subject to change, strategies not implemented)
+## Client interface (subject to change, controllers not implemented)
 
 Gearsloth injector daemon adds the following functions to the gearman server:
 
