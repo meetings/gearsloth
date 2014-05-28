@@ -12,7 +12,7 @@ function args(argv) {
   return ['node', 'gearslothd.js'].concat(argv);
 }
 
-describe('config', function() {
+suite('config', function() {
   suite('initialize()', function() {
     function testThrow(msg, argv) {
       test(msg, function() {
@@ -37,15 +37,20 @@ describe('config', function() {
           util.inspect(serv));
       });
     }
-    function testRet(msg, argv) {
-      test(msg, function() {
-        var ret = config.initialize(args(argv));
-        if (ret)
-          throw new Error('Returned something');
+    function testHelp(msg, argv) {
+      test(msg, function(done) {
+        config.setLog(function(msg) {
+          if (msg === config.helpString(args(argv)))
+            done();
+          else
+            done(new Error('Unexpected help string'));
+        });
+        config.initialize(args(argv));
+        config.setLog(console.log);
       });
     }
     function testdbopt(msg, argv, key, val) {
-      test(msg, function(done) {
+      test(msg, function() {
         var conf = config.initialize(args(argv));
         if (conf.dbopt[key] !== val)
           throw new Error(conf.dbopt[key] + ' !== ' + val);
@@ -53,41 +58,41 @@ describe('config', function() {
     }
 
     // legal configuration options
-    testRet('should return help string with -h',
+    testHelp('should return help string with -h',
       [ '-h' ]);
-    testRet('should return help string with -irce',
-      [ '-irce' ]);
-    testRet('should return help string with --help',
+    testHelp('should return help string with -irceh',
+      [ '-irceh' ]);
+    testHelp('should return help string with --help',
       [ '--help' ]);
-    testRet('should return help string with --injector --help',
+    testHelp('should return help string with --injector --help',
       [ '--injector', '--help' ]);
-    testConf('should set worker with -wr',
-      [ '-wr' ], 'worker', true);
-    testConf('should set runner with -wr',
-      [ '-wr' ], 'runner', true);
-    testConf('should set worker with -w -r',
-      [ '-w', '-r' ], 'worker', true);
-    testConf('should set runner with -w -r',
-      [ '-w', '-r' ], 'runner', true);
-    testConf('should set worker with --worker --runner',
-      [ '--worker', '--runner' ], 'worker', true);
-    testConf('should set runner with --worker --runner',
-      [ '--worker', '--runner' ], 'runner', true);
-    testConf('should set runner=true with -f ok.json -rw',
-      [ '-f', ok_json, '-rw' ], 'runner', true);
+    testConf('should set injector with -ir',
+      [ '-ir' ], 'injector', true);
+    testConf('should set runner with -ir',
+      [ '-ir' ], 'runner', true);
+    testConf('should set injector with -i -r',
+      [ '-i', '-r' ], 'injector', true);
+    testConf('should set runner with -i -r',
+      [ '-i', '-r' ], 'runner', true);
+    testConf('should set injector with --injector --runner',
+      [ '--injector', '--runner' ], 'injector', true);
+    testConf('should set runner with --injector --runner',
+      [ '--injector', '--runner' ], 'runner', true);
+    testConf('should set runner=true with -f ok.json -ri',
+      [ '-f', ok_json, '-ri' ], 'runner', true);
     testServ('should set server list with --file=ok.json',
-      [ '-rw', '--file=' + ok_json ],
+      [ '-ri', '--file=' + ok_json ],
       { host: 'localhost', port: 4830 });
     testServ('should override server list with --file=ok.json asdf:1234',
-      [ '-rw', '--file=' + ok_json, 'asdf:1234' ],
+      [ '-ri', '--file=' + ok_json, 'asdf:1234' ],
       { host: 'asdf', port: 1234 });
     testServ('should override server list with --file=ok.json --servers=...',
-      [ '-rw', '--file=' + ok_json,
+      [ '-ri', '--file=' + ok_json,
       '--servers=[{"host":"asdf","port":"1234"}]' ],
       { host: 'asdf', port: 1234 });
     testServ('should override server list with --file=ok.json --servers=... ' +
         'with numerical port values',
-      [ '-rw', '--file=' + ok_json,
+      [ '-ri', '--file=' + ok_json,
       '--servers=[{"host":"asdf","port":1234}]' ],
       { host: 'asdf', port: 1234 });
     testServ('should set default server',
@@ -99,31 +104,21 @@ describe('config', function() {
     testServ('should set default host if not set',
       [ ':1234' ], { host: 'localhost', port: 1234 });
     testdbopt('should read dbopt',
-      [ '-rwf', ok_json ], 'there', 'could');
+      [ '-rif', ok_json ], 'there', 'could');
     testdbopt('should override dbopt',
-      [ '-rwf', ok_json, '--dbopt={"there":"foo"}' ], 'there', 'foo');
+      [ '-rif', ok_json, '--dbopt={"there":"foo"}' ], 'there', 'foo');
     testdbopt('should augment dbopt',
-      [ '-rwf', ok_json, '--dbopt={"foo":"bar"}' ], 'foo', 'bar');
+      [ '-rif', ok_json, '--dbopt={"foo":"bar"}' ], 'foo', 'bar');
     testServ('should override earlier options',
-      [ '-f', crap_json, '-f', ok_json, '-rw' ],
+      [ '-f', crap_json, '-f', ok_json, '-ri' ],
       { host: 'localhost', 'port': 4830 });
     testServ('should override earlier options with posix style short args',
-      [ '-frwf', crap_json, ok_json ],
+      [ '-frif', crap_json, ok_json ],
       { host: 'localhost', 'port': 4830 });
     testConf('should override with --conf',
       [ '-f', ok_json, '--conf={ "mode": "both" }' ], 'runner', true);
 
     // illegal configuration options
-    testThrow('should throw on -f ok.json with default mem adapter',
-      [ '-f', ok_json ]);
-    testThrow('should throw on -w with default mem adapter',
-      [ '-w' ]);
-    testThrow('should throw on -r with default mem adapter',
-      [ '-r' ]);
-    testThrow('should throw on --worker with default mem adapter',
-      [ '--worker' ]);
-    testThrow('should throw on --runner with default mem adapter',
-      [ '--runner' ]);
     testThrow('should throw on crap json conf after short opt',
       [ '-f', crap_json ]);
     testThrow('should throw on crap json conf after long opt',
@@ -134,25 +129,25 @@ describe('config', function() {
       [ '--file=foo' ]);
     testThrow('should throw on nonexistent configuration file after multiple' +
       'short options',
-      [ '-wrf', 'foo' ]);
+      [ '-irf', 'foo' ]);
     testThrow('should throw on nonexistent overriding configuration file ' +
       'after multiple short options',
-      [ '-wfrf', ok_json, 'foo' ]);
+      [ '-ifrf', ok_json, 'foo' ]);
     testThrow('should throw on nonexistent overriding configuration file ' +
       'after multiple long options',
-      [ '--file=' + ok_json, '--worker', '--file=foo' ]);
+      [ '--file=' + ok_json, '--injector', '--file=foo' ]);
     testThrow('should throw on unrecognized option',
       [ '-b' ]);
     testThrow('should throw on unrecognized short option',
-      [ '-wbr' ]);
+      [ '-ibr' ]);
     testThrow('should throw on unrecognized long option',
       [ '--foo' ]);
     testThrow('should throw on unrecognized long option after legal options',
-      [ '--worker', '--foo' ]);
+      [ '--injector', '--foo' ]);
     testThrow('should throw on nonnumerical port',
       [ 'localhost:foo' ]);
     testThrow('should throw on nonnumerical port after options',
-      [ '-wr', 'localhost:foo' ]);
+      [ '-ir', 'localhost:foo' ]);
     testThrow('should throw on illegal hostname/port',
       [ 'localhost:4730:foo' ]);
     testThrow('should throw on missing configuration file after short opt',

@@ -96,29 +96,16 @@ suite('validate', function() {
   });
   suite('conf()', function() {
     // valid confs
-    [[{}, {
-      db: 'mem',
-      servers: [{
-        host: 'localhost', port: 4730
-      }]
-    }], [{
+    [[{}, {}], [{
       injector: true
     }, {
-      injector: true,
-      db: 'mem',
-      servers: [{
-        host: 'localhost', port: 4730
-      }]
+      injector: true
     }], [{
       injector: false,
       controller: 'true'
     }, {
       injector: false,
-      controller: true,
-      db: 'mem',
-      servers: [{
-        host: 'localhost', port: 4730
-      }]
+      controller: true
     }], [{
       db: 'sqlite',
       dbopt: { foo: 'bar' },
