@@ -11,7 +11,7 @@ suite('sqlite-adapter', function() {
   
   var test_config = {
     db_opt:{
-      db_name:null,
+      db_name:':memory:',
       table_name:"sloth",
       poll_timeout:0
     }
