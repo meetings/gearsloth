@@ -46,7 +46,6 @@ suite("multiserver-worker", function() {
   suite("when given no servers", function() {
     setup(function() {
       sandbox.spy(exports, 'Worker');
-      m = new MultiserverWorker(
         null,
         'sample',
         dummy_func,

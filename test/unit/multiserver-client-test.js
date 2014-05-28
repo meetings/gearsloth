@@ -12,7 +12,7 @@ var dummy_func = function() {};
 suite("multiserver-client", function() {
   var sandbox = sinon.sandbox.create();
   suite("when given multiple servers", function() {
-    var m, clientStub, randomStub, submitJobStub;
+    var m, ClientStub, randomStub, submitJobStub;
 
     var sampleServers = [{
       host:'localhost',
@@ -22,14 +22,13 @@ suite("multiserver-client", function() {
       port:715517
     }];
 
-
     setup(function() {
-      clientStub = sandbox.spy(Client);
-      clientStub.submitJob = sandbox.spy();
+      ClientStub = sandbox.spy(Client);
+      ClientStub.prototype.submitJob = sandbox.spy(Client.prototype.submitJob);
       randomStub = sandbox.stub();
       m = new MultiserverClient(
         sampleServers,
-        clientStub,
+        ClientStub,
         randomStub);
     });
 
@@ -38,10 +37,10 @@ suite("multiserver-client", function() {
       sandbox.restore();
     });
     test("should spawn as many client instances", function() {
-      expect(clientStub).to.be.calledTwice; 
-      expect(clientStub).to.be
+      expect(ClientStub).to.be.calledTwice; 
+      expect(ClientStub).to.be
       .calledWith(sampleServers[0]);
-      expect(clientStub).to.be
+      expect(ClientStub).to.be
       .calledWith(sampleServers[1]);
     });
     test("should have a submitJob() function with on() function", function() {
@@ -57,19 +56,24 @@ suite("multiserver-client", function() {
       var func2 = m.submitJob();
       expect(func1).to.not.equal(func2);
     });
+    test("should call submitJob with correct arguments", function() {
+      randomStub.returns(0);
+      m.submitJob('kikkens', 'sinep');
+      expect(ClientStub.prototype.submitJob).to.have.been.calledWith('kikkens', 'sinep');
+    });
   });
 
   suite("when given no servers", function() {
-    var clientStub;
+    var ClientStub;
     setup(function() {
-      clientStub = sandbox.spy(Client);
+      ClientStub = sandbox.spy(Client);
       m = new MultiserverClient(
         null,
-        clientStub);
+        ClientStub);
     });
 
     test("should return a client with default config", function() {
-      expect(clientStub).to.have.been.calledOnce;
+      expect(ClientStub).to.have.been.calledOnce;
       expect(m).to.have.property('submitJob');
     });
   });
