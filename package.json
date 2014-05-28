@@ -30,6 +30,7 @@
     "sqlite3": "*",
     "istanbul": "*",
     "sinon": "*",
-    "sinon-chai": "*"
+    "sinon-chai": "*",
+    "async": "*"
   }
 }
