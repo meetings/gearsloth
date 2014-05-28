@@ -3,13 +3,13 @@ var sinon = require('sinon');
 var expect = chai.expect;
 chai.use(require('sinon-chai'));
 
-var Multiserver = require("../../lib/gearman/multiserver-worker").Multiserver;
+var MultiserverWorker = require("../../lib/gearman/multiserver-worker").MultiserverWorker;
 
 exports.Worker = function() {};
 
 var dummy_func = function() {};
 
-suite("gearman-multiserver", function() {
+suite("multiserver-worker", function() {
   var sandbox = sinon.sandbox.create();
   suite("when given multiple servers", function() {
     var m, workerStub, workerSpy;
@@ -24,7 +24,7 @@ suite("gearman-multiserver", function() {
 
     setup(function() {
       sandbox.spy(exports, 'Worker');
-      m = new Multiserver(
+      m = new MultiserverWorker(
         sampleServers,
         'sample',
         dummy_func,
@@ -46,7 +46,7 @@ suite("gearman-multiserver", function() {
   suite("when given no servers", function() {
     setup(function() {
       sandbox.spy(exports, 'Worker');
-      m = new Multiserver(
+      m = new MultiserverWorker(
         null,
         'sample',
         dummy_func,
