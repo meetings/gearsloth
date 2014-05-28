@@ -8,12 +8,6 @@ suite('sqlite-adapter', function() {
 
   var worker = 'log';
   var payload = new Buffer(10);
-  var test_json = {
-    at: new Date(),
-    func_name: worker,
-    payload: payload,
-    strategy:'default'
-  };
   
   var test_config = {
     db_opt:{
@@ -31,17 +25,24 @@ suite('sqlite-adapter', function() {
     }
   };
   
+ var test_json = {
+    at: new Date(),
+    func_name: worker,
+    payload: "jassoo",
+    strategy:'default'
+  };
+  
   var test_json_with_unset_strategy = {
     at: new Date(),
     func_name: worker,
-    payload: payload,
+    payload: "jassoo",
     strategy:null
   };
   
   var test_json_with_strategy_options = {
     at: new Date(),
     func_name: worker,
-    payload: payload,
+    payload: "jassoo",
     strategy:'specialized',
     strategy_options: {
       retry:true,
@@ -89,7 +90,7 @@ suite('sqlite-adapter', function() {
               expect(task).to.have.property('func_name');
               expect(task).to.have.property('payload');
               expect(task).to.have.property('strategy');
-              expect(task.at).to.equal(test_json.at);
+              expect(task.at.toISOString().substring(0, 20)).to.equal(test_json.at.toISOString().substring(0, 20));
               expect(task.func_name).to.equal(test_json.func_name);
               expect(task.payload).to.deep.equal(test_json.payload);
               expect(task.strategy).to.equal(test_json.strategy);
@@ -165,48 +166,26 @@ suite('sqlite-adapter', function() {
     });
   });
   
-  suite('saveTask()', function() {
-  
-    test('should call callback with error empty invalid task', function(done) {
-      function testScript(err, dbconn) {
-        dbconn.saveTask({}, function(err) {
-          if(err) return done();
-        });
-      }
-      adapter.initialize(test_config, testScript);
-    });
-    
-    test('should call callback with error if task is missing at', function(done) {
-      function testScript(err, dbconn) {
-        dbconn.saveTask({func_name: 'sinep'}, function(err) {
-          if(err) done();
-        });
-      }
-      adapter.initialize(test_config, testScript);
-    });
-    
-    test('should call callback with error if task is missing func_name', function(done) {
-      function testScript(err, dbconn) {
-        dbconn.saveTask({at: second_ago}, function(err) {
-          if(err) done();
-        });
-      }
-      adapter.initialize(test_config, testScript);
-    });
-
-  });
-  
   suite('updateTask()', function() {
+    var roundTrip = 2;
     test('should update task correctly', function(done) {
       function testScript(err, dbconn) {
         var stop = dbconn.listenTask(function (err, task) {
-          stop();
-          dbconn.updateTask(task_id, "FAIL", function() {
-            dbconn.grabTask(task_id, function(task) {
-              if(task.status === "FAIL") return done();
-              done(new Error('status was not FAIL'));
-            });
-          });
+          --roundTrip;
+          if (roundTrip == 0){
+            stop();
+            try {
+              expect(task.func_name).to.equal("lolleros");
+              expect(task.after).to.equal(1);
+            } catch (err) {
+              return done(err);
+            }
+            done();
+          } else {
+            task.func_name = "lolleros";
+            task.after = 1;
+            dbconn.updateTask(task, function() {});
+          }
         });
         dbconn.saveTask(test_json, function() {});
       }
@@ -214,17 +193,13 @@ suite('sqlite-adapter', function() {
     });
   });
   
-  suite('deleteTask()', function() {
+  suite('completeTask()', function() {
     test('should delete task correctly', function(done) {
       function testScript(err, dbconn) {
-        var stop = dbconn.listenTask(function (err, task_id) {
+        var stop = dbconn.listenTask(function (err, task) {
           stop();
-          dbconn.deleteTask(task_id, function() {
-            dbconn.grabTask(task_id, function(task) {
-              if(!task) return done();
-              done(new Error('callback called with a task'));
-            });
-          });
+          dbconn.completeTask(task, function() {});
+          done();
         });
         dbconn.saveTask(test_json, function() {});
       }
@@ -235,11 +210,14 @@ suite('sqlite-adapter', function() {
   suite('initialize()', function() {
     test('should create a database to a file', function(done) {
       adapter.initialize(test_config_with_file, function() {
-        fs.open('test-database.sqlite', 'r', function(err) {
-          if(!err) done();
-          else done(new Error('file does not exist'));
-          fs.unlink('test-database.sqlite', function() {});
-        });
+        setTimeout(checkFile, 1000);
+        function checkFile () {
+          fs.open('test-database.sqlite', 'r', function(err) {
+            if(!err) done();
+            else done(new Error('file does not exist'));
+            fs.unlink('test-database.sqlite', function() {});
+          });
+        }
       });
     });
   });  
