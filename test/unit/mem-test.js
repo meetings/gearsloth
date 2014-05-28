@@ -20,11 +20,6 @@ suite('MemAdapter', function() {
     });
   });
   suite('saveTask', function() {
-    test('adds task to internal list', function() {
-      var task = "some task";
-      adapter.saveTask(task, function() {});
-      adapter._tasks.should.include(task, function() {});
-    });
     test('sends task to listener', function() {
       var task = "some task";
       var callback = sinon.spy();
@@ -64,7 +59,7 @@ suite('MemAdapter', function() {
   });
   suite('initialize', function() {
     test('returns a MemAdapter', function() {
-      var config = { worker: true, runner: true };
+      var config = { injector: true, runner: true, ejector: true };
       var callback = sinon.spy();
       memadapter.initialize(config, callback);
 

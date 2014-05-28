@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "mocha": "*",
+    "mysql": "*",
     "chai": "*",
     "sqlite3": "*",
     "istanbul": "*",

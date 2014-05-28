@@ -16,13 +16,14 @@ var worker = {
 var Passthrough = require("../../lib/controllers/passthrough").Passthrough;
 
 suite('passthrough controller', function() {
-
   var sampleTask = {
     id: 666,
     at: 0,
     func_name: "func_to_call",
     payload: "payload"
   }
+  var sampleBuffer = new Buffer(JSON.stringify(sampleTask));
+  
   suite('construction', function() {
     test('can create Passthrough controller', function() {
       var p = new Passthrough(function(a) {return null;}, null, null);
@@ -45,7 +46,7 @@ suite('passthrough controller', function() {
         return workerStub;
       };
       clientStub = sandbox.stub(client);
-      p = new Passthrough(workerParameter, clientStub);
+      p = new Passthrough(clientStub, workerParameter);
       client.submitJob.returns(new EventEmitter());
     });
 
@@ -54,12 +55,12 @@ suite('passthrough controller', function() {
     });
 
     test('should send complete packet after grabbing work successfully', function() {
-      workHandler.call(p, sampleTask, workerStub);
+      workHandler.call(p, sampleBuffer, workerStub);
 
       expect(workerStub.complete).to.have.been.calledOnce;
     });
     test('calls correct functions after grabbing', function() {
-      workHandler.call(p, sampleTask, workerStub)
+      workHandler.call(p, sampleBuffer, workerStub)
 
       expect(workerStub.complete).to.have.been.calledOnce;
       expect(clientStub.submitJob).to.have.been.called;
@@ -79,7 +80,7 @@ suite('passthrough controller', function() {
         workHandler = handler;
         return workerStub;
       };
-      p = new Passthrough(workerParameter, clientStub);
+      p = new Passthrough(clientStub, workerParameter);
       emitter = new EventEmitter();
       clientStub.submitJob.returns(emitter);
     });
@@ -90,7 +91,7 @@ suite('passthrough controller', function() {
 
       expect(clientStub.submitJob).to.have.been.calledTwice;
       expect(clientStub.submitJob).to.have.been
-        .calledWith('delayedJobDone', sampleTask);
+        .calledWith('delayedJobDone', JSON.stringify(sampleTask));
     });
     test('does nothing if task fails', sinon.test(function() {
       p._runTask(sampleTask);
