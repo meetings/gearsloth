@@ -17,7 +17,7 @@ suite('(e2e) ejector', function() {
     , conf = { dbconn: adapter };
 
   setup(function(done) {
-    gearmand = child_process.spawn('gearmand');
+    gearmand = child_process.exec('gearmand');
     client = new gearman.Client();
     client.on('connect', function() {
       ejector(conf);
@@ -25,7 +25,9 @@ suite('(e2e) ejector', function() {
     });
   });
 
-  teardown(function() {
+  teardown(function(done) {
+    gearmand.on('close', function() { done() });
+    client.disconnect();
     gearmand.kill();
   });
 
@@ -35,6 +37,17 @@ suite('(e2e) ejector', function() {
     var ejectorArgument = { id: "666" };
     client.submitJob('delayedJobDone', JSON.stringify(ejectorArgument))
       .on('complete', function() {
+        adapter.completeTask.should.have.been.calledWith(ejectorArgument);
+        done();
+      });
+  });
+
+  test('should return error message to client when completeTask fails', function(done) {
+    adapter.completeTask = sinon.stub().callsArgWith(1, "error");
+
+    var ejectorArgument = { id: "666" };
+    client.submitJob('delayedJobDone', JSON.stringify(ejectorArgument))
+      .on('fail', function() {
         adapter.completeTask.should.have.been.calledWith(ejectorArgument);
         done();
       });
