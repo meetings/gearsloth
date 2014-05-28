@@ -1,12 +1,9 @@
 var gearman = require('gearman-coffee')
   , ejector = require('../../lib/daemon/ejector')
-  , sqlite = require('../../lib/adapters/sqlite')
   , child_process = require('child_process')
   , chai = require('chai')
   , sinon = require('sinon')
   , sinonChai = require('sinon-chai')
-  , parallel = require('async').parallel
-  , _ = require('underscore');
 
 chai.should();
 chai.use(sinonChai);
@@ -14,33 +11,33 @@ chai.use(sinonChai);
 suite('(e2e) ejector', function() {
 
   var gearmand
-    , adapter
-    , client;
+    , adapter = {}
+    , client
+    , e
+    , conf = { dbconn: adapter };
 
   setup(function(done) {
     gearmand = child_process.spawn('gearmand');
     client = new gearman.Client();
-
-    parallel({
-      adapter: _.partial(sqlite.initialize, null),
-      client: _.bind(client.on, client, 'connect')
-    }, function(err, results) {
-      if(err) {
-        gearmand.kill();
-      }
-      adapter = results.adapter;
-      done(err);
+    client.on('connect', function() {
+      ejector(conf);
+      done();
     });
   });
 
   teardown(function() {
     gearmand.kill();
-  })
+  });
 
-  test('should delete task from database', function() {
-    var conf = { dbconn: adapter };
-    //var completeSpy = sinon.spy(init.adapter, 'completeTask');
+  test('should delete task from database', function(done) {
 
+    adapter.completeTask = function(id, callback) {
+      id.should.equal("666");
+      callback(null, 1);
+      done();
+    };
 
+    var ejectorArgument = { id: "666" };
+    client.submitJob('delayedJobDone', JSON.stringify(ejectorArgument));
   });
 });
