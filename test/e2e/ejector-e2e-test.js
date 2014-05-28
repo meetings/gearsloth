@@ -10,6 +10,8 @@ chai.use(sinonChai);
 
 suite('(e2e) ejector', function() {
 
+  this.timeout(5000);
+
   var gearmand
     , adapter = {}
     , client
