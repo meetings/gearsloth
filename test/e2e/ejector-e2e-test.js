@@ -29,15 +29,15 @@ suite('(e2e) ejector', function() {
     gearmand.kill();
   });
 
-  test('should delete task from database', function(done) {
-
-    adapter.completeTask = function(id, callback) {
-      id.should.equal("666");
-      callback(null, 1);
-      done();
-    };
+  test('should delete task from database and send complete message to client', function(done) {
+    adapter.completeTask = sinon.stub().callsArgWith(1, null, 1);
 
     var ejectorArgument = { id: "666" };
-    client.submitJob('delayedJobDone', JSON.stringify(ejectorArgument));
+    client.submitJob('delayedJobDone', JSON.stringify(ejectorArgument))
+      .on('complete', function() {
+        adapter.completeTask.should.have.been.calledWith(ejectorArgument);
+        done();
+      });
   });
+
 });
