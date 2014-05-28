@@ -30,7 +30,7 @@ suite('(e2e) ejector', function() {
   teardown(function(done) {
     gearmand.on('close', function() { done() });
     client.disconnect();
-    gearmand.kill();
+    gearmand.kill('SIGKILL');
   });
 
   test('should delete task from database and send complete message to client', function(done) {
