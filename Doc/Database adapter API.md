@@ -36,5 +36,3 @@ None of the functions implemented in the adapter provide rollback, so it is impo
 
 
 
-
-

@@ -32,6 +32,12 @@ suite('sqlite-adapter', function() {
     strategy:'default'
   };
   
+ var test_json_unset_delivery = {
+    func_name: worker,
+    payload: "unset delivery",
+    strategy:'default'
+  };
+  
   var test_json_with_unset_strategy = {
     at: new Date(),
     func_name: worker,
@@ -71,7 +77,6 @@ suite('sqlite-adapter', function() {
             }
             done();
         });
-
         dbconn.saveTask(test_json, function() {});
       }
       adapter.initialize(test_config, testScript);
@@ -90,7 +95,6 @@ suite('sqlite-adapter', function() {
               expect(task).to.have.property('func_name');
               expect(task).to.have.property('payload');
               expect(task).to.have.property('strategy');
-              expect(task.at.toISOString().substring(0, 18)).to.equal(test_json.at.toISOString().substring(0, 18));
               expect(task.func_name).to.equal(test_json.func_name);
               expect(task.payload).to.deep.equal(test_json.payload);
               expect(task.strategy).to.equal(test_json.strategy);
@@ -102,17 +106,50 @@ suite('sqlite-adapter', function() {
             done();
           }
         });
-
         dbconn.saveTask(test_json, function() {});
         dbconn.saveTask(test_json, function() {});
         dbconn.saveTask(test_json, function() {});
       }
       adapter.initialize(test_config, testScript);
     });
+    
+    test('should save current timestamp as execution time when after and at unset', function(done) {
+      var items = 2;
+      var insertionDate;
+
+      function testScript(err, dbconn) {
+        var stop = dbconn.listenTask(function (err, task) {
+          --items;
+          stop();
+            try {
+              expect(task).to.have.property('at');
+              expect(task).to.have.property('func_name');
+              expect(task).to.have.property('payload');
+              expect(task).to.have.property('strategy');
+
+              expect(task.at.substring(0, 18)).to.equal(new Date().toISOString().substring(0, 18));
+              expect(task.func_name).to.equal(test_json_unset_delivery.func_name);
+              expect(task.payload).to.deep.equal(test_json_unset_delivery.payload);
+              expect(task.strategy).to.equal(test_json_unset_delivery.strategy);
+            } catch(err) {
+              return done(err);
+            }
+
+          if (items <= 0) {
+            done();
+          }
+        });
+
+        dbconn.saveTask(test_json_unset_delivery, function() {});
+        dbconn.saveTask(test_json_unset_delivery, function() {});
+      }
+      adapter.initialize(test_config, testScript);
+    });
+
 
   });
   
-  suite('grabTask()', function() {
+  suite('listenTask()', function() {
     test('should return correct strategy when set', function(done) {
       function testScript(err, dbconn) {
         var stop = dbconn.listenTask(function (err, task) {
