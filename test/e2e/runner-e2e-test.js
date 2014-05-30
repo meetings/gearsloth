@@ -17,7 +17,10 @@ suite('(e2e) runner', function() {
     , adapter = {}
     , worker
     , e
-    , conf = { dbconn: adapter }
+    , conf = { dbconn: adapter,
+      servers: [{ host: 'localhost' }]
+      }
+    , port
     , sample_task = {
         id: 666,
         controller: 'test',
@@ -27,6 +30,10 @@ suite('(e2e) runner', function() {
         };
 
   setup(function() {
+    port = 6660 + Math.floor(Math.random() * 1000);
+    conf.servers[0].port = port;
+
+    gearmand = child_process.exec('gearmand -p ' + port, {}, console.log);
     gearmand = child_process.exec('gearmand');
   });
 
@@ -43,7 +50,7 @@ suite('(e2e) runner', function() {
       expect(json).to.have.property('func_name', sample_task.func_name);
 
       done();
-    });
+    }, {port:port});
     console.log(sample_task);
     adapter.listenTask = sinon.stub().callsArgWith(0, null, sample_task);
     adapter.updateTask = sinon.stub().callsArgWith(1, null);
