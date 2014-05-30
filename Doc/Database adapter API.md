@@ -21,7 +21,7 @@ This adapter requires the sqlite3.js npm package.
 
 The sqlite-adapter configuration takes in a JSON object that describes the following properties of the database:
 * `db_opt.table_name`: REQUIRED, the name of the table into which the tasks are to be saved.
-* `db_opt.db_name`: REQUIRED, the filename which is used for the database. An 'in-memory' database can be used by providing the `':memory:'` string as the db_name. The 'in-memory' database will be lost once the execution of the process ends, and it will not be accessible to other instances of adapters. An aboslute path to the datbase should be used. CHECK THIS in-memory access CHECK THIS
+* `db_opt.db_name`: REQUIRED, the filename which is used for the database. An 'in-memory' database can be used by providing the `':memory:'` string as the db_name. The 'in-memory' database will be lost once the execution of the process ends, and it will not be accessible to other instances of adapters. An aboslute path to the datbase should be used.
 * `db_opt.poll_timeout`: REQUIRED, a non-zero time value in milliseconds which the adaters database polling function is to timeout before the next query.
 
 ### Notes
