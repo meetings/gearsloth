@@ -25,7 +25,7 @@ suite('(e2e) ejector', function() {
     var port = 6660 + Math.floor(Math.random() * 1000);
     conf.servers[0].port = port;
 
-    gearmand = child_process.exec('gearmand -p ' + port, {}, console.log);
+    gearmand = child_process.exec('gearmand -p ' + port);
 
     client = new gearman.Client({
       port: port

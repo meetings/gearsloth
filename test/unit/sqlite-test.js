@@ -155,8 +155,6 @@ suite('sqlite-adapter', function() {
         var stop = dbconn.listenTask(function (err, task) {
           --items;
           stop();
-          console.log(task);
-          console.log(err);
             try {
               expect(task).to.have.property('at');
               expect(task).to.have.property('func_name');
@@ -178,10 +176,7 @@ suite('sqlite-adapter', function() {
           }
         });
 
-        dbconn.saveTask(test_json_unset_delivery, function(err, id) {
-        console.log(err);
-        console.log(id);  
-        });
+        dbconn.saveTask(test_json_unset_delivery, function(err, id) {});
         dbconn.saveTask(test_json_unset_delivery, function() {});
       }
       adapter.initialize(null, testScript);
