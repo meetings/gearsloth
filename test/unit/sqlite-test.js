@@ -147,6 +147,45 @@ suite('sqlite-adapter', function() {
       adapter.initialize(test_config, testScript);
     });
 
+    test('should behave correctly with no cofiguration', function(done) {
+      var items = 2;
+      var insertionDate;
+
+      function testScript(err, dbconn) {
+        var stop = dbconn.listenTask(function (err, task) {
+          --items;
+          stop();
+          console.log(task);
+          console.log(err);
+            try {
+              expect(task).to.have.property('at');
+              expect(task).to.have.property('func_name');
+              expect(task).to.have.property('payload');
+              expect(task).to.have.property('strategy');
+
+              expect(task.at.toISOString().substring(0, 18))
+              .to.equal(new Date().toISOString().substring(0, 18));
+              expect(task.func_name).to.equal(test_json_unset_delivery.func_name);
+              expect(task.payload).to.deep.equal(test_json_unset_delivery.payload);
+              expect(task.strategy).to.equal(test_json_unset_delivery.strategy);
+            } catch(err) {
+              return done(err);
+            }
+
+          if (items <= 0) {
+            done();
+            fs.unlink('/tmp/DelayedTasks.sqlite', function() {});
+          }
+        });
+
+        dbconn.saveTask(test_json_unset_delivery, function(err, id) {
+        console.log(err);
+        console.log(id);  
+        });
+        dbconn.saveTask(test_json_unset_delivery, function() {});
+      }
+      adapter.initialize(null, testScript);
+    });
 
   });
   
@@ -207,6 +246,7 @@ suite('sqlite-adapter', function() {
   suite('updateTask()', function() {
     var roundTrip = 2;
     test('should update task correctly', function(done) {
+      this.timeout(5000);
       function testScript(err, dbconn) {
         var stop = dbconn.listenTask(function (err, task) {
           --roundTrip;

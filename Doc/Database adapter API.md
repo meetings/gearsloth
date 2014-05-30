@@ -15,14 +15,25 @@ Currently there are 2 complete adpters: 'sqlite.js', which uses the sqlite3.js n
 
 ## Sqlite3
 
-This adapter requires the sqlite3.js npm package.
+This adapter requires the sqlite3.js npm package which can be installed by issuing the command:
+```
+npm install sqlite3
+```
 
 ### Configuration
 
 The sqlite-adapter configuration takes in a JSON object that describes the following properties of the database:
-* `db_opt.table_name`: REQUIRED, the name of the table into which the tasks are to be saved.
-* `db_opt.db_name`: REQUIRED, the filename which is used for the database. An 'in-memory' database can be used by providing the `':memory:'` string as the db_name. The 'in-memory' database will be lost once the execution of the process ends, and it will not be accessible to other instances of adapters. An aboslute path to the datbase should be used. CHECK THIS in-memory access CHECK THIS
-* `db_opt.poll_timeout`: REQUIRED, a non-zero time value in milliseconds which the adaters database polling function is to timeout before the next query.
+* `db_opt.table_name`: The name of the table into which the tasks are to be saved. If unset a default value of *"DelayedTasks"* is used.
+* `db_opt.db_name`: The filename which is used for the database. An 'in-memory' database can be used by providing the `':memory:'` string as the db_name. The 'in-memory' database will be lost once the execution of the process ends, and it will not be accessible to other instances of adapters. An aboslute path to the datbase should be used. If unset a default value of *"/tmp/DelayedTasks.sqlite"* is used.
+* `db_opt.poll_timeout`: A non-zero time value in milliseconds which the adaters database polling function is to timeout before the next query. If unset a default value of *1000* milliseconds is used.
+* `db_opt.pre_poll`: A non-zero time value in secods that is subtracted from the exipry time of the task to accomplish retrieving tasks before they expire. If unset a default value of *0* seconds is used.
+
+The initialization may also be called without any configuration to adopt all default cofigurations, for example:
+
+```
+var adapter = require('../../lib/adapters/sqlite');
+adapter.initialize(null, someScriptToExecute);
+```
 
 ### Notes
 
