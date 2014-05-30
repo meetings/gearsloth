@@ -48,6 +48,9 @@ suite("multiserver-client", function() {
       randomStub.returns(0);
       expect(m.submitJob('test', 'test')).to.have.property('on');
     });
+    test("should have a submitJobBg() function", function() {
+      expect(m).to.have.property('submitJobBg');
+    });
     // does not actually test anything
     test("should pick a server randomly", function() {
       randomStub.onCall(0).returns(0);
