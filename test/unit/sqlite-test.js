@@ -127,7 +127,8 @@ suite('sqlite-adapter', function() {
               expect(task).to.have.property('payload');
               expect(task).to.have.property('strategy');
 
-              expect(task.at.substring(0, 18)).to.equal(new Date().toISOString().substring(0, 18));
+              expect(task.at.toISOString().substring(0, 18))
+              .to.equal(new Date().toISOString().substring(0, 18));
               expect(task.func_name).to.equal(test_json_unset_delivery.func_name);
               expect(task.payload).to.deep.equal(test_json_unset_delivery.payload);
               expect(task.strategy).to.equal(test_json_unset_delivery.strategy);
