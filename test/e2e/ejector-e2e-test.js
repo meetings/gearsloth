@@ -16,21 +16,30 @@ suite('(e2e) ejector', function() {
     , adapter = {}
     , client
     , e
-    , conf = { dbconn: adapter };
+    , conf = {
+      dbconn: adapter,
+      servers: [{ host: 'localhost' }]
+    };
 
   setup(function(done) {
-    gearmand = child_process.exec('gearmand');
-    client = new gearman.Client();
+    var port = 6660 + Math.floor(Math.random() * 1000);
+    conf.servers[0].port = port;
+
+    gearmand = child_process.exec('gearmand -p ' + port, {}, console.log);
+
+    client = new gearman.Client({
+      port: port
+    });
+
     client.on('connect', function() {
       ejector(conf);
       done();
     });
   });
 
-  teardown(function(done) {
-    gearmand.on('close', function() { done() });
+  teardown(function() {
     client.disconnect();
-    gearmand.kill('SIGKILL');
+    gearmand.kill();
   });
 
   test('should delete task from database and send complete message to client', function(done) {
