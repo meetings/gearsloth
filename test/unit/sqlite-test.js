@@ -77,7 +77,7 @@ suite('sqlite-adapter', function() {
             }
             done();
         });
-        dbconn.saveTask(test_json, function() {});
+        dbconn.saveTask(test_json, function(err, id) {});
       }
       adapter.initialize(test_config, testScript);
     });
@@ -171,6 +171,9 @@ suite('sqlite-adapter', function() {
           if (items <= 0) {
             done();
             fs.unlink('/tmp/DelayedTasks.sqlite', function() {});
+            fs.open('/tmp/DelayedTasks.sqlite', 'r', function(err) {
+              fs.unlink('/tmp/DelayedTasks.sqlite', function() {});
+            });
           }
         });
 
@@ -203,7 +206,7 @@ suite('sqlite-adapter', function() {
     test('should return correct at when unset', function(done) {
       var cur_date = new Date();
       function testScript(err, dbconn) {
-        var stop = dbconn.listenTask(function (err, task_id) {
+        var stop = dbconn.listenTask(function (err, task) {
           stop();
             try {
               expect(task.strategy).to.equal(null);
@@ -223,18 +226,47 @@ suite('sqlite-adapter', function() {
     
     test('should return correct strategy and strategy options when set', function(done) {
       function testScript(err, dbconn) {
-        var stop = dbconn.listenTask(function (err, task_id) {
+        var stop = dbconn.listenTask(function (err, task) {
           stop();
-            try {
-              expect(task.strategy).to.equal(test_json_with_strategy_options.strategy);
-              expect(task.strategy_options).to.deep.equal(test_json_with_strategy_options.strategy_options);
-            } catch(err) {
-              return done(err);
-            }
-            done();
+          try {
+            expect(task.strategy).to.equal(test_json_with_strategy_options.strategy);
+            expect(task.strategy_options).to.deep.equal(test_json_with_strategy_options.strategy_options);
+          } catch(err) {
+            return done(err);
+          }
+          done();
         });
         
         dbconn.saveTask(test_json_with_strategy_options, function() {});
+      }
+      adapter.initialize(test_config, testScript);
+    });
+
+    test('should not return a task when disabled', function(done){
+      function testScript(err, dbconn) {
+        var count = 0;
+        var disabled_task_id ;
+        var stop = dbconn.listenTask(function(err, task){
+          ++count;
+          task.after = 0;
+          dbconn.updateTask(task, function(){});
+          if (count === 1){
+            disabled_task_id = task.id.task_id;
+            dbconn.disableTask(task, function(){});
+          }
+          if (count > 1) {
+            try {
+              expect(disabled_task_id).not.to.equal(task.id.task_id);
+            } catch (err) {
+              done(err);
+            }
+          }
+          if (count === 4){
+            stop(done);
+          }
+        });
+        dbconn.saveTask(test_json, function(){});
+        dbconn.saveTask(test_json_unset_delivery, function(){});
       }
       adapter.initialize(test_config, testScript);
     });

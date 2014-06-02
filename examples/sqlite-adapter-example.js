@@ -3,7 +3,7 @@ var db = require('../lib/adapters/sqlite');
 var config = {
   db_opt:{
     db_name:"DelayedTasks.sqlite",
-    table_name:"sloth",
+    table_name:"DelayedTasks",
     poll_timeout:1000
   }
 };
@@ -41,10 +41,14 @@ function afterInit(err, dbconn) {
         return;
       }
       
-      stop();
       log.debug("Recieved task:");
       console.log(task);
       console.log(new Date());
       dbconn.completeTask(task, function () {} );
+      stop(afterRun);
   });
+
+  function afterRun() {
+    console.log("Listening stopped.");
+  }
 }
