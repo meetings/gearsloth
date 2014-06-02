@@ -38,7 +38,7 @@ suite('sqlite-adapter', function() {
     strategy:'default'
   };
   
-  var test_json_with_unset_strategy = {
+  var test_json_with_unset_at = {
     after: 0,
     func_name: worker,
     payload: "jassoo",
@@ -115,7 +115,6 @@ suite('sqlite-adapter', function() {
     
     test('should save current timestamp as execution time when after and at unset', function(done) {
       var items = 2;
-      var insertionDate;
 
       function testScript(err, dbconn) {
         var stop = dbconn.listenTask(function (err, task) {
@@ -149,7 +148,6 @@ suite('sqlite-adapter', function() {
 
     test('should behave correctly with no cofiguration', function(done) {
       var items = 2;
-      var insertionDate;
 
       function testScript(err, dbconn) {
         var stop = dbconn.listenTask(function (err, task) {
