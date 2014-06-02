@@ -27,6 +27,7 @@ The only required field for task is `func_name`.
 * `runner_retry_timeout`: if defined this is any string that is parseable into an integer. Represents the time in seconds after which a runner is to retry submitting the task for execution if it failed to do so previously.
 * `runner_retry_count`: if defined this is any string that is parseable into an integer. Represents the number of times a runner is to try to submit the task for execution if it failed to do so previously.
 * `payload`: if defined this can be anything that can be sanely converted into a string. It may also be a JSON object in itself. `payload` will be passed on to the `func_name` function as given or to the `controller` if defined for more processing.
+* `first_run`: at the time of the first execution the current timestamp is stored into this field. *Don't use this field.*
 
 
 In addition the `task` JSON object may contain any number of fields (for example to be passed to the `controller`) These additional fields will not be taken into account in any way in the control flow other than in the custom `controller` if it is to do so.
