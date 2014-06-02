@@ -10,7 +10,7 @@ suite('sqlite-adapter', function() {
   var payload = new Buffer(10);
   
   var test_config = {
-    db_opt:{
+    dbopt:{
       db_name:':memory:',
       table_name:"sloth",
       poll_timeout:0
@@ -18,7 +18,7 @@ suite('sqlite-adapter', function() {
   };
   
   var test_config_with_file = {
-    db_opt:{
+    dbopt:{
       db_name:'test-database.sqlite',
       table_name:"sloth",
       poll_timeout:1000
