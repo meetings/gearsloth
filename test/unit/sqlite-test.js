@@ -39,7 +39,7 @@ suite('sqlite-adapter', function() {
   };
   
   var test_json_with_unset_strategy = {
-    at: new Date(),
+    after: 0,
     func_name: worker,
     payload: "jassoo",
     strategy:null
@@ -202,12 +202,16 @@ suite('sqlite-adapter', function() {
       adapter.initialize(test_config, testScript);
     });
     
-    test('should return correct strategy when unset', function(done) {
+    test('should return correct at when unset', function(done) {
+      var cur_date = new Date();
       function testScript(err, dbconn) {
         var stop = dbconn.listenTask(function (err, task_id) {
           stop();
             try {
               expect(task.strategy).to.equal(null);
+              expect(task.at.toISOString()
+                .substring(0, 18)).to.equal(cur_date.toISOString()
+                .substring(0, 18));
             } catch(err) {
               return done(err);
             }
