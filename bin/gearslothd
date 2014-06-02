@@ -4,6 +4,8 @@ var config = require('../lib/config');
 
 try {
   var conf = config.initialize(process.argv);
+  if (!conf)
+    process.exit(0);
   config.initializeDb(conf, function(err, conf) {
     if (conf.injector)    require('../lib/daemon/injector')         (conf);
     if (conf.runner)      require('../lib/daemon/runner')           (conf);
