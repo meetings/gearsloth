@@ -216,7 +216,7 @@ suite('sqlite-adapter', function() {
             done();
         });
 
-        dbconn.saveTask(test_json_with_unset_strategy, function() {});
+        dbconn.saveTask(test_json_with_unset_at, function() {});
       }
       adapter.initialize(test_config, testScript);
     });
