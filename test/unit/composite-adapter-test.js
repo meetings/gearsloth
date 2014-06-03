@@ -9,39 +9,22 @@ chai.use(sinonChai);
 suite('composite-adapter', function() {
   var sandbox = sinon.sandbox.create()
     , callback
-    , config = {}
-    , bad_config = {}
+    , config = {dbopt:[]}
     , config_helper = {}
-    , good_config = [{
-        db: 'sqlite',
-        db_id: 'sqlite://sqlite.db'
-      },{
-        db: 'sqlite',
-        db_id: 'sqlite://sqlite2.db'
-      }];
+    , adapters = [];
 
   setup(function() {
     callback = sandbox.spy();
-
-    config.dbopt = good_config;
-
-    augmented_conf = config;
-    augmented_conf.dbconn = {};
-    augmented_conf.dbmodule = {};
-
-    augmented_conf.dbconn.saveTask = sandbox.spy();
-    augmented_conf.dbconn.listenTask = sandbox.spy();
-    config_helper.initializeDb = sinon.stub();
-    config_helper.initializeDb.callsArgWith(1, null, augmented_conf);
-
+    initSandbox();
   });
   teardown(function() {
     sandbox.restore();
   });
+
   suite('initialize()', function() {
     test('should call callback with error if dbopt is of invalid type', function() {
-      config.dbopt = bad_config;
-      composite.initialize(config, callback);
+      var fake_config = {dbopt:{}};
+      composite.initialize(fake_config, callback);
       expect(callback).to.have.been.calledOnce;
       expect(callback.args[0][0]).to.not.be.null;
     });
@@ -55,10 +38,9 @@ suite('composite-adapter', function() {
       var _databases = callback.args[0][1]._databases;
       expect(_databases[0]).to.have.property('db_id');
       expect(_databases[1]).to.have.property('db_id');
-      expect(_databases[0]).to.have.property('dbconn');
-      expect(_databases[1]).to.have.property('dbconn');
     });
   });
+
   suite('saveTask()', function() {
     var dbconn;
     setup(function() {
@@ -71,27 +53,30 @@ suite('composite-adapter', function() {
     teardown(function() {
       sandbox.restore();
     });
-    test('saves a task to a random database', function() {
+    test('saves a task to some database', function() {
       var task = {};
       var savetask_callback = sandbox.spy();
       dbconn.saveTask(task, savetask_callback);
-      expect(augmented_conf.dbconn.saveTask).to.have.been.calledOnce;
-      expect(augmented_conf.dbconn.saveTask).to.have.been.calledWith(task);
+      expect(adapters[0].saveTask).to.have.been.calledOnce;
+      expect(adapters[0].saveTask).to.have.been.calledWith(task);
     });
     suite('on database error', function() {
+      var dbconn;
       setup(function() {
-        augmented_conf.dbconn.saveTask = sandbox.stub();
-        augmented_conf.dbconn.saveTask.callsArgWith(1, new Error('dummy error, ignore'));
-        config_helper.initializeDb = sinon.stub();
-        config_helper.initializeDb.callsArgWith(1, null, augmented_conf);
+        initSandbox();
+        
         composite.initialize(
           config,
           function(e,dbconn_local) { dbconn = dbconn_local },
           config_helper);
+        dbconn._databases[0].saveTask = sandbox.stub();
+        dbconn._databases[0].saveTask.callsArgWith(1, new Error('dummy error, ignore'));
       });
       test('tries another database', function() {
         dbconn.saveTask({}, function() {});
-        expect(augmented_conf.dbconn.saveTask).to.have.been.calledTwice;
+        expect(dbconn._databases[0].saveTask).to.have.been.calledOnce;
+        expect(dbconn._databases[1].saveTask).to.have.been.calledOnce;
+        expect(dbconn._databases[2].saveTask).to.not.have.been.called;
       });
       test('calls callback with error if _databases contains no dbs', function() {
         dbconn._databases = new Array();
@@ -111,6 +96,7 @@ suite('composite-adapter', function() {
   suite('listenTask()', function() {
     var dbconn;
     setup(function() {
+      initSandbox();
       composite.initialize(
         config,
         function(e,dbconn_local) { dbconn = dbconn_local },
@@ -124,10 +110,40 @@ suite('composite-adapter', function() {
     test('registers callback to all db adapters', function() {
       var listentask_callback = sandbox.spy();
       dbconn.listenTask(listentask_callback);
-      expect(augmented_conf.dbconn.listenTask).to.have.been.calledTwice;
-      expect(augmented_conf.dbconn.listenTask)
-      .to.have.been.calledWith(listentask_callback);
+      dbconn._databases.forEach(function(db) {
+        expect(db.listenTask).to.have.been.calledOnce;
+        expect(db.listenTask).to.have.been.calledWith(listentask_callback);
+      });
     });
   });
+  suite('_findDbById()', function() {
+    var dbconn;
+    setup(function() {
+      composite.initialize(
+        config,
+        function(e,dbconn_local) { dbconn = dbconn_local },
+        config_helper);
+    });
+    test('returns null if database is not found', function() {
+      expect(dbconn._findDbById(930)).to.be.null;
+    });
+    test('returns a correct database object', function() {
+      expect(dbconn._findDbById(1))
+      .to.have.property('db_id', 1);
+    });
+  });
+  // helper function
+  function initSandbox() {
+    config_helper.initializeDb = sandbox.stub();
+    for(var i = 0; i < 5; ++i) {
+      config.dbopt.push({db:'sqlite'});
+      var adapter = {db_id: i};
+      adapter.saveTask = sandbox.spy();
+      adapter.listenTask = sandbox.spy();
+      adapters[i] = adapter;
+      var aug_conf = {dbconn: adapter}
+      config_helper.initializeDb.onCall(i).callsArgWith(1, null, aug_conf);
+    }
+  }
 });
 
