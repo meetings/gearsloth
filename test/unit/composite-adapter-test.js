@@ -30,6 +30,7 @@ suite('composite-adapter', function() {
     augmented_conf.dbmodule = {};
 
     augmented_conf.dbconn.saveTask = sandbox.spy();
+    augmented_conf.dbconn.listenTask = sandbox.spy();
     config_helper.initializeDb = sinon.stub();
     config_helper.initializeDb.callsArgWith(1, null, augmented_conf);
 
@@ -75,7 +76,57 @@ suite('composite-adapter', function() {
       var savetask_callback = sandbox.spy();
       dbconn.saveTask(task, savetask_callback);
       expect(augmented_conf.dbconn.saveTask).to.have.been.calledOnce;
-      expect(augmented_conf.dbconn.saveTask).to.have.been.calledWith(task, savetask_callback);
+      expect(augmented_conf.dbconn.saveTask).to.have.been.calledWith(task);
+    });
+    suite('on database error', function() {
+      setup(function() {
+        augmented_conf.dbconn.saveTask = sandbox.stub();
+        augmented_conf.dbconn.saveTask.callsArgWith(1, new Error('dummy error, ignore'));
+        config_helper.initializeDb = sinon.stub();
+        config_helper.initializeDb.callsArgWith(1, null, augmented_conf);
+        composite.initialize(
+          config,
+          function(e,dbconn_local) { dbconn = dbconn_local },
+          config_helper);
+      });
+      test('tries another database', function() {
+        dbconn.saveTask({}, function() {});
+        expect(augmented_conf.dbconn.saveTask).to.have.been.calledTwice;
+      });
+      test('calls callback with error if _databases contains no dbs', function() {
+        dbconn._databases = new Array();
+        var savetask_callback = sandbox.spy();
+        dbconn.saveTask({}, savetask_callback);
+        expect(savetask_callback.args[0][0]).to.be.an.instanceof(Error);
+      });
+      test('seizes if failcounter exceeds number of dbs', function() {
+        var savetask_callback = sandbox.spy();
+        dbconn.saveTask({}, savetask_callback, dbconn._databases.length)
+        expect(savetask_callback).to.have.been.calledOnce;
+        expect(savetask_callback.args[0][0]).to.be.an.instanceof(Error);
+      });
+    });
+  });
+
+  suite('listenTask()', function() {
+    var dbconn;
+    setup(function() {
+      composite.initialize(
+        config,
+        function(e,dbconn_local) { dbconn = dbconn_local },
+        config_helper);
+    });
+
+    teardown(function() {
+      sandbox.restore();
+    });
+    
+    test('registers callback to all db adapters', function() {
+      var listentask_callback = sandbox.spy();
+      dbconn.listenTask(listentask_callback);
+      expect(augmented_conf.dbconn.listenTask).to.have.been.calledTwice;
+      expect(augmented_conf.dbconn.listenTask)
+      .to.have.been.calledWith(listentask_callback);
     });
   });
 });
