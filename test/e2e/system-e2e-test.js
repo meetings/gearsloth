@@ -9,6 +9,8 @@ var port = 54730;
 
 suite('single gearslothd in default mode:', function() {
 
+  this.timeout(5000);
+
   var gearmand;
   var gearslothd;
   var tester;
