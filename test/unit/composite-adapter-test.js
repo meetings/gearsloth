@@ -28,6 +28,12 @@ suite('composite-adapter', function() {
       expect(callback).to.have.been.calledOnce;
       expect(callback.args[0][0]).to.not.be.null;
     });
+    test('should call callback with error if dbopt is empty', function() {
+      var fake_config = {dbopt:[]};
+      composite.initialize(fake_config, callback);
+      expect(callback).to.have.been.calledOnce;
+      expect(callback.args[0][0]).to.not.be.null;
+    });
     test('should call callback with no error if everything goes smoothly', function() {
       composite.initialize(config, callback, config_helper);
       expect(callback).to.have.been.calledOnce;
