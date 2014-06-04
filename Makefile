@@ -8,7 +8,7 @@ ISTANBUL := ./node_modules/.bin/istanbul
 define start-local
 	FAIL=; GM_PID=; GS_PID=;\
 	gearmand 2> /dev/null & GM_PID=$$!;\
-	./bin/gearslothd --db=sqlite & GS_PID=$$!;\
+	./bin/gearslothd & GS_PID=$$!;\
 	$1 || FAIL=1;\
 	[ ! -z $$GS_PID ] && kill $$GS_PID;\
 	[ ! -z $$GM_PID ] && kill $$GM_PID;\
