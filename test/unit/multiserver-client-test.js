@@ -2,6 +2,7 @@ var chai = require("chai");
 var sinon = require('sinon');
 var expect = chai.expect;
 chai.use(require('sinon-chai'));
+var EventEmitter = require('events').EventEmitter;
 
 // DISCLAIMER: I have no idea why this works, but it does, tread carefully
 // <3: ransum
@@ -109,6 +110,7 @@ suite("multiserver-client", function() {
       m._clients.forEach(function(client) {
         client.submitJob = sandbox.spy();
       });
+
     });
     teardown(function() {
       sandbox.restore();
@@ -146,6 +148,15 @@ different clients", function(done) {
       else if(called_clients > 2) done(new Error('Job was sent to too many clients'));
       else done(new Error('Job was not sent'));
     });
+    
+    test("emits a disconnect event after all servers have been tried", function(done) {
+      this.timeout(500);
+      m.connected = true;
+      m.on('disconnect', done);
+      m.submitJob('mita', 'hessu');
+      m.submitJob('mita', 'hessu');
+      m.submitJob('mita', 'hessu');
+    });
   });
 
   suite("when given no servers", function() {
@@ -160,6 +171,46 @@ different clients", function(done) {
     test("should return a client with default config", function() {
       expect(ClientStub).to.have.been.calledOnce;
       expect(m).to.have.property('submitJob');
+    });
+  });
+  
+  suite("when disconnect is called", function() {
+    setup(function() {
+      ClientStub = sandbox.spy(Client);
+
+      m = new MultiserverClient(
+        sampleServers,
+        ClientStub);
+      client = new EventEmitter();
+
+      m._clients.forEach(function(client) {
+        client.disconnect = sandbox.spy();
+        client.connected = true;
+      });
+    });
+
+    teardown(function() {
+      sandbox.restore();
+    });
+
+    test("should call disconnect for all clients", function() {
+      m.disconnect();
+      m._clients.forEach(function(client) {
+        expect(client.disconnect).to.have.been.calledOnce;
+      });
+    });
+    test("should emit disconnect event", function(done) {
+        this.timeout(500);
+        m.on('disconnect', done);
+        m.disconnect();
+        m._clients.forEach(function(client) {
+          client.emit('disconnect');
+        });
+    });
+    test("should not set connected as false if clients did not disconnect", function() {
+        m.connected = true;
+        m.disconnect();
+        expect(m.connected).to.be.true;
     });
   });
 });
