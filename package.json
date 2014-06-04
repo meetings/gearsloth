@@ -22,7 +22,8 @@
   "homepage": "https://github.com/meetings/gearman-delayed-task",
   "dependencies": {
     "gearman-coffee": "^1.1.1",
-    "underscore": "*"
+    "underscore": "*",
+    "async": "*"
   },
   "devDependencies": {
     "mocha": "*",
@@ -31,7 +32,6 @@
     "sqlite3": "*",
     "istanbul": "*",
     "sinon": "*",
-    "sinon-chai": "*",
-    "async": "*"
+    "sinon-chai": "*"
   }
 }

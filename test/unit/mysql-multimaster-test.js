@@ -175,12 +175,14 @@ suite('MySQL Multimaster adapter', function() {
     test('should call query correctly', function(done) {
 
       var task = {
-        id: 100,
+        id: {
+          task_id: 666
+        },
         func_name: 'ebin',
         after: 10
       };
       var task_to_delete = {
-        id: 100
+        id: 666
       };
 
       adapter.completeTask(task, function(err, rows) {
@@ -188,6 +190,82 @@ suite('MySQL Multimaster adapter', function() {
           .should.have.been.calledWith(any, task_to_delete);
         done();
       });
+    });
+
+  });
+
+  suite('listenTask', function() {
+
+    var mysql_conn, adapter;
+
+    setup(function() {
+      mysql_conn = {
+        query: sandbox.stub(),
+        beginTransaction: sandbox.stub(),
+        commit: sandbox.stub()
+      };
+
+      mysql.createConnection.returns(mysql_conn);
+      adapter = new MySQLMultimaster.MySQLMultimaster(config);
+    });
+
+    test('should return function to remove listener', function() {
+      var adapter = new MySQLMultimaster.MySQLMultimaster({});
+      var listener = function() {};
+
+      var remover = adapter.listenTask(listener);
+      adapter._listener.should.equal(listener);
+      remover();
+      expect(adapter._listener).to.be.null;
+    });
+
+    suite('poller', function() {
+
+      test("doesn't call listener if no rows are returned" , function(done) {
+        var clock = sinon.useFakeTimers();
+
+        mysql_conn.query = sandbox.stub().yields(null, []);
+
+        var listenerSpy = sandbox.spy();
+        adapter.listenTask(listenerSpy);
+
+        setTimeout(function() {
+          listenerSpy.should.not.have.been.called;
+          done();
+        }, 1500);
+
+        clock.tick(1600);
+        clock.restore();
+      });
+
+      test('sets task.first_run on the first run');
+  
+      test('polls every second by default', function() {
+        var clock = sinon.useFakeTimers();
+        var pollSpy = sandbox.spy(adapter, '_poll');
+
+        adapter.listenTask(sandbox.stub());
+
+        clock.tick(2500);
+        pollSpy.should.have.been.calledTwice;
+
+        clock.restore();
+      });
+
+      test('stops polling after listener disconnected', function() {
+        var clock = sinon.useFakeTimers();
+        var pollSpy = sandbox.spy(adapter, '_poll');
+
+        var listenerRemover = adapter.listenTask(sandbox.stub());
+
+        clock.tick(2500);
+        listenerRemover();
+        clock.tick(1000);
+        pollSpy.should.have.been.calledTwice;
+
+        clock.restore();
+      });
+
     });
 
   });
