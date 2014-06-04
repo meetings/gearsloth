@@ -159,4 +159,37 @@ suite('MySQL Multimaster adapter', function() {
 
   });
 
+  suite('completeTask', function() {
+
+    var mysql_conn, adapter;
+
+    setup(function() {
+      mysql_conn = {
+        query: sandbox.stub().callsArgWith(2, null, 1)
+      };
+
+      mysql.createConnection.returns(mysql_conn);
+      adapter = new MySQLMultimaster.MySQLMultimaster(config);
+    });
+
+    test('should call query correctly', function(done) {
+
+      var task = {
+        id: 100,
+        func_name: 'ebin',
+        after: 10
+      };
+      var task_to_delete = {
+        id: 100
+      };
+
+      adapter.completeTask(task, function(err, rows) {
+        mysql_conn.query
+          .should.have.been.calledWith(any, task_to_delete);
+        done();
+      });
+    });
+
+  });
+
 });
