@@ -29,7 +29,7 @@ The only required field for task is `func_name`.
 * `payload`: if defined this can be anything that can be sanely converted into a string. It may also be a JSON object in itself. `payload` will be passed on to the `func_name` function as given or to the `controller` if defined for more processing.
 
 #### Internal
-* `id`: Set by the adapter. It should be an object with one mandatory property: `db_id`, which is mainly used by the composite adapter. `db_id` should be a human-readable string based on the database configuration. The rest of the properties can be freely set by the adapter.
+* `id`: Set by the adapter. It should be an object with one mandatory property: `db_id`, which is mainly used by the composite adapter. `db_id` should be a (preferably human-readable) string based on the database configuration. The rest of the properties can be freely set by the adapter to identify the task.
 * `first_run`: at the time of the first execution the current timestamp is stored into this field.
 
 In addition the `task` JSON object may contain any number of fields (for example to be passed to the `controller`) These additional fields will not be taken into account in any way in the control flow other than in the custom `controller` if it is to do so.
