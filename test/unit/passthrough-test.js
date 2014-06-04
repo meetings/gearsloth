@@ -23,7 +23,7 @@ suite('passthrough controller', function() {
     payload: "payload"
   }
   var sampleBuffer = new Buffer(JSON.stringify(sampleTask));
-  
+
   suite('construction', function() {
     test('can create Passthrough controller', function() {
       var p = new Passthrough(function(a) {return null;}, null, null);
@@ -46,7 +46,8 @@ suite('passthrough controller', function() {
         return workerStub;
       };
       clientStub = sandbox.stub(client);
-      p = new Passthrough(clientStub, workerParameter);
+      p = new Passthrough({});
+      p._client = clientStub;
       client.submitJob.returns(new EventEmitter());
     });
 
@@ -55,12 +56,12 @@ suite('passthrough controller', function() {
     });
 
     test('should send complete packet after grabbing work successfully', function() {
-      workHandler.call(p, sampleBuffer, workerStub);
+      p.workHandler.call(p, sampleTask, workerStub);
 
       expect(workerStub.complete).to.have.been.calledOnce;
     });
     test('calls correct functions after grabbing', function() {
-      workHandler.call(p, sampleBuffer, workerStub)
+      p.workHandler.call(p, sampleTask, workerStub)
 
       expect(workerStub.complete).to.have.been.calledOnce;
       expect(clientStub.submitJob).to.have.been.called;
@@ -76,11 +77,9 @@ suite('passthrough controller', function() {
     setup(function() {
       workerStub = sandbox.stub(worker);
       clientStub = sandbox.stub(client);
-      workerParameter = function(handler) {
-        workHandler = handler;
-        return workerStub;
-      };
-      p = new Passthrough(clientStub, workerParameter);
+      p = new Passthrough({});
+      p._client = clientStub;
+      p._worker = workerStub;
       emitter = new EventEmitter();
       clientStub.submitJob.returns(emitter);
     });
