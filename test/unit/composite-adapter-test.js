@@ -116,6 +116,52 @@ suite('composite-adapter', function() {
       });
     });
   });
+  suite('updateTask()', function() {
+    var dbconn;
+    setup(function() {
+      initSandbox();
+      composite.initialize(
+        config,
+        function(e,dbconn_local) { dbconn = dbconn_local },
+        config_helper);
+    });
+
+    teardown(function() {
+      sandbox.restore();
+    });
+    
+    test('calls updateTask() of correct adapter', function() {
+      var callback = sandbox.spy();
+      var task = {id:{db_id:2}};
+      dbconn.updateTask(task, callback);
+      expect(dbconn._databases[2].updateTask).to.have.been.calledOnce;
+      expect(dbconn._databases[2].updateTask).to.have.been
+      .calledWith(task, callback);
+    });
+  });
+  suite('completeTask()', function() {
+    var dbconn;
+    setup(function() {
+      initSandbox();
+      composite.initialize(
+        config,
+        function(e,dbconn_local) { dbconn = dbconn_local },
+        config_helper);
+    });
+
+    teardown(function() {
+      sandbox.restore();
+    });
+    
+    test('calls completeTask() of correct adapter', function() {
+      var callback = sandbox.spy();
+      var task = {id:{db_id:2}};
+      dbconn.completeTask(task, callback);
+      expect(dbconn._databases[2].completeTask).to.have.been.calledOnce;
+      expect(dbconn._databases[2].completeTask).to.have.been
+      .calledWith(task, callback);
+    });
+  });
   suite('_findDbById()', function() {
     var dbconn;
     setup(function() {
@@ -140,6 +186,8 @@ suite('composite-adapter', function() {
       var adapter = {db_id: i};
       adapter.saveTask = sandbox.spy();
       adapter.listenTask = sandbox.spy();
+      adapter.updateTask = sandbox.spy();
+      adapter.completeTask = sandbox.spy();
       adapters[i] = adapter;
       var aug_conf = {dbconn: adapter}
       config_helper.initializeDb.onCall(i).callsArgWith(1, null, aug_conf);
