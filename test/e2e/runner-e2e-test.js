@@ -45,13 +45,11 @@ suite('(e2e) runner', function() {
   test('should fetch a task from db and pass it on', function(done) {
     worker = new gearman.Worker('test', function(payload, worker) {
       var json = JSON.parse(payload.toString());
-      console.log(json);
       expect(json).to.have.property('id', sample_task.id);
       expect(json).to.have.property('func_name', sample_task.func_name);
 
       done();
     }, {port:port});
-    console.log(sample_task);
     adapter.listenTask = sinon.stub().callsArgWith(0, null, sample_task);
     adapter.updateTask = sinon.stub().callsArgWith(1, null);
     runner = runner(conf);

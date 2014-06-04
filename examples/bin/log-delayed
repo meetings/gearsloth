@@ -47,7 +47,7 @@ var task1 = {
   at: new Date(Date.now() + delay1),
   func_name: 'log',
   payload: msg1
-  };
+};
 
 log('client1:', msg1);
 client.submitJob('submitJobDelayed', JSON.stringify(task1)).
