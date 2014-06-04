@@ -20,7 +20,6 @@ var task = {
 
 The only required field for task is `func_name`.
 
-* `id`: Set by the adapter. It should be an object with one mandatory property: `db_id`, which is mainly used by the composite adapter. `db_id` should be a human-readable string based on the database configuration. The rest of the properties can be freely set by the adapter.
 * `func_name`: is to be any string that corresponds to a Gearman function that is registered in the Gearman Job server. The function must be registered in the Gearman Job server at the moment of execution, it is not required earlier. Needless to say, if the function does not exist at execution time it will not be run and the task will likely fail to execute, depending on controllers and settings of the runner at the time of execution.
 * `at`: if defined this is any string which is understood by the JavaScript `Date` API. `at` specifies the date and time at which the task is to be executed.
 * `after`: if defined it supersedes the `at`. This is any string that is parseable into an integer as representative of *seconds* after which the task is to be executed.
@@ -28,8 +27,10 @@ The only required field for task is `func_name`.
 * `runner_retry_timeout`: if defined this is any string that is parseable into an integer. Represents the time in seconds after which a runner is to retry submitting the task for execution if it failed to do so previously.
 * `runner_retry_count`: if defined this is any string that is parseable into an integer. Represents the number of times a runner is to try to submit the task for execution if it failed to do so previously.
 * `payload`: if defined this can be anything that can be sanely converted into a string. It may also be a JSON object in itself. `payload` will be passed on to the `func_name` function as given or to the `controller` if defined for more processing.
-* `first_run`: at the time of the first execution the current timestamp is stored into this field. *Don't use this field.*
 
+#### Internal
+* `id`: Set by the adapter. It should be an object with one mandatory property: `db_id`, which is mainly used by the composite adapter. `db_id` should be a human-readable string based on the database configuration. The rest of the properties can be freely set by the adapter.
+* `first_run`: at the time of the first execution the current timestamp is stored into this field.
 
 In addition the `task` JSON object may contain any number of fields (for example to be passed to the `controller`) These additional fields will not be taken into account in any way in the control flow other than in the custom `controller` if it is to do so.
 
