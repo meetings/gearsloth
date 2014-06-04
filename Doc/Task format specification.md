@@ -20,6 +20,7 @@ var task = {
 
 The only required field for task is `func_name`.
 
+* `id`: Set by the adapter. It should be an object with one mandatory property: `db_id`, which is mainly used by the composite adapter. `db_id` should be a human-readable string based on the database configuration. The rest of the properties can be freely set by the adapter.
 * `func_name`: is to be any string that corresponds to a Gearman function that is registered in the Gearman Job server. The function must be registered in the Gearman Job server at the moment of execution, it is not required earlier. Needless to say, if the function does not exist at execution time it will not be run and the task will likely fail to execute, depending on controllers and settings of the runner at the time of execution.
 * `at`: if defined this is any string which is understood by the JavaScript `Date` API. `at` specifies the date and time at which the task is to be executed.
 * `after`: if defined it supersedes the `at`. This is any string that is parseable into an integer as representative of *seconds* after which the task is to be executed.
@@ -34,8 +35,4 @@ In addition the `task` JSON object may contain any number of fields (for example
 
 ### Marking jobs as done
 
-After a job is done, a controller should send a JSON object with the following fields to the ejector in order to remove it from the task database:
-* `id`: a string that identifies the task in the database
-
-In addition the `task` JSON object may contain any number of other fields. Any other fields that are not defined here will not not be taken into account in any way in the control flow other than in the custom `controller` if it has been written to do so. The only limitation of these fields is that they must not break the stringifying or parseing operations done the the `task` JSON object.
-
+After a job is done, a controller should send the task object to the ejector in order to remove it from the task database.
