@@ -32,12 +32,12 @@ suite("multiserver-client", function() {
         randomStub);
     });
 
-    
+
     teardown(function() {
       sandbox.restore();
     });
     test("should spawn as many client instances", function() {
-      expect(ClientStub).to.be.calledTwice; 
+      expect(ClientStub).to.be.calledTwice;
       expect(ClientStub).to.be
       .calledWith(sampleServers[0]);
       expect(ClientStub).to.be

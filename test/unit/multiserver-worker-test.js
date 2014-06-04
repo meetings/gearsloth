@@ -1,11 +1,12 @@
-var chai = require("chai");
+var events = require('events');
+var chai = require('chai');
 var sinon = require('sinon');
 var expect = chai.expect;
 chai.use(require('sinon-chai'));
 
 var MultiserverWorker = require("../../lib/gearman/multiserver-worker").MultiserverWorker;
 
-exports.Worker = function() {};
+exports.Worker = events.EventEmitter;
 
 var dummy_func = function() {};
 
@@ -19,7 +20,7 @@ suite("multiserver-worker", function() {
       port:2
     }, {
       host:'melkki',
-      port:715517
+      port:7155
     }];
 
     setup(function() {
@@ -36,7 +37,7 @@ suite("multiserver-worker", function() {
     });
 
     test("should spawn as many worker instances", function() {
-      expect(exports.Worker).to.be.calledTwice; 
+      expect(exports.Worker).to.be.calledTwice;
       expect(exports.Worker).to.be
       .calledWith('sample', dummy_func, sampleServers[0]);
       expect(exports.Worker).to.be
