@@ -11,7 +11,7 @@ var conf = {
 
 db.initialize(conf, afterInit);
 
-function afterInit(err, dbconn) {
+function afterInit(err, database) {
   if (err) {
     log.debug("<<ERR>>", err);
     return;
@@ -19,24 +19,28 @@ function afterInit(err, dbconn) {
 
   var example_task = {
     at:         new Date().toISOString(),
+    after:      12345,
     func_name:  'do_' + Math.random().toString().substr(2, 4),
-    payload:    'kittens_' + Date.now().toString(),
+    payload:    'kittens',
     controller: 'normal',
     options: {
-      retry: true,
-      times: 3
+      retry: true
     }
   };
 
-  log.debug("<<DBCONN>>");
-
-  dbconn.saveTask(example_task, function(err) {
-    if (err) log.debug("[[[ ERR ]]]", err);
+  database.saveTask(example_task, function(err, task) {
+    if (err) log.debug('[[[ ERR ]]]', err);
+    log.debug('saveTask: saved::', task);
   });
 
-  var stop = dbconn.listenTask(function (err, task) {
+  database.completeTask({}, function(err, task) {
+    if (err) log.debug('[[[ ERR ]]]', err);
+    log.debug('completeTask: deleted::', task);
+  });
+
+  var stop = database.listenTask(function (err, task) {
     if (err) {
-      log.debug("<<ERR>>", err);
+      log.debug('[[[ ERR ]]]', err);
       return;
     }
 
