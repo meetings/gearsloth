@@ -7,8 +7,8 @@ ISTANBUL := ./node_modules/.bin/istanbul
 # run local gearman server and gearsloth worker
 define start-local
 	FAIL=; GM_PID=; GS_PID=;\
-	gearmand 2> /dev/null & GM_PID=$$!;\
-	./bin/gearslothd & GS_PID=$$!;\
+	gearmand $(GEARMAN_PARAMS) 2> /dev/null & GM_PID=$$!;\
+	./bin/gearslothd $(GEARSLOTH_PARAMS) & GS_PID=$$!;\
 	$1 || FAIL=1;\
 	[ ! -z $$GS_PID ] && kill $$GS_PID;\
 	[ ! -z $$GM_PID ] && kill $$GM_PID;\
