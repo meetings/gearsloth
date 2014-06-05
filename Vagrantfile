@@ -6,7 +6,7 @@ VAGRANTFILE_API_VERSION = "2"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   ### Machine settings
   #
-  config.vm.hostname = "sloth-host"
+  config.vm.hostname = "sloth"
   config.vm.box      = "sloth-2014-06-06"
   config.vm.box_url  = "https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box"
 
@@ -20,6 +20,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   #
   config.vm.provider :virtualbox do |virtualbox|
     virtualbox.name   = "sloth-machine"
-    virtualbox.memory = "512"
+    virtualbox.memory = "1024"
   end
 end
