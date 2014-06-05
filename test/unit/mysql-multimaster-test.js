@@ -201,8 +201,8 @@ suite('MySQL Multimaster adapter', function() {
     setup(function() {
       mysql_conn = {
         query: sandbox.stub(),
-        beginTransaction: sandbox.stub(),
-        commit: sandbox.stub()
+        beginTransaction: sandbox.stub().yields(null),
+        commit: sandbox.stub().yields(null)
       };
 
       mysql.createConnection.returns(mysql_conn);
@@ -221,39 +221,43 @@ suite('MySQL Multimaster adapter', function() {
 
     suite('poller', function() {
 
-      test("doesn't call listener if no rows are returned" , function(done) {
-        var clock = sinon.useFakeTimers();
+      var clock;
 
-        mysql_conn.query = sandbox.stub().yields(null, []);
+      setup(function() {
+        clock = sinon.useFakeTimers();
+      });
+
+      teardown(function() {
+        clock.restore();
+      });
+
+      test("doesn't call listener if no rows are returned" , function(done) {
+        mysql_conn.query.yields(null, [], null);
 
         var listenerSpy = sandbox.spy();
         adapter.listenTask(listenerSpy);
 
         setTimeout(function() {
+          mysql_conn.query.should.have.been.calledThrice;
           listenerSpy.should.not.have.been.called;
           done();
         }, 1500);
 
         clock.tick(1600);
-        clock.restore();
       });
 
       test('sets task.first_run on the first run');
   
       test('polls every second by default', function() {
-        var clock = sinon.useFakeTimers();
         var pollSpy = sandbox.spy(adapter, '_poll');
 
         adapter.listenTask(sandbox.stub());
 
         clock.tick(2500);
         pollSpy.should.have.been.calledTwice;
-
-        clock.restore();
       });
 
       test('stops polling after listener disconnected', function() {
-        var clock = sinon.useFakeTimers();
         var pollSpy = sandbox.spy(adapter, '_poll');
 
         var listenerRemover = adapter.listenTask(sandbox.stub());
@@ -262,9 +266,34 @@ suite('MySQL Multimaster adapter', function() {
         listenerRemover();
         clock.tick(1000);
         pollSpy.should.have.been.calledTwice;
-
-        clock.restore();
       });
+
+      test('calls listener with correct task', function() {
+        var task = {
+          id: {
+            task_id: 13
+          },
+          at: sinon.match.date,
+          func_name: "eebenpuu",
+          after: 100
+        };
+
+        var listener = sandbox.spy();
+        adapter.listenTask(listener);
+
+        var task_from_db = {
+          id: 13,
+          at: new Date(),
+          task: '{"func_name":"eebenpuu","after":100}'
+        };
+        mysql_conn.query.yields(null, [task_from_db], null);
+
+        clock.tick(1500);
+
+        listener.should.have.been.calledOnce;
+        listener.should.have.been.calledWith(null, task);
+      });
+
 
     });
 
