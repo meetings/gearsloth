@@ -202,6 +202,7 @@ different clients", function(done) {
     test("should emit disconnect event", function(done) {
         this.timeout(500);
         m.on('disconnect', done);
+        m._connected_count = m._clients.length;
         m.disconnect();
         m._clients.forEach(function(client) {
           client.emit('disconnect');
