@@ -13,6 +13,8 @@ var gearman = require('gearman-coffee')
 chai.should();
 chai.use(sinonChai);
 
+require('../../lib/log').setOutput();
+
 describe('(e2e) runner', function() {
 
   suite('using a stubbed adapter,', function() {
