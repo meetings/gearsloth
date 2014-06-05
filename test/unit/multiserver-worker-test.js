@@ -59,4 +59,21 @@ suite("multiserver-worker", function() {
     });
   });
 
+  suite("disconnect()", function() {
+    setup(function() {
+      sandbox.spy(exports, 'Worker');
+      exports.Worker.prototype.disconnect = sandbox.spy();
+      m = new MultiserverWorker(
+        null,
+        'sample',
+        dummy_func,
+        exports.Worker);
+    });
+
+    test("should call disconnect for all workers", function() {
+      m._workers.forEach(function(worker) {
+        expect(worker.disconnect).to.have.been.calledOnce;
+      });
+    });
+  });
 });
