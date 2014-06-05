@@ -25,6 +25,7 @@ suite("multiserver-worker", function() {
 
     setup(function() {
       sandbox.spy(exports, 'Worker');
+      exports.Worker.prototype.reconnecter = new events.EventEmitter();
       m = new MultiserverWorker(
         sampleServers,
         'sample',
@@ -66,6 +67,7 @@ suite("multiserver-worker", function() {
     setup(function() {
       sandbox.spy(exports, 'Worker');
       exports.Worker.prototype.disconnect = sandbox.spy();
+      exports.Worker.prototype.reconnecter = new events.EventEmitter();
       m = new MultiserverWorker(
         null,
         'sample',
@@ -89,7 +91,7 @@ suite("multiserver-worker", function() {
       m._connected_count = m._workers.length;
       m.disconnect();
       m._workers.forEach(function(worker) {
-        worker.emit('disconnect');
+        worker.reconnecter.emit('disconnect');
       });
     });
     test("should not set connected as false if workers did not disconnect", function() {

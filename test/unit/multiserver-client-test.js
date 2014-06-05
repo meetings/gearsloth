@@ -4,8 +4,6 @@ var expect = chai.expect;
 chai.use(require('sinon-chai'));
 var EventEmitter = require('events').EventEmitter;
 
-// DISCLAIMER: I have no idea why this works, but it does, tread carefully
-// <3: ransum
 
 var MultiserverClient = require("../../lib/gearman/multiserver-client").MultiserverClient;
 var Client = require("gearman-coffee").Client;
@@ -33,17 +31,11 @@ suite("multiserver-client", function() {
       ClientStub = sandbox.spy(Client);
       ClientStub.prototype.submitJob = sandbox.stub();
       ClientStub.prototype.submitJob.returns({on:function() {}});
+      ClientStub.prototype.connected = true;;
       
       m = new MultiserverClient(
         sampleServers,
         ClientStub);
-
-      // we don't actually have any servers to connect to
-      // so let's trick the clients to think they are
-      // connected.
-      m._clients.forEach(function(client) {
-        client.connected = true;
-      });
     });
 
     teardown(function() {
@@ -177,6 +169,9 @@ different clients", function(done) {
   suite("when disconnect is called", function() {
     setup(function() {
       ClientStub = sandbox.spy(Client);
+      ClientStub.prototype.connected = true;
+      ClientStub.prototype.reconnecter = new EventEmitter();
+
 
       m = new MultiserverClient(
         sampleServers,
@@ -185,7 +180,6 @@ different clients", function(done) {
 
       m._clients.forEach(function(client) {
         client.disconnect = sandbox.spy();
-        client.connected = true;
       });
     });
 
@@ -205,7 +199,7 @@ different clients", function(done) {
         m._connected_count = m._clients.length;
         m.disconnect();
         m._clients.forEach(function(client) {
-          client.emit('disconnect');
+          client.reconnecter.emit('disconnect');
         });
     });
     test("should not set connected as false if clients did not disconnect", function() {
