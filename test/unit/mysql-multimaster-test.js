@@ -202,7 +202,8 @@ suite('MySQL Multimaster adapter', function() {
       mysql_conn = {
         query: sandbox.stub(),
         beginTransaction: sandbox.stub().yields(null),
-        commit: sandbox.stub().yields(null)
+        commit: sandbox.stub().yields(null),
+        rollback: sandbox.stub()
       };
 
       mysql.createConnection.returns(mysql_conn);
@@ -294,6 +295,15 @@ suite('MySQL Multimaster adapter', function() {
         listener.should.have.been.calledWith(null, task);
       });
 
+      test("rolls back and doesn't call listener on error", function() {
+        adapter._listener = sandbox.spy();
+        mysql_conn.query.yields(new Error());
+
+        adapter._poll();
+
+        mysql_conn.rollback.should.have.been.calledOnce;
+        adapter._listener.should.not.have.been.called;
+      });
 
     });
 
