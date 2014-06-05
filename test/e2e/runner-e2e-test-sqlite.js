@@ -6,7 +6,9 @@ var gearman = require('gearman-coffee')
   , sinonChai = require('sinon-chai')
   , expect = chai.expect
   , sqlite = require('../../lib/adapters/sqlite')
-  , fs = require('fs');
+  , fs = require('fs')
+  , async = require('async')
+  , spawn = require('../lib/spawn');
 
 chai.should();
 chai.use(sinonChai);
@@ -57,50 +59,70 @@ describe('(e2e) runner', function() {
         jeebo: 'jussi'
     }
 
-    suiteSetup(function(done) {
-      port = 6660 + Math.floor(Math.random() * 1000);
-      config.servers[0].port = port;
-
-      gearmand = child_process.exec('gearmand -p ' + port, console.log);
-      
-      var client = new gearman.Client({port:port});
-      client.on('connect', function() {
-        running_runner = new Runner(config);
-      });
-
-      sqlite.initialize(null, function(err, dbconn) {
-        if (err) console.log(err, dbconn);        
-        config.dbconn = dbconn;
-      });
-
-      setTimeout(function() {
-        sinon.spy(config.dbconn, 'disableTask');
-        sinon.spy(config.dbconn, 'updateTask');
-        sinon.spy(config.dbconn, 'listenTask');
-        done();
-      }, 2000);
-    });
-
-    setup(function () {
-
+    setup(function(done) {
+      async.series([
+        function(callback) {
+          port = 6660 + Math.floor(Math.random() * 1000);
+          config.servers[0].port = port;
+          callback();
+        },
+        function(callback) {
+          gearmand = spawn.gearmand(port, function(){
+            callback();
+          });
+        },
+        function(callback) {
+          sqlite.initialize(null, function(err, dbconn) {
+            if (err) console.log(err, dbconn);        
+            config.dbconn = dbconn;
+            callback();
+          });
+        },
+        function(callback) {
+          sinon.spy(config.dbconn, 'disableTask');
+          sinon.spy(config.dbconn, 'updateTask');
+          sinon.spy(config.dbconn, 'listenTask');
+          callback();
+        },
+        function(callback) {
+          running_runner = new Runner(config);
+          callback();
+        }
+        ], function() {
+          done();
+        });
     });
 
     teardown(function(done) {
-      worker.disconnect();
-      done();
-    });
-
-    suiteTeardown(function(done) {
-      // worker.disconnect();
-      gearmand.kill('SIGKILL');
-      setTimeout(function() {
-        fs.open('/tmp/DelayedTasks.sqlite', 'r', function(err) {
-          if(err) console.log(err);
-          fs.unlink('/tmp/DelayedTasks.sqlite', function() {});
+      async.series([
+        function (callback) {
+          
+          worker.disconnect();
+          worker.socket.on('close', function() {
+            callback();
+          });
+        },
+        function (callback) {
+          
+          running_runner.stop(0, function() {
+            callback();
+          });
+        },
+        function (callback) {
+          spawn.killall([gearmand], callback);
+        },
+        function(callback) {
+          setTimeout(function() {
+          fs.open('/tmp/DelayedTasks.sqlite', 'r', function(err) {
+            if(err) console.log(err);
+            fs.unlink('/tmp/DelayedTasks.sqlite', function() {});
+            callback();
+          });
+        }, 500);
+        }
+        ], function () {
           done();
         });
-      }, 500);
-      
     });
 
     test('should fetch a task from db and pass it on', function(done) {
@@ -108,7 +130,6 @@ describe('(e2e) runner', function() {
           var json = JSON.parse(payload.toString());
           expect(json).to.have.property('id');
           expect(json).to.have.property('func_name', sample_task.func_name);
-          config.dbconn.completeTask(json, function(err, id){ });
           done();
         }, { port:port
       });
@@ -121,7 +142,6 @@ describe('(e2e) runner', function() {
         json.at = new Date(json.at);
         json.first_run = new Date(json.first_run);
         config.dbconn.disableTask.should.have.been.calledWith(json);
-        config.dbconn.completeTask(json, function(err, id){});
         done();
       }, { port:port 
       });
@@ -134,7 +154,6 @@ describe('(e2e) runner', function() {
         json.at = new Date(json.at);
         json.first_run = new Date(json.first_run);
         config.dbconn.disableTask.should.not.have.been.calledWith(json);
-        config.dbconn.completeTask(json, function(err, id){});
         done();
       }, { port:port 
       });

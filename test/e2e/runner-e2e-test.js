@@ -28,7 +28,6 @@ describe('(e2e) runner', function() {
         }
     var port;
     var runner_in_use;
-    var testFunction;
 
     var new_task1 = {
         controller: 'test',
@@ -67,39 +66,28 @@ describe('(e2e) runner', function() {
         },
         function(callback) {
           gearmand = spawn.gearmand(port, function(){
-            console.log("gearman is up");
             callback();
           });
-        }, 
-        function (callback) {
-          worker = new gearman.Worker('test', testFunction, port)
-          .on('connect', function(){
-            console.log("worker is running");
-            callback();
-          });
-        },
+        }
         ], function() {
           done();
         });
     });
 
     teardown(function(done) {
-      console.log("teardown");
       async.series([
         function (callback) {
           worker.disconnect();
           worker.socket.on('close', function() {
-            console.log("worker is dead");
             callback();
           });
         },
         function (callback) {
-          runner_in_use.stop();
-          console.log("runner is dead");
-          callback();
+          runner_in_use.stop(0, function(){
+            callback();
+          });
         },
         function (callback) {
-          console.log("killing gearmand");
           spawn.killall([gearmand], callback);
         }
         ], function () {
@@ -107,37 +95,17 @@ describe('(e2e) runner', function() {
         });
     });
 
-    test.only('should fetch a task from db and pass it on', function(done) {
-      // worker = new gearman.Worker('test', testFunc, { port:port
-      // }).on('connect', f);
-      // function testFunc(payload, worker) {
-      //     var json = JSON.parse(payload.toString());
-      //     console.log(json);
-      //     expect(json).to.have.property('id', sample_task1.id);
-      //     expect(json).to.have.property('func_name', sample_task1.func_name);
-      //     f()
-      // }
-      async.series([
-        function (callback) {
-          adapter.listenTask = sinon.stub().returns(function() {}).yields(null, sample_task1);
-          adapter.updateTask = sinon.stub().yields(null, 1);
-          testFunction = function(payload, worker) {
-            console.log(payload);
-          }
-          callback();
-        },
-        function (callback) {
-          runner_in_use = runner(conf)
-          .on('connect', function(){
-            console.log("runner is up");
-            callback();
-          });
-        }
-        ], function() {
-          done();
-        });
-
-      
+    test('should fetch a task from db and pass it on', function(done) {
+      worker = new gearman.Worker('test', function(payload, worker) {
+        var json = JSON.parse(payload.toString());
+        expect(json).to.have.property('id', sample_task1.id);
+        expect(json).to.have.property('func_name', sample_task1.func_name);
+        done();
+      }, { port:port 
+      });
+      adapter.listenTask = sinon.stub().yields(null, sample_task1);
+      adapter.updateTask = sinon.stub().yields(null, 1);
+      runner_in_use = runner(conf);
     });
 
     test('should disable task when runner_retry_count reaches 0', function(done) {
