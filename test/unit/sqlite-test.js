@@ -126,8 +126,11 @@ suite('sqlite-adapter', function() {
               expect(task).to.have.property('payload');
               expect(task).to.have.property('strategy');
 
+              var now = new Date();
+              var utc = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
+
               expect(task.at.toISOString().substring(0, 18))
-              .to.equal(new Date().toISOString().substring(0, 18));
+              .to.equal(utc.toISOString().substring(0, 18));
               expect(task.func_name).to.equal(test_json_unset_delivery.func_name);
               expect(task.payload).to.deep.equal(test_json_unset_delivery.payload);
               expect(task.strategy).to.equal(test_json_unset_delivery.strategy);
@@ -158,9 +161,15 @@ suite('sqlite-adapter', function() {
               expect(task).to.have.property('func_name');
               expect(task).to.have.property('payload');
               expect(task).to.have.property('strategy');
+              expect(task).to.have.property('id');
+              expect(task.id).to.have.property('task_id');
+              expect(task.id).to.have.property('db_id');
+
+              var now = new Date();
+              var utc = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
 
               expect(task.at.toISOString().substring(0, 18))
-              .to.equal(new Date().toISOString().substring(0, 18));
+              .to.equal(utc.toISOString().substring(0, 18));
               expect(task.func_name).to.equal(test_json_unset_delivery.func_name);
               expect(task.payload).to.deep.equal(test_json_unset_delivery.payload);
               expect(task.strategy).to.equal(test_json_unset_delivery.strategy);
@@ -170,7 +179,6 @@ suite('sqlite-adapter', function() {
 
           if (items <= 0) {
             done();
-            fs.unlink('/tmp/DelayedTasks.sqlite', function() {});
             fs.open('/tmp/DelayedTasks.sqlite', 'r', function(err) {
               fs.unlink('/tmp/DelayedTasks.sqlite', function() {});
             });
@@ -204,14 +212,15 @@ suite('sqlite-adapter', function() {
     });
     
     test('should return correct at when unset', function(done) {
-      var cur_date = new Date();
+      var now = new Date();
+      var utc = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
       function testScript(err, dbconn) {
         var stop = dbconn.listenTask(function (err, task) {
           stop();
             try {
               expect(task.strategy).to.equal(null);
               expect(task.at.toISOString()
-                .substring(0, 18)).to.equal(cur_date.toISOString()
+                .substring(0, 18)).to.equal(utc.toISOString()
                 .substring(0, 18));
             } catch(err) {
               return done(err);
