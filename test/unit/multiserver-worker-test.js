@@ -53,6 +53,9 @@ suite("multiserver-worker", function() {
         dummy_func,
         exports.Worker);
     });
+    teardown(function() {
+      sandbox.restore();
+    });
 
     test("should spawn a worker with default config", function() {
       expect(exports.Worker).to.have.been.calledOnce;
@@ -70,10 +73,29 @@ suite("multiserver-worker", function() {
         exports.Worker);
     });
 
+    teardown(function() {
+      sandbox.restore();
+    });
+
     test("should call disconnect for all workers", function() {
+      m.disconnect();
       m._workers.forEach(function(worker) {
         expect(worker.disconnect).to.have.been.calledOnce;
       });
+    });
+    test("should emit disconnect event", function(done) {
+      this.timeout(500);
+      m.on('disconnect', done);
+      m._connected_count = m._workers.length;
+      m.disconnect();
+      m._workers.forEach(function(worker) {
+        worker.emit('disconnect');
+      });
+    });
+    test("should not set connected as false if workers did not disconnect", function() {
+      m.connected = true;
+      m.disconnect();
+      expect(m.connected).to.be.true;
     });
   });
 });
