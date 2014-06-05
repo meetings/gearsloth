@@ -168,6 +168,29 @@ suite('composite-adapter', function() {
       .calledWith(task, callback);
     });
   });
+  suite('disableTask()', function() {
+    var dbconn;
+    setup(function() {
+      initSandbox();
+      composite.initialize(
+        config,
+        function(e,dbconn_local) { dbconn = dbconn_local },
+        config_helper);
+    });
+
+    teardown(function() {
+      sandbox.restore();
+    });
+    
+    test('calls disableTask() of correct adapter', function() {
+      var callback = sandbox.spy();
+      var task = {id:{db_id:2}};
+      dbconn.completeTask(task, callback);
+      expect(dbconn._databases[2].disableTask).to.have.been.calledOnce;
+      expect(dbconn._databases[2].disableTask).to.have.been
+      .calledWith(task, callback);
+    });
+  });
   suite('_findDbById()', function() {
     var dbconn;
     setup(function() {
