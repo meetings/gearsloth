@@ -185,7 +185,7 @@ suite('composite-adapter', function() {
     test('calls disableTask() of correct adapter', function() {
       var callback = sandbox.spy();
       var task = {id:{db_id:2}};
-      dbconn.completeTask(task, callback);
+      dbconn.disableTask(task, callback);
       expect(dbconn._databases[2].disableTask).to.have.been.calledOnce;
       expect(dbconn._databases[2].disableTask).to.have.been
       .calledWith(task, callback);
@@ -217,6 +217,7 @@ suite('composite-adapter', function() {
       adapter.listenTask = sandbox.spy();
       adapter.updateTask = sandbox.spy();
       adapter.completeTask = sandbox.spy();
+      adapter.disableTask = sandbox.spy();
       adapters[i] = adapter;
       var aug_conf = {dbconn: adapter}
       config_helper.initializeDb.onCall(i).callsArgWith(1, null, aug_conf);
