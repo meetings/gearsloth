@@ -17,9 +17,19 @@ suite('MySQL Multimaster adapter', function() {
     password: 'example_secret'
   };
   var sandbox = sinon.sandbox.create();
+  var mysql_conn;
 
   setup(function() {
     sandbox.stub(mysql, 'createConnection');
+    mysql_conn = {
+      connect: sinon.stub(),
+      query: sandbox.stub(),
+      beginTransaction: sandbox.stub(),
+      commit: sandbox.stub(),
+      rollback: sandbox.stub()
+    };
+
+    mysql.createConnection.returns(mysql_conn);
   });
 
   teardown(function() {
@@ -27,15 +37,6 @@ suite('MySQL Multimaster adapter', function() {
   });
 
   suite('initialize', function() {
-
-    var mysql_conn;
-
-    setup(function() {
-      mysql_conn = {
-        connect: sinon.stub()
-      };
-      mysql.createConnection.returns(mysql_conn);
-    });
 
     test('should create adapter', function(done) {
       var successful_example_connect = { 
@@ -78,14 +79,10 @@ suite('MySQL Multimaster adapter', function() {
 
   suite('saveTask', function() {
 
-    var mysql_conn, adapter;
+    var adapter;
 
     setup(function() {
-      mysql_conn = {
-        query: sandbox.stub().callsArgWith(2, null, 666)
-      };
-
-      mysql.createConnection.returns(mysql_conn);
+      mysql_conn.query.callsArgWith(2, null, 666)
       adapter = new MySQLMultimaster.MySQLMultimaster(config);
     });
 
@@ -162,14 +159,10 @@ suite('MySQL Multimaster adapter', function() {
 
   suite('completeTask', function() {
 
-    var mysql_conn, adapter;
+    var adapter;
 
     setup(function() {
-      mysql_conn = {
-        query: sandbox.stub().callsArgWith(2, null, 1)
-      };
-
-      mysql.createConnection.returns(mysql_conn);
+      mysql_conn.query.callsArgWith(2, null, 1)
       adapter = new MySQLMultimaster.MySQLMultimaster(config);
     });
 
@@ -197,17 +190,12 @@ suite('MySQL Multimaster adapter', function() {
 
   suite('listenTask', function() {
 
-    var mysql_conn, adapter;
+    var adapter;
 
     setup(function() {
-      mysql_conn = {
-        query: sandbox.stub(),
-        beginTransaction: sandbox.stub().yields(null),
-        commit: sandbox.stub().yields(null),
-        rollback: sandbox.stub()
-      };
+      mysql_conn.beginTransaction.yields(null),
+      mysql_conn.commit.yields(null),
 
-      mysql.createConnection.returns(mysql_conn);
       adapter = new MySQLMultimaster.MySQLMultimaster(config);
     });
 
