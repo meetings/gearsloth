@@ -14,7 +14,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   #
   config.vm.provision :shell, path: ".provision/stdintty.sh"
   config.vm.provision :shell, path: ".provision/apt.sh"
-  config.vm.provision :shell, path: ".provision/make.sh"
+  config.vm.provision :shell, path: ".provision/make.sh", privileged: false
 
   ### Virtalbox configuration
   #
