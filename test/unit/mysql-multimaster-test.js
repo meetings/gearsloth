@@ -298,4 +298,42 @@ suite('MySQL Multimaster adapter', function() {
 
   });
 
+  suite('updateTask', function() {
+    var adapter;
+
+    setup(function() {
+      mysql_conn.query.callsArgWith(2, null, { affectedRows: 1 })
+      adapter = new MySQLMultimaster.MySQLMultimaster(config);
+    });
+
+    test('should update at', function() {
+      var task = {
+        id: {
+          db_id: 'asdf://foo',
+          task_id: 53
+        },
+        at: new Date('2014-05-22'),
+        func_name: 'asdf'
+      }
+      var values = {
+        at: new Date('2014-05-22'),
+        task: JSON.stringify({
+          at: new Date('2014-05-22'),
+          func_name: 'asdf'
+        })
+      }
+      var where = {
+        id: 53
+      }
+
+      adapter.updateTask(task, function(err, rows) {
+        expect(err).to.be.null;
+        rows.should.be.equal(1);
+
+        mysql_conn.query
+          .should.have.been.calledWith(any, [values, where]);
+      });
+    });
+  });
+
 });
