@@ -1,4 +1,4 @@
-# Dockerfile
+# Dockerfile for a Mysql installation
 
 FROM ubuntu:trusty
 
@@ -12,10 +12,4 @@ ADD db.sql       /
 
 EXPOSE 3306
 
-CMD ["/bin/bash", "/initmysql.sh"]
-
-# ENTRYPOINT ["/usr/local/sbin/initmysql.sh"]
-
-## docker.io build -t säilö /vagrant/.docker
-## docker.io run -d -p 3306:3306 säilö
-##               -i -t --rm säiliö /bin/bash
+ENTRYPOINT ["/initmysql.sh"]

@@ -1,4 +1,4 @@
-# Dockerfile
+# Dockerfile for a Mysql installation
 
 FROM ubuntu:trusty
 
@@ -12,6 +12,4 @@ ADD db.sql       /
 
 EXPOSE 3306
 
-CMD ["/bin/bash", "/initmysql.sh"]
-
-# ENTRYPOINT ["/usr/local/sbin/initmysql.sh"]
+ENTRYPOINT ["/initmysql.sh"]

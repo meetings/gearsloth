@@ -12,14 +12,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   ### Provisioning
   #
-  config.vm.provision :shell, path: ".provision/stdintty.sh"
-  config.vm.provision :shell, path: ".provision/apt.sh"
-  config.vm.provision :shell, path: ".provision/make.sh", privileged: false
+  config.vm.provision :shell, path: "virt/vagrant/stdintty.sh"
+  config.vm.provision :shell, path: "virt/vagrant/apt.sh"
+  config.vm.provision :shell, path: "virt/vagrant/make.sh", privileged: false
 
   ### Virtalbox configuration
   #
   config.vm.provider :virtualbox do |virtualbox|
-    virtualbox.name   = "sloth-machine"
+    virtualbox.name   = "sloth-test-env"
     virtualbox.memory = "1024"
   end
 end
