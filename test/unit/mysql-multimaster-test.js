@@ -19,7 +19,7 @@ suite('MySQL Multimaster adapter', function() {
   var sandbox = sinon.sandbox.create();
 
   setup(function() {
-    sandbox.stub(mysql);
+    sandbox.stub(mysql, 'createConnection');
   });
 
   teardown(function() {
@@ -27,6 +27,15 @@ suite('MySQL Multimaster adapter', function() {
   });
 
   suite('initialize', function() {
+
+    var mysql_conn;
+
+    setup(function() {
+      mysql_conn = {
+        connect: sinon.stub()
+      };
+      mysql.createConnection.returns(mysql_conn);
+    });
 
     test('should create adapter', function(done) {
       var successful_example_connect = { 
@@ -40,11 +49,7 @@ suite('MySQL Multimaster adapter', function() {
         changedRows: 0 
       };
 
-      var mysql_conn = {
-        connect: sinon.stub().callsArgWith(0, null, successful_example_connect)
-      };
-
-      mysql.createConnection.returns(mysql_conn);
+      mysql_conn.connect.callsArgWith(0, null, successful_example_connect);
 
       var multimaster = MySQLMultimaster.initialize(config, function(err, adapter) {
         expect(err).to.be.null;
@@ -61,11 +66,7 @@ suite('MySQL Multimaster adapter', function() {
         fatal: true 
       });
 
-      var mysql_conn = {
-        connect: sinon.stub().callsArgWith(0, error)
-      };
-
-      mysql.createConnection.returns(mysql_conn);
+      mysql_conn.connect.callsArgWith(0, error)
 
       var multimaster = MySQLMultimaster.initialize(config, function(err, adapter) {
         expect(err).to.equal(error);
@@ -93,13 +94,13 @@ suite('MySQL Multimaster adapter', function() {
         func_name: 'ebin'
       };
       var task_to_insert = {
-        at: new Date(),
         task: JSON.stringify(task)
       };
+      var sql_expectation = sinon.match('at = UTC_TIMESTAMP()');
 
       adapter.saveTask(task, function(err, id) {
         mysql_conn.query
-          .should.have.been.calledWith(any, task_to_insert);
+          .should.have.been.calledWith(sql_expectation, task_to_insert);
         done();
       });
     });
@@ -110,13 +111,14 @@ suite('MySQL Multimaster adapter', function() {
         at: new Date('2014-06-07')
       };
       var task_to_insert = {
-        at: new Date('2014-06-07'),
         task: JSON.stringify(task)
       };
+      var sql_expectation = sinon.match('at = ' + mysql.escape(task.at));
 
       adapter.saveTask(task, function(err, id) {
+        var task
         mysql_conn.query
-          .should.have.been.calledWith(any, task_to_insert);
+          .should.have.been.calledWith(sql_expectation, task_to_insert);
         done();
       });
     });
@@ -126,15 +128,14 @@ suite('MySQL Multimaster adapter', function() {
         func_name: 'ebin',
         after: 10
       };
-      var after = new Date( new Date().getTime() + 10000 );
       var task_to_insert = {
-        at: after,
         task: JSON.stringify(task)
       };
+      var sql_expectation = sinon.match('at = TIMESTAMPADD(SECOND, 10, UTC_TIMESTAMP())');
 
       adapter.saveTask(task, function(err, id) {
         mysql_conn.query
-          .should.have.been.calledWith(any, task_to_insert);
+          .should.have.been.calledWith(sql_expectation, task_to_insert);
         done();
       });
     });
@@ -146,13 +147,13 @@ suite('MySQL Multimaster adapter', function() {
       };
       var after = new Date( new Date().getTime() + 100000 );
       var task_to_insert = {
-        at: after,
         task: JSON.stringify(task)
       };
+      var sql_expectation = sinon.match('at = TIMESTAMPADD(SECOND, 100, UTC_TIMESTAMP())');
 
       adapter.saveTask(task, function(err, id) {
         mysql_conn.query
-          .should.have.been.calledWith(any, task_to_insert);
+          .should.have.been.calledWith(sql_expectation, task_to_insert);
         done();
       });
     });
