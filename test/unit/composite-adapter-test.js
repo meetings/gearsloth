@@ -96,6 +96,14 @@ suite('composite-adapter', function() {
         expect(savetask_callback).to.have.been.calledOnce;
         expect(savetask_callback.args[0][0]).to.be.an.instanceof(Error);
       });
+      test('throws if no dbs are connected', function()  {
+        dbconn._databases.forEach(function(db) {
+          db.connected = false;
+        });
+        expect(function() {
+          dbconn.saveTask({}, savetask_callback)
+        }).to.throw(Error);
+      });
     });
   });
 
@@ -218,6 +226,7 @@ suite('composite-adapter', function() {
       adapter.updateTask = sandbox.spy();
       adapter.completeTask = sandbox.spy();
       adapter.disableTask = sandbox.spy();
+      adapter.connected = true;
       adapters[i] = adapter;
       var aug_conf = {dbconn: adapter}
       config_helper.initializeDb.onCall(i).callsArgWith(1, null, aug_conf);
