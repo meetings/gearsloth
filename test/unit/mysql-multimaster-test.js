@@ -373,6 +373,22 @@ suite('MySQL Multimaster adapter', function() {
     
   });
 
+  suite("db_id", function() {
+    test("should be the same with two adapters with same config", function() {
+      adapter1 = new MySQLMultimaster.MySQLMultimaster(config);
+      adapter2 = new MySQLMultimaster.MySQLMultimaster(config);
+      adapter1.db_id.should.equal(adapter2.db_id)
+    });
+    test("should differ if config is different", function() {
+      adapter1 = new MySQLMultimaster.MySQLMultimaster(config);
+      config.host = "goabase.net"
+      adapter2 = new MySQLMultimaster.MySQLMultimaster(config);
+      adapter1.db_id.should.not.equal(adapter2.db_id)
+    });
+
+  });
+
+
   suite('updateTask', function() {
     var adapter;
 
