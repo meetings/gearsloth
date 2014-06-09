@@ -5,7 +5,7 @@ var mysql = require('mysql')
   , sinon = require('sinon')
   , any = sinon.match.any
   , sinonchai = require('sinon-chai')
-  , EventEmitter = require('events').EventEmitter;;
+  , EventEmitter = require('events').EventEmitter;
 
 chai.should();
 chai.use(sinonchai);
@@ -19,7 +19,6 @@ suite('MySQL Multimaster adapter', function() {
   };
   var sandbox = sinon.sandbox.create();
   var mysql_conn;
-  MySQLMultimaster.MySQLMultimaster.prototype._registerListeners = function() {};
 
   setup(function() {
     sandbox.stub(mysql, 'createConnection');
@@ -28,7 +27,8 @@ suite('MySQL Multimaster adapter', function() {
       query: sandbox.stub(),
       beginTransaction: sandbox.stub(),
       commit: sandbox.stub(),
-      rollback: sandbox.stub()
+      rollback: sandbox.stub(),
+      on: function() {}
     };
 
     mysql.createConnection.returns(mysql_conn);
@@ -317,7 +317,6 @@ suite('MySQL Multimaster adapter', function() {
       mysql_conn.connect = sinon.stub().callsArgWith(0, null, successful_example_connect);
       mysql.createConnection.returns(mysql_conn);
       adapter = new MySQLMultimaster.MySQLMultimaster(config);
-      console.log(adapter._registerListeners);
     });
 
     test("should be false before connecting", function() {
@@ -358,10 +357,15 @@ suite('MySQL Multimaster adapter', function() {
       adapter = new MySQLMultimaster.MySQLMultimaster(config);
     });
 
+    teardown(function() {
+      sandbox.restore();
+    });
+
     test("should be done when connection is lost", function(done) {
-      mysql_conn.connect = function() {;
-        done();
-      };
+      this.timeout(500);
+      mysql.createConnection.returns({
+        connect:function() { done() }
+      });
       mysql_conn.emit('error', {
         code: 'PROTOCOL_CONNECTION_LOST'
       });
