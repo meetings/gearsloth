@@ -9,3 +9,10 @@ CREATE TABLE gearsloth.gearsloth (
   task       TEXT, -- FIXME Upgrade to LONGTEXT before production
   INDEX      at (at)
 ) ENGINE = InnoDB;
+
+CREATE TABLE gearsloth.gearsloth_disabled (
+  id         INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  at         DATETIME,
+  task       TEXT, -- FIXME Upgrade to LONGTEXT before production
+  INDEX      at (at)
+) ENGINE = InnoDB;
