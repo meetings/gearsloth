@@ -4,7 +4,8 @@ var mysql = require('mysql')
   , expect = chai.expect
   , sinon = require('sinon')
   , any = sinon.match.any
-  , sinonchai = require('sinon-chai');
+  , sinonchai = require('sinon-chai')
+  , EventEmitter = require('events').EventEmitter;;
 
 chai.should();
 chai.use(sinonchai);
@@ -306,7 +307,75 @@ suite('MySQL Multimaster adapter', function() {
       });
 
     });
+  });
+  suite("connected", function() {
+    var mysql_conn, adapter, error;
 
+    var successful_example_connect = { 
+      fieldCount: 0,
+      affectedRows: 0,
+      insertId: 0,
+      serverStatus: 2,
+      warningCount: 0,
+      message: '',
+      protocol41: true,
+      changedRows: 0 
+    };
+
+    setup(function() {
+      mysql_conn = new EventEmitter();
+      mysql_conn.connect = sinon.stub().callsArgWith(0, null, successful_example_connect);
+      mysql.createConnection.returns(mysql_conn);
+      adapter = new MySQLMultimaster.MySQLMultimaster(config);
+    });
+
+    test("should be false before connecting", function() {
+      adapter.connected.should.be.false;
+    });
+
+    test("should be true after connecting", function() {
+      MySQLMultimaster.initialize(config, function(err, adapter1) {
+        adapter1.connected.should.be.true;
+      });
+    });
+
+    test("should be false when connection is lost", function() {
+      var ad;
+      MySQLMultimaster.initialize(config, function(err, adapter1) {
+        ad = adapter1;
+      });
+      mysql_conn.connect = sinon.stub().callsArgWith(0, new Error());
+      mysql_conn.emit('error', {
+        code: 'PROTOCOL_CONNECTION_LOST'
+      });
+      ad.connected.should.be.false;
+    });
+
+    test("should be true after reconnecting", function() {
+      mysql_conn.emit('error', {
+        code: 'PROTOCOL_CONNECTION_LOST'
+      });
+      adapter.connected.should.be.true;
+    });
+
+  });
+
+  suite("reconnecting", function() {
+    setup(function() {
+      mysql_conn = new EventEmitter();
+      mysql.createConnection.returns(mysql_conn);
+      adapter = new MySQLMultimaster.MySQLMultimaster(config);
+    });
+
+    test("should be done when connection is lost", function(done) {
+      mysql_conn.connect = function() {;
+        done();
+      };
+      mysql_conn.emit('error', {
+        code: 'PROTOCOL_CONNECTION_LOST'
+      });
+    });
+    
   });
 
 });
