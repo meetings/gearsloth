@@ -19,6 +19,7 @@ suite('MySQL Multimaster adapter', function() {
   };
   var sandbox = sinon.sandbox.create();
   var mysql_conn;
+  MySQLMultimaster.MySQLMultimaster.prototype._registerListeners = function() {};
 
   setup(function() {
     sandbox.stub(mysql, 'createConnection');
@@ -316,6 +317,7 @@ suite('MySQL Multimaster adapter', function() {
       mysql_conn.connect = sinon.stub().callsArgWith(0, null, successful_example_connect);
       mysql.createConnection.returns(mysql_conn);
       adapter = new MySQLMultimaster.MySQLMultimaster(config);
+      console.log(adapter._registerListeners);
     });
 
     test("should be false before connecting", function() {
