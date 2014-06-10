@@ -14,6 +14,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   #
   config.vm.provision :shell, path: "virt/vagrant/stdintty.sh"
   config.vm.provision :shell, path: "virt/vagrant/apt.sh"
+  config.vm.provision :shell, path: "virt/vagrant/build.sh"
   config.vm.provision :shell, path: "virt/vagrant/make.sh", privileged: false
 
   ### Virtalbox configuration
