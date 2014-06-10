@@ -13,6 +13,8 @@ var gearman = require('gearman-coffee')
 chai.should();
 chai.use(sinonChai);
 
+require('../../lib/log').setOutput();
+
 suite('(e2e) runner', function() {
 
   suite('using a stubbed adapter,', function() {
@@ -104,7 +106,7 @@ suite('(e2e) runner', function() {
         expect(json).to.have.property('id', sample_task1.id);
         expect(json).to.have.property('func_name', sample_task1.func_name);
         done();
-      }, { port:port 
+      }, { port:port
       });
       adapter.listenTask = sinon.stub().yields(null, sample_task1);
       adapter.updateTask = sinon.stub().yields(null, 1);
@@ -116,7 +118,7 @@ suite('(e2e) runner', function() {
         var json = JSON.parse(payload.toString());
         adapter.disableTask.should.have.been.calledWith(json);
         done();
-      }, { port:port 
+      }, { port:port
       });
       adapter.listenTask = sinon.stub().yields(null, expiring_task1);
       adapter.updateTask = sinon.stub().yields(null, 1);
@@ -129,7 +131,7 @@ suite('(e2e) runner', function() {
         var json = JSON.parse(payload.toString());
         adapter.disableTask.should.not.have.been.calledWith(json);
         done();
-      }, { port:port 
+      }, { port:port
       });
 
       adapter.listenTask = sinon.stub().yields(null, non_expiring_task1);

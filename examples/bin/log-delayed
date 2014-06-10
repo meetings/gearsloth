@@ -29,15 +29,15 @@ function log() {
 // start gearman log worker
 
 var log_worker = new gearman.Worker('log', function(payload, worker) {
+  worker.complete();
   var str = payload.toString('utf-8');
   log('worker:', str);
   worker_called();
-  return worker.complete();
 });
 
 // client
 
-var client = new gearman.Client();
+var client = new gearman.Client({ debug: false });
 
 // using high level API
 
