@@ -8,12 +8,12 @@ client submitting those tasks at a specified time. The gearslothd daemon
 supports a database backend architecture which abstracts persisting delayed
 tasks to a database.
 
-## Quick start
+### Quick start
 
-1. Read about the basic structure of gearsloth [Structure](Doc/Structure.md)
-2. Start gearmand on localhost to default port
-3. Start Gearsloth in all modes with `./bin/gearslothd`
-4. [Configure](Doc/Configuration.md) your gearsloth
+1. Read about the basic [structure](Doc/Structure.md) of gearsloth
+2. [Configure](Doc/Configuration.md) your gearsloth or just start it in all modes with `./bin/gearslothd`
+3. Learn how to submit delayed [tasks](Doc/Task format specification.md) to gearsloth with the help of an [injector](Doc/Injector API.md)
+
 
 ### Running tests
 
@@ -38,6 +38,7 @@ or use make targets `test` or `unit-test`.
     sloth:~$ make test
 
 ### Links
-
+ 
+ * [Documentation](Doc)
  * [Gearman project](http://gearman.org)
- * [Original project description](description.md)
+ * [Original project description](Doc/legacy-description.md)
