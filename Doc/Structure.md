@@ -43,27 +43,3 @@ In a nutshell, a controller does the following:
 3.  When the task completes, pass the task object to the ejector component
     (gearman function `delayedJobDone`). The field `.id` that identifies a task
     must be passed to the ejector unchanged.
-
-## Client interface (subject to change, controllers not implemented)
-
-Gearsloth injector daemon adds the following functions to the gearman server:
-
-### submitJobDelayed
-
-Submits a task to be executed at a specified time. The task is given as a
-UTF-8 encoded JSON object.
-
-See the [task format specification](Task format specification.md)
-
-## Client helper library (subject to change, strategies not implemented)
-
-The file 'lib/gearsloth.js' includes some helper functions for Javascript
-clients which aid in encoding, decoding and validating gearsloth tasks.
-
-**`encodeTask(Object task)` -> `String`**
-
-Encodes a task as a JSON string that can be passed to gearman.
-
-**`decodeTask(String|Buffer task)` -> `Object`**
-
-Decodes and validates a delayed task to a JSON task object.
