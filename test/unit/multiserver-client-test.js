@@ -140,15 +140,6 @@ different clients", function(done) {
       else if(called_clients > 2) done(new Error('Job was sent to too many clients'));
       else done(new Error('Job was not sent'));
     });
-    
-    test("emits a disconnect event after all servers have been tried", function(done) {
-      this.timeout(500);
-      m.connected = true;
-      m.on('disconnect', done);
-      m.submitJob('mita', 'hessu');
-      m.submitJob('mita', 'hessu');
-      m.submitJob('mita', 'hessu');
-    });
   });
 
   suite("when given no servers", function() {
