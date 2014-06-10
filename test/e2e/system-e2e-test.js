@@ -14,6 +14,16 @@ suite('single gearslothd in default mode:', function() {
   var gearmand;
   var gearslothd;
   var tester;
+  var conf = {
+    dbopt: {
+      poll_timeout:0,
+      db_name:':memory:'
+    },
+    servers: [{
+      host:'localhost',
+      port: port
+    }]
+  };
 
   setup(function(done) {
     async.series([

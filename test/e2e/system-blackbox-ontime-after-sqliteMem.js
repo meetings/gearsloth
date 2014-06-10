@@ -15,10 +15,11 @@ var Passthrough = require('../../lib/controllers/passthrough').Passthrough;
 chai.should();
 chai.use(sinonChai);
 
-suite.only('blackbox: on-time with sqlite :memory:', function() {
+suite('blackbox: on-time with sqlite :memory:', function() {
 
   this.timeout(5000);
 
+  var port = 54730;
   var gearmand;
   var injector;
   var ejector;
@@ -34,16 +35,19 @@ suite.only('blackbox: on-time with sqlite :memory:', function() {
       db_name:':memory:'
     },
     servers: [{
-      host:'localhost'
+      host:'localhost',
+      port: port
     }]
   };
 
   var simple_task = {
     func_name:'test',
-    payload:'blackbox'
+    payload:'blackbox-immediate'
   };
-  var after_1_task = {
-
+  var after_2_task = {
+    func_name:'test',
+    payload:'blackbox-2-second-delay',
+    after:2
   };
   var after_3_task = {
 
@@ -58,49 +62,50 @@ suite.only('blackbox: on-time with sqlite :memory:', function() {
               done("Error initializing database");
             }
             conf.dbconn = dbconn;
-        console.log('db up');
             callback();
         });
       },
-      function(callback) {
-        port = 6660 + Math.floor(Math.random() * 1000);
-        conf.servers[0].port = port;
-        console.log('port up');
-        callback();
-      },
+      // function(callback) {
+      //   port = 6660 + Math.floor(Math.random() * 1000);
+      //   conf.servers[0].port = port;
+      //   callback();
+      // },
       function(callback) {
         gearmand = spawn.gearmand(port, function(){
-        console.log('gearman up');
           callback();
         });
       },
       function(callback) {
         runner = new Runner(conf);
         runner.on('connect', function(){
-        console.log('runner up');
           callback();
         });
       },
       function(callback) {
         injector = new Injector(conf);
         injector.on('connect', function() {
-        console.log('injector up');
           callback();
         });
       },
       function(callback) {
         ejector = new Ejector(conf);
         ejector.on('connect', function() {
-        console.log('ejector up');
           callback();
         });
       },
       function(callback) {
         controller = new Passthrough(conf);
         controller.on('connect', function(){
-          console.log('controller up');
           callback();
         });
+      },
+      function(callback) {
+        sinon.spy(conf.dbconn, 'disableTask');
+        sinon.spy(conf.dbconn, 'updateTask');
+        sinon.spy(conf.dbconn, 'completeTask');
+        sinon.spy(conf.dbconn, 'saveTask');
+        sinon.spy(conf.dbconn, 'listenTask');
+        callback();
       }
       ], function() {
         done();
@@ -111,49 +116,42 @@ suite.only('blackbox: on-time with sqlite :memory:', function() {
     async.series([
       function(callback) {
         runner.on('disconnect', function() {
-        console.log('runner down');
           callback();
         })
         runner.stop();
       },
       function(callback) {
         injector.on('disconnect', function() {
-        console.log('injector down');
           callback();
         });
         injector.disconnect();
       },
       function(callback) {
         ejector.on('disconnect', function() {
-        console.log('ejector down');
           callback();
         });
         ejector.disconnect();
       },
       function(callback) {
         controller.on('disconnect', function() {
-          console.log('controller down');
           callback();
         });
         controller.disconnect();
       },
       function(callback) {
-        client.on('disconnect', function() {
-          console.log('client down');
+        client.socket.on('close', function() {
           callback();
         });
         client.disconnect();
       },
       function(callback) {
-        worker.socket.on('disconnect', function() {
-          console.log('worker down');
+        worker.socket.on('close', function() {
           callback();
         });
         worker.disconnect();
       },
       function(callback) {
         spawn.killall([gearmand], function() {
-        console.log('gearman down');
           callback();
         });
       }
@@ -163,13 +161,32 @@ suite.only('blackbox: on-time with sqlite :memory:', function() {
   });
 
   test('task is recieved in bottom level worker almost immediately', function(done){
+    this.timeout(100);
     client = new gearman.Client({port:port});
     worker = new gearman.Worker('test', function(payload, worker) {
-      console.log(payload.toString());
+      var payload = payload.toString();
+      expect(payload).to.equal(simple_task.payload);
       done();
-    });
+    }, {port:port});
     worker.on('connect', function(){
-      client.submitJob('submitJobDelayed', JSON.stringify(simple_task));
+      client.submitJob('submitJobDelayed', JSON.stringify(simple_task))
+        .on('complete', function(){
+        });
+    });
+  });
+
+  test('task is recieved in bottom level worker after timeout expires', function(done){
+    this.timeout(2100);
+    client = new gearman.Client({port:port});
+    worker = new gearman.Worker('test', function(payload, worker) {
+      var payload = payload.toString();
+      expect(payload).to.equal(after_2_task.payload);
+      done();
+    }, {port:port});
+    worker.on('connect', function(){
+      client.submitJob('submitJobDelayed', JSON.stringify(after_2_task))
+        .on('complete', function(){
+        });
     });
   });
 
