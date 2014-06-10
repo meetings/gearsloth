@@ -1,11 +1,19 @@
 
-## gearsloth
+## Introduction
 
-Delayed task workers and persistent storage schemes for Gearman.
+Gearsloth is a system that enables delayed tasks and persistent storage schemes
+in Gearman queue server. It consists of a small javascript helper library and a
+daemon that functions as both a gearman worker listening to delayed tasks and a
+client submitting those tasks at a specified time. The gearslothd daemon
+supports a database backend architecture which abstracts persisting delayed
+tasks to a database.
 
-### Documentation
+### Quick start
 
-* [Documentation](doc.md)
+1. Read about the basic [structure](Doc/Structure.md) of gearsloth
+2. [Configure](Doc/Configuration.md) your gearsloth or just start it in all modes with `./bin/gearslothd`
+3. Learn how to submit delayed [tasks](Doc/Task format specification.md) to gearsloth with the help of an [injector](Doc/Injector API.md)
+
 
 ### Running tests
 
@@ -30,6 +38,7 @@ or use make targets `test` or `unit-test`.
     sloth:~$ make test
 
 ### Links
-
+ 
+ * [Documentation](Doc)
  * [Gearman project](http://gearman.org)
- * [Original project description](description.md)
+ * [Original project description](Doc/legacy-description.md)

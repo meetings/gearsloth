@@ -15,11 +15,11 @@ chai.use(sinonChai);
 
 require('../../lib/log').setOutput();
 
-describe('(e2e) runner', function() {
+suite('(e2e) runner', function() {
 
   suite('using a stubbed adapter,', function() {
 
-    this.timeout(1000);
+    this.timeout(4000);
 
     var gearmand;
     var adapter = {};
@@ -85,12 +85,15 @@ describe('(e2e) runner', function() {
           });
         },
         function (callback) {
-          runner_in_use.stop(0, function(){
+          runner_in_use.on('disconnect', function(){
             callback();
           });
+          runner_in_use.stop(0, function(){});
         },
         function (callback) {
-          spawn.killall([gearmand], callback);
+          spawn.killall([gearmand], function(){
+            callback();
+          });
         }
         ], function () {
           done();
@@ -103,7 +106,7 @@ describe('(e2e) runner', function() {
         expect(json).to.have.property('id', sample_task1.id);
         expect(json).to.have.property('func_name', sample_task1.func_name);
         done();
-      }, { port:port 
+      }, { port:port
       });
       adapter.listenTask = sinon.stub().yields(null, sample_task1);
       adapter.updateTask = sinon.stub().yields(null, 1);
@@ -115,7 +118,7 @@ describe('(e2e) runner', function() {
         var json = JSON.parse(payload.toString());
         adapter.disableTask.should.have.been.calledWith(json);
         done();
-      }, { port:port 
+      }, { port:port
       });
       adapter.listenTask = sinon.stub().yields(null, expiring_task1);
       adapter.updateTask = sinon.stub().yields(null, 1);
@@ -128,7 +131,7 @@ describe('(e2e) runner', function() {
         var json = JSON.parse(payload.toString());
         adapter.disableTask.should.not.have.been.calledWith(json);
         done();
-      }, { port:port 
+      }, { port:port
       });
 
       adapter.listenTask = sinon.stub().yields(null, non_expiring_task1);
@@ -147,19 +150,6 @@ describe('(e2e) runner', function() {
       adapter.listenTask = sinon.stub().yields(null, sample_task1);
       adapter.updateTask = sinon.stub().yields(null, 1);
       runner_in_use = runner(conf);
-    });
-
-    test('should fetch a task from db and pass it on', function(done) {
-      worker = new gearman.Worker('test', function(payload, worker) {
-        var json = JSON.parse(payload.toString());
-        expect(json).to.have.property('id', sample_task1.id);
-        expect(json).to.have.property('func_name', sample_task1.func_name);
-
-        done();
-      }, {port:port});
-      adapter.listenTask = sinon.stub().callsArgWith(0, null, sample_task1);
-      adapter.updateTask = sinon.stub().callsArgWith(1, null);
-      runner = runner(conf);
     });
   });
 });

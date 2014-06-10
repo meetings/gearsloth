@@ -15,7 +15,7 @@ chai.use(sinonChai);
 
 require('../../lib/log').setOutput();
 
-describe('(e2e) runner', function() {
+suite('(e2e) runner', function() {
 
   suite('runner using a real adapter with no conf,', function() {
 
@@ -75,7 +75,7 @@ describe('(e2e) runner', function() {
         },
         function(callback) {
           sqlite.initialize(null, function(err, dbconn) {
-            if (err) console.log(err, dbconn);        
+            if (err) console.log(err, dbconn);
             config.dbconn = dbconn;
             callback();
           });
@@ -88,7 +88,9 @@ describe('(e2e) runner', function() {
         },
         function(callback) {
           running_runner = new Runner(config);
-          callback();
+          running_runner.on('connect', function(){
+            callback();
+          });
         }
         ], function() {
           done();
@@ -98,31 +100,52 @@ describe('(e2e) runner', function() {
     teardown(function(done) {
       async.series([
         function (callback) {
-          
-          worker.disconnect();
           worker.socket.on('close', function() {
             callback();
           });
+          worker.disconnect();
         },
         function (callback) {
-          
-          running_runner.stop(0, function() {
+          running_runner.on('disconnect', function() {
             callback();
           });
+          running_runner.stop(0, function() {});
         },
         function (callback) {
-          spawn.killall([gearmand], callback);
+          spawn.killall([gearmand], function() {
+            callback();
+          });
         },
         function(callback) {
           setTimeout(function() {
-          fs.open('/tmp/DelayedTasks.sqlite', 'r', function(err) {
-            if(err) console.log(err);
-            fs.unlink('/tmp/DelayedTasks.sqlite', function() {});
-            callback();
-          });
-        }, 500);
+            fs.unlink('/tmp/DelayedTasks.sqlite', function(err) {
+              if (err) console.log(err);
+              callback();
+            });
+          }, 500);
         }
         ], function () {
+          done();
+        });
+    });
+
+    suiteTeardown(function(done){
+      async.series([
+        function(callback) {
+          // setTimeout(function() {
+            fs.unlink('/tmp/DelayedTasks.sqlite', function() {
+              callback();
+            });
+          // }, 500);
+        },
+        function(callback) {
+          // setTimeout(function() {
+            fs.unlink('/tmp/DelayedTasks.sqlite-journal', function() {
+              callback();
+            });
+          // }, 500);
+        }
+        ], function() {
           done();
         });
     });
@@ -145,7 +168,7 @@ describe('(e2e) runner', function() {
         json.first_run = new Date(json.first_run);
         config.dbconn.disableTask.should.have.been.calledWith(json);
         done();
-      }, { port:port 
+      }, { port:port
       });
       config.dbconn.saveTask(expiring_task, function(err, id){});
     });
@@ -157,7 +180,7 @@ describe('(e2e) runner', function() {
         json.first_run = new Date(json.first_run);
         config.dbconn.disableTask.should.not.have.been.calledWith(json);
         done();
-      }, { port:port 
+      }, { port:port
       });
       config.dbconn.saveTask(non_expiring_task, function(err, id){});
     });
@@ -175,5 +198,4 @@ describe('(e2e) runner', function() {
       config.dbconn.saveTask(sample_task, function(err, id){});
     });
   });
-  
 });
