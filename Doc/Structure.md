@@ -1,12 +1,12 @@
 ## Gearslothd daemon modes
 
-Gearslothd daemon running as *injector* receives delayed tasks sent by gearsloth
+Gearslothd daemon running as *injector* receives delayed tasks sent by gearman
 clients. These are saved to a persistent storage. Gearsloth *runners* then
 receive pending tasks from the persistent storage and send these forward at a
 specified time to *controllers* whose job is to submit the task to the final
 destination, wait for the completion/failure of the task and rely this
 information to *ejectors*, which in turn will remove the task from the
-persistent store.
+persistent storage.
 
 ### Controllers
 
