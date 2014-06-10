@@ -72,7 +72,7 @@ suite('(e2e) runner', function() {
           });
         },
         function(callback) {
-          sqlite.initialize(null, function(err, dbconn) {
+          sqlite.initialize(config, function(err, dbconn) {
             if (err) console.log(err, dbconn);        
             config.dbconn = dbconn;
             callback();
