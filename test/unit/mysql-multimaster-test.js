@@ -263,6 +263,7 @@ suite('MySQL Multimaster adapter', function() {
       test('calls listener with correct task', function() {
         var task = {
           id: {
+            db_id: adapter.db_id,
             task_id: 13
           },
           at: sinon.match.date,
