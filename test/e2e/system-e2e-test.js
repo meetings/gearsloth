@@ -31,7 +31,7 @@ suite('single gearslothd in default mode:', function() {
         gearmand = spawn.gearmand(port, callback);
       },
       function(callback) {
-        gearslothd = spawn.gearslothd(port, callback);
+        gearslothd = spawn.gearslothd(conf, callback);
       },
       function(callback) {
         tester = new Tester(port, callback);
