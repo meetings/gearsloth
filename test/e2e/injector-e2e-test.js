@@ -36,24 +36,25 @@ suite('(e2e) injector', function() {
         runner_retry_count: 2
     }
 
-    var non_expiring_task1 = {
+    var invalid_at_task = {
+        at: "ölihnoiö",
         id : 2,
         controller: 'test',
         func_name: 'log',
         runner_retry_count: 2
     }
 
-    var expiring_task1 = {
+    var invalid_after_task = {
+        after: "öoosaf",
         id : 2,
         controller: 'test',
         func_name: 'log',
         runner_retry_count: 1
     }
 
-    var sample_task1 = {
+    var no_func_name_task = {
         id: 666,
         controller: 'test',
-        func_name: 'log',
         mikko: 'jussi',
         jeebo: 'jussi'
     }
@@ -118,6 +119,42 @@ suite('(e2e) injector', function() {
       client.submitJob('submitJobDelayed', JSON.stringify(new_task))
       .on('complete', function(){
         expect(adapter.saveTask).to.have.been.calledWith(new_task);
+        done();
+      });
+    });
+
+    test('should return error on invalid date', function(done) {
+      client = new Client({port:port});
+      client.submitJob('submitJobDelayed', JSON.stringify(invalid_at_task))
+      .on('warning', function(handle, error){
+        expect(adapter.saveTask).not.have.been.called;
+        expect(error).to.equal("Injector: invalid date format.");
+      })
+      .on('fail', function(){
+        done();
+      });
+    })
+
+    test('should return error on invalid after parameter', function(done){
+      client = new Client({port:port});
+      client.submitJob('submitJobDelayed', JSON.stringify(invalid_after_task))
+      .on('warning', function(handle, error){
+        expect(adapter.saveTask).not.to.have.been.called;
+        expect(error).to.equal("Injector: invalid 'after' format.");
+      })
+      .on('fail', function(){
+        done();
+      });
+    });
+
+    test('should return error on missing func_name intask', function(done){
+      client = new Client({port:port});
+      client.submitJob('submitJobDelayed', JSON.stringify(no_func_name_task))
+      .on('warning', function(handle, error){
+        expect(adapter.saveTask).not.to.have.been.called;
+        expect(error).to.equal("Injector: no function name (func_name) defined in task.");
+      })
+      .on('fail', function(){
         done();
       });
     });
