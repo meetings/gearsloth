@@ -5,7 +5,7 @@ var mysql = require('mysql')
   , sinon = require('sinon')
   , any = sinon.match.any
   , sinonchai = require('sinon-chai')
-  , EventEmitter = require('events').EventEmitter;;
+  , EventEmitter = require('events').EventEmitter;
 
 chai.should();
 chai.use(sinonchai);
@@ -27,7 +27,8 @@ suite('MySQL Multimaster adapter', function() {
       query: sandbox.stub(),
       beginTransaction: sandbox.stub(),
       commit: sandbox.stub(),
-      rollback: sandbox.stub()
+      rollback: sandbox.stub(),
+      on: function() {}
     };
 
     mysql.createConnection.returns(mysql_conn);
@@ -262,6 +263,7 @@ suite('MySQL Multimaster adapter', function() {
       test('calls listener with correct task', function() {
         var task = {
           id: {
+            db_id: adapter.db_id,
             task_id: 13
           },
           at: sinon.match.date,
@@ -356,16 +358,37 @@ suite('MySQL Multimaster adapter', function() {
       adapter = new MySQLMultimaster.MySQLMultimaster(config);
     });
 
+    teardown(function() {
+      sandbox.restore();
+    });
+
     test("should be done when connection is lost", function(done) {
-      mysql_conn.connect = function() {;
-        done();
-      };
+      this.timeout(500);
+      mysql.createConnection.returns({
+        connect:function() { done() }
+      });
       mysql_conn.emit('error', {
         code: 'PROTOCOL_CONNECTION_LOST'
       });
     });
     
   });
+
+  suite("db_id", function() {
+    test("should be the same with two adapters with same config", function() {
+      adapter1 = new MySQLMultimaster.MySQLMultimaster(config);
+      adapter2 = new MySQLMultimaster.MySQLMultimaster(config);
+      adapter1.db_id.should.equal(adapter2.db_id)
+    });
+    test("should differ if config is different", function() {
+      adapter1 = new MySQLMultimaster.MySQLMultimaster(config);
+      config.host = "goabase.net"
+      adapter2 = new MySQLMultimaster.MySQLMultimaster(config);
+      adapter1.db_id.should.not.equal(adapter2.db_id)
+    });
+
+  });
+
 
   suite('updateTask', function() {
     var adapter;
