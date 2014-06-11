@@ -12,7 +12,7 @@ tasks to a database.
 
 1. Read about the basic [structure](Doc/Structure.md) of gearsloth
 2. [Configure](Doc/Configuration.md) your gearsloth or just start it in all modes with `./bin/gearslothd`
-3. Learn how to submit delayed [tasks](Doc/Task format specification.md) to gearsloth with the help of an [injector](Doc/Injector API.md)
+3. Learn how to [submit delayed tasks](Doc/Injector API.md) to gearsloth
 
 
 ### Running tests
