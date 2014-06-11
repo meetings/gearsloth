@@ -85,7 +85,7 @@ suite('(e2e) injector', function() {
     teardown(function(done) {
       async.series([
         function (callback) {
-          client.on('disconnect', function() {
+          client.socket.on('close', function() {
             callback();
           });
           client.disconnect();

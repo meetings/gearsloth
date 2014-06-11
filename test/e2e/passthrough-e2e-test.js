@@ -20,7 +20,10 @@ suite('(e2e) passthrough controller', function() {
     , client
     , conf = {
       dbconn: adapter,
-      servers: [{ host: 'localhost' }]
+      servers: [{ 
+        host: 'localhost',
+        port:port
+      }]
     }
     , task = {
       id: '666',
@@ -52,7 +55,7 @@ suite('(e2e) passthrough controller', function() {
   teardown(function(done) {
     async.series([
       function(callback) {
-        client.on('disconnect', function() {
+        client.socket.on('close', function() {
           callback();
         });
         client.disconnect();

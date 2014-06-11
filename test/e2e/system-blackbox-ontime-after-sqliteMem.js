@@ -65,11 +65,6 @@ suite('blackbox: on-time with sqlite :memory:', function() {
             callback();
         });
       },
-      // function(callback) {
-      //   port = 6660 + Math.floor(Math.random() * 1000);
-      //   conf.servers[0].port = port;
-      //   callback();
-      // },
       function(callback) {
         gearmand = spawn.gearmand(port, function(){
           callback();
