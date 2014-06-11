@@ -32,7 +32,7 @@ suite('blackbox: at on-time with sqlite :memory:', function() {
   var port;
   var conf = {
     dbopt: {
-      poll_timeout:0,
+      poll_timeout:50,
       db_name:':memory:'
     },
     servers: [{
