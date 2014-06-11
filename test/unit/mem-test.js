@@ -20,14 +20,15 @@ suite('MemAdapter', function() {
     });
   });
   suite('saveTask', function() {
-    test('sends task to listener', function() {
-      var task = "some task";
-      var callback = sinon.spy();
-      adapter.listenTask(callback);
+    test('sends task to listener', function(done) {
+      var task = {};
+      var called = false;
+      adapter.listenTask(function(err, task) {
+        if (!called)
+          done();
+        called = true;
+      });
       adapter.saveTask(task, function() {});
-
-      callback.calledOnce.should.be.true;
-      callback.calledWith(null, task).should.be.true;
     });
     test('calls provided callback', function(done) {
       var task = "some task";

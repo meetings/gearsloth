@@ -1,18 +1,19 @@
 #!/usr/bin/env node
 
 var config = require('../lib/config');
+var daemon = require('../lib/daemon');
 
 try {
   var conf = config.initialize(process.argv);
   if (!conf)
     process.exit(0);
   config.initializeDb(conf, function(err, conf) {
-    if (conf.injector)    require('../lib/daemon/injector')         (conf);
-    if (conf.runner)      require('../lib/daemon/runner')           (conf);
-    if (conf.controller)  require('../lib/controllers/passthrough') (conf);
-    if (conf.ejector)     require('../lib/daemon/ejector')          (conf);
+    if (err)
+      throw new Error('Error initializing database adapter:', err.message);
+    daemon.initialize(conf);
   });
-} catch (e) {
-  console.error('gearslothd:', e.message);
+} catch (err) {
+  console.error('gearslothd:', err.message);
   process.exit(1);
 }
+

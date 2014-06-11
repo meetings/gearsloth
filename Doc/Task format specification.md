@@ -27,15 +27,13 @@ The only required field for task is `func_name`.
 * `runner_retry_timeout`: if defined this is any string that is parseable into an integer. Represents the time in seconds after which a runner is to retry submitting the task for execution if it failed to do so previously.
 * `runner_retry_count`: if defined this is any string that is parseable into an integer. Represents the number of times a runner is to try to submit the task for execution if it failed to do so previously.
 * `payload`: if defined this can be anything that can be sanely converted into a string. It may also be a JSON object in itself. `payload` will be passed on to the `func_name` function as given or to the `controller` if defined for more processing.
-* `first_run`: at the time of the first execution the current timestamp is stored into this field. *Don't use this field.*
 
+#### Internal
+* `id`: Set by the adapter. It should be an object with one mandatory property: `db_id`, which is mainly used by the composite adapter. `db_id` should be a (preferably human-readable) string based on the database configuration. The rest of the properties can be freely set by the adapter to identify the task.
+* `first_run`: at the time of the first execution the current timestamp is stored into this field.
 
 In addition the `task` JSON object may contain any number of fields (for example to be passed to the `controller`) These additional fields will not be taken into account in any way in the control flow other than in the custom `controller` if it is to do so.
 
 ### Marking jobs as done
 
-After a job is done, a controller should send a JSON object with the following fields to the ejector in order to remove it from the task database:
-* `id`: a string that identifies the task in the database
-
-In addition the `task` JSON object may contain any number of other fields. Any other fields that are not defined here will not not be taken into account in any way in the control flow other than in the custom `controller` if it has been written to do so. The only limitation of these fields is that they must not break the stringifying or parseing operations done the the `task` JSON object.
-
+After a job is done, a controller should send the task object to the ejector in order to remove it from the task database.

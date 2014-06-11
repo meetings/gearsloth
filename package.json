@@ -21,7 +21,7 @@
   "license": "MIT",
   "homepage": "https://github.com/meetings/gearman-delayed-task",
   "dependencies": {
-    "gearman-coffee": "^1.1.1",
+    "gearman-coffee": "git://github.com/meetings/gearman-coffee.git",
     "underscore": "*",
     "async": "*"
   },
