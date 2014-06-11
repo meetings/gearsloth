@@ -34,8 +34,8 @@ or use make targets `test` or `unit-test`.
     $ vagrant up
     $ vagrant ssh
 
-    sloth:~$ cd /vagrant
-    sloth:~$ make test
+    sloth:~$ cd gearsloth
+    sloth:~/gearsloth$ make test
 
 ### Links
  
