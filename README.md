@@ -26,8 +26,8 @@ or use make targets `test` or `unit-test`.
     $ vagrant up
     $ vagrant ssh
 
-    sloth:~$ cd /vagrant
-    sloth:~$ make test
+    sloth-host:~$ cd /vagrant
+    sloth-host:~$ make test
 
 ### Links
 
