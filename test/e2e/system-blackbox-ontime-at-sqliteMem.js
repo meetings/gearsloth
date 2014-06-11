@@ -15,7 +15,7 @@ var Passthrough = require('../../lib/controllers/passthrough').Passthrough;
 chai.should();
 chai.use(sinonChai);
 
-suite.only('blackbox: at on-time with sqlite :memory:', function() {
+suite('blackbox: at on-time with sqlite :memory:', function() {
 
   this.timeout(5000);
 
@@ -26,7 +26,7 @@ suite.only('blackbox: at on-time with sqlite :memory:', function() {
   var runner;
   var client;
   var worker;
-  var worker_fail;
+  // var worker_fail;
   var controller;
 
   var port;
@@ -40,16 +40,17 @@ suite.only('blackbox: at on-time with sqlite :memory:', function() {
       port: port
     }]
   };
+
   var at_2000_task = {
     func_name:'test',
-    payload:'blackbox-10000-ms-delay',
-    at:new Date(new Date().getTime() + 2000)
+    payload:'blackbox-6000-ms-delay',
+    // at:time_in_future will be set in the test to circumvent some weird shit
   };
   var after_and_at_task = {
     func_name:'test',
     payload:'blackbox-after-supersedes',
-    at:new Date(new Date().getTime() + 1000),
-    after:2
+    at:new Date(),
+    after:6
   };
 
   setup(function(done) {
@@ -59,8 +60,14 @@ suite.only('blackbox: at on-time with sqlite :memory:', function() {
             if (err) {
               console.log(err, dbconn);
               done("Error initializing database");
+              return;
             }
             conf.dbconn = dbconn;
+            sinon.spy(conf.dbconn, 'disableTask');
+            sinon.spy(conf.dbconn, 'updateTask');
+            sinon.spy(conf.dbconn, 'completeTask');
+            sinon.spy(conf.dbconn, 'saveTask');
+            sinon.spy(conf.dbconn, 'listenTask');
             callback();
         });
       },
@@ -92,14 +99,6 @@ suite.only('blackbox: at on-time with sqlite :memory:', function() {
         controller.on('connect', function(){
           callback();
         });
-      },
-      function(callback) {
-        sinon.spy(conf.dbconn, 'disableTask');
-        sinon.spy(conf.dbconn, 'updateTask');
-        sinon.spy(conf.dbconn, 'completeTask');
-        sinon.spy(conf.dbconn, 'saveTask');
-        sinon.spy(conf.dbconn, 'listenTask');
-        callback();
       }
       ], function() {
         done();
@@ -139,10 +138,14 @@ suite.only('blackbox: at on-time with sqlite :memory:', function() {
         client.disconnect();
       },
       function(callback) {
-        worker.on('disconnect', function() {
+        if (worker) {
+          worker.on('disconnect', function() {
+            callback();
+          });
+          worker.disconnect();
+        } else {
           callback();
-        });
-        worker.disconnect();
+        }
       },
       function(callback) {
         spawn.killall([gearmand], function() {
@@ -153,61 +156,71 @@ suite.only('blackbox: at on-time with sqlite :memory:', function() {
         done();
       });
   });
+
   test('task is recieved in bottom level worker after timeout expires', function(done){
-    this.timeout(3000);
+    var time_in_future = new Date();
+    time_in_future.setSeconds(time_in_future.getSeconds() + 6 );
+
+    this.timeout(10000);
     client = new gearman.Client({port:port});
-    worker_fail = new gearman.Worker('test', function(payload, worker) {
+    var worker_fail = new gearman.Worker('test', function(payload, worker) {
       done(new Error('task arrived too quickly'));
     }, {port:port});
     worker_fail.on('connect', function(){
-      client.submitJob('submitJobDelayed', JSON.stringify(at_2000_task))
-      .on('complete', function(){
-      });
-
-      setTimeout(function() {
-        async.series([
-          function(callback) {
-            worker_fail.on('disconnect', callback);
-            worker_fail.disconnect();
-          },
-          function(callback) {
-            worker = new gearman.Worker('test', function(payload, worker) {
-              var payload = payload.toString();
-              expect(payload).to.equal(at_2000_task.payload);
-              done();
-              callback();
-            }, {port:port});
-          }]);
-      }, 1500);
+        task_sent = true;
+        at_2000_task.at = time_in_future;
+        client.submitJob('submitJobDelayed', JSON.stringify(at_2000_task));
     });
+
+    setTimeout(function() {
+      async.series([
+        function(callback) {
+          worker_fail.socket.on('close', function(){
+            callback();
+          });
+          worker_fail.disconnect();
+        },
+        function(callback) {
+          worker = new gearman.Worker('test', function(payload, worker) {
+            var payload = payload.toString();
+            worker.complete();
+            expect(payload).to.equal(at_2000_task.payload);
+            done();
+            callback();
+          }, {port:port});
+        }]);
+    }, 5000);
   });
 
   test('task is scheduled according to after if after and at are both specified', function(done){
-    this.timeout(3000);
+    this.timeout(10000);
     client = new gearman.Client({port:port});
-    worker_fail = new gearman.Worker('test', function(payload, worker) {
+    var worker_2_fail = new gearman.Worker('test', function(payload, worker) {  
       done(new Error('task arrived too quickly'));
     }, {port:port});
-    worker_fail.on('connect', function(){
-      client.submitJob('submitJobDelayed', JSON.stringify(after_and_at_task))
-      .on('complete', function(){
-      });
-
-      setTimeout(function() {
-        async.series([
-          function(callback) {
-            worker_fail.on('disconnect', callback);
-            worker_fail.disconnect();
-          },
-          function(callback) {
-            worker = new gearman.Worker('test', function(payload, worker) {
-              var payload = payload.toString();
-              expect(payload).to.equal(after_and_at_task.payload);
-              done();
-              callback();
-            }, {port:port});
-          }]);
-      }, 1500);
+    worker_2_fail.on('connect', function(){
+        task_sent = true;
+        client.submitJob('submitJobDelayed', JSON.stringify(after_and_at_task));
     });
+
+    setTimeout(function() {
+      async.series([
+        function(callback) {
+          worker_2_fail.socket.on('close', function(){  
+            callback();
+          });
+          worker_2_fail.disconnect();
+        },
+        function(callback) {
+          worker = new gearman.Worker('test', function(payload, worker) {
+            var payload = payload.toString();
+            worker.complete();
+            expect(payload).to.equal(after_and_at_task.payload);
+            done();
+            callback();
+          }, {port:port});
+        }]);
+    }, 5000);
   });
+
 });
