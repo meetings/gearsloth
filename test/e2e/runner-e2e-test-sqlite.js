@@ -19,6 +19,7 @@ suite('(e2e) runner', function() {
 
     this.timeout(4000);
 
+    var port = 54730;
     var gearmand;
     var adapter = {};
     var worker;
@@ -28,7 +29,10 @@ suite('(e2e) runner', function() {
 
     var config = {
       dbpopt: {poll_timeout : 0},
-      servers: [{ host: 'localhost' }]
+      servers: [{
+        host: 'localhost',
+        port: port
+      }]
     }
 
     var new_task = {
@@ -61,11 +65,6 @@ suite('(e2e) runner', function() {
 
     setup(function(done) {
       async.series([
-        function(callback) {
-          port = 6660 + Math.floor(Math.random() * 1000);
-          config.servers[0].port = port;
-          callback();
-        },
         function(callback) {
           gearmand = spawn.gearmand(port, function(){
             callback();

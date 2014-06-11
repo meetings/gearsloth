@@ -20,12 +20,16 @@ suite('(e2e) injector', function() {
 
     this.timeout(5000);
 
+    var port = 54730;
     var gearmand;
     var adapter = {};
     var client;
     var e;
     var conf = { dbconn: adapter,
-          servers: [{ host: 'localhost' }]
+          servers: [{
+            host: 'localhost',
+            port: port
+          }]
         };
     var port;
     var injector_in_use;
@@ -61,11 +65,6 @@ suite('(e2e) injector', function() {
 
     setup(function(done) {
       async.series([
-        function(callback) {
-          port = 6660 + Math.floor(Math.random() * 1000);
-          conf.servers[0].port = port;
-          callback();
-        },
         function(callback) {
           gearmand = spawn.gearmand(port, function(){
             callback();
