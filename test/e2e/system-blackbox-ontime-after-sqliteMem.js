@@ -40,6 +40,9 @@ suite('blackbox: on-time with sqlite :memory:', function() {
     }]
   };
 
+  var time_in_future = new Date();
+  time_in_future.setSeconds(time_in_future.getSeconds() +1000 );
+
   var simple_task = {
     func_name:'test',
     payload:'blackbox-immediate'
@@ -49,9 +52,18 @@ suite('blackbox: on-time with sqlite :memory:', function() {
     payload:'blackbox-2-second-delay',
     after:2
   };
-  var after_3_task = {
-
+  var conflict_task = {
+    func_name:'test',
+    payload:'blackbox-delay-with-conflict',
+    after: 2,
+    at: time_in_future.toISOString()
   };
+
+  var too_early_task = {
+    func_name:'test',
+    payload:'blackbox-delay-with-conflict',
+    after: 6
+  }
 
   setup(function(done) {
     async.series([
@@ -62,6 +74,11 @@ suite('blackbox: on-time with sqlite :memory:', function() {
               done("Error initializing database");
             }
             conf.dbconn = dbconn;
+            sinon.spy(conf.dbconn, 'disableTask');
+            sinon.spy(conf.dbconn, 'updateTask');
+            sinon.spy(conf.dbconn, 'completeTask');
+            sinon.spy(conf.dbconn, 'saveTask');
+            sinon.spy(conf.dbconn, 'listenTask');
             callback();
         });
       },
@@ -93,14 +110,6 @@ suite('blackbox: on-time with sqlite :memory:', function() {
         controller.on('connect', function(){
           callback();
         });
-      },
-      function(callback) {
-        sinon.spy(conf.dbconn, 'disableTask');
-        sinon.spy(conf.dbconn, 'updateTask');
-        sinon.spy(conf.dbconn, 'completeTask');
-        sinon.spy(conf.dbconn, 'saveTask');
-        sinon.spy(conf.dbconn, 'listenTask');
-        callback();
       }
       ], function() {
         done();
@@ -183,6 +192,58 @@ suite('blackbox: on-time with sqlite :memory:', function() {
         .on('complete', function(){
         });
     });
+  });
+
+  test('task is recieved on time, regardless of future "at" field', function(done){
+    this.timeout(2100);
+    client = new gearman.Client({port:port});
+    worker = new gearman.Worker('test', function(payload, worker) {
+      var payload = payload.toString();
+      expect(payload).to.equal(conflict_task.payload);
+      done();
+    }, {port:port});
+    worker.on('connect', function(){
+      client.submitJob('submitJobDelayed', JSON.stringify(conflict_task))
+        .on('complete', function(){
+        });
+    });
+  });
+
+  test('task is recieved on time, regardless of future "at" field', function(done){
+    this.timeout(10000);
+    client = new gearman.Client({port:port});
+    var failing_worker = new gearman.Worker('test', function(payload, worker) {
+      done("task arrived too early");
+    }, {port:port});
+    failing_worker.on('connect', function(){
+      client.submitJob('submitJobDelayed', JSON.stringify(too_early_task))
+        .on('complete', function(){
+        });
+    });
+    setTimeout(function(){
+      async.series([
+        function(callback) {
+          failing_worker.socket.on('close', function(){
+            callback();
+          });
+          failing_worker.disconnect();
+        },
+        function(callback){
+          worker = new gearman.Worker('test', function(payload, worker) {
+            worker.complete();
+            expect(payload.toString()).to.equal(too_early_task.payload);
+            setTimeout(function() {
+              callback();
+            }, 500);
+          }, {port:port});
+        }], function() {
+          expect(conf.dbconn.saveTask).to.have.been.called;
+          expect(conf.dbconn.listenTask).to.have.been.called;
+          expect(conf.dbconn.updateTask).to.have.been.called;
+          expect(conf.dbconn.completeTask).to.have.been.called;
+          done();
+        })
+    }, 5000)
   });
 
 });
