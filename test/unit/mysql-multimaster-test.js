@@ -18,13 +18,21 @@ suite('MySQL Multimaster adapter', function() {
     password: 'example_secret'
   };
   var sandbox = sinon.sandbox.create();
-  var mysql_conn;
+  var mysql_conn_master;
+  var mysql_conn_slave;
   var mysql_pool;
 
   setup(function() {
-    sandbox.stub(mysql, 'createPool');
-    mysql_conn = {
-      connect: sinon.stub(),
+    sandbox.stub(mysql, 'createPoolCluster');
+    mysql_conn_master = {
+      query: sandbox.stub(),
+      beginTransaction: sandbox.stub(),
+      commit: sandbox.stub(),
+      rollback: sandbox.stub(),
+      on: function() {},
+      release: sandbox.stub()
+    };
+    mysql_conn_slave = {
       query: sandbox.stub(),
       beginTransaction: sandbox.stub(),
       commit: sandbox.stub(),
@@ -33,11 +41,13 @@ suite('MySQL Multimaster adapter', function() {
       release: sandbox.stub()
     };
     mysql_pool = {
-      getConnection: sandbox.stub().yields(null, mysql_conn),
-      query: mysql_conn.query
+      getConnection: sandbox.stub(),
+      add: sandbox.stub()
     };
 
-    mysql.createPool.returns(mysql_pool);
+    mysql.createPoolCluster.returns(mysql_pool);
+    mysql_pool.getConnection.withArgs('MASTER').yields(null, mysql_conn_master);
+    mysql_pool.getConnection.withArgs('SLAVE').yields(null, mysql_conn_slave);
   });
 
   teardown(function() {
@@ -58,11 +68,13 @@ suite('MySQL Multimaster adapter', function() {
         changedRows: 0 
       };
 
-      mysql_conn.connect.callsArgWith(0, null, successful_example_connect);
 
       var multimaster = MySQLMultimaster.initialize(config, function(err, adapter) {
         expect(err).to.be.null;
         expect(adapter).to.not.be.null;
+        mysql_pool.getConnection.should.have.been.calledTwice;
+        mysql_conn_master.release.should.have.been.calledOnce;
+        mysql_conn_slave.release.should.have.been.calledOnce;
         done();
       });
     });
@@ -75,11 +87,13 @@ suite('MySQL Multimaster adapter', function() {
         fatal: true 
       });
 
-      mysql_pool.getConnection.yields(error);
+      mysql_pool.getConnection.withArgs('SLAVE').yields(error);
 
       var multimaster = MySQLMultimaster.initialize(config, function(err, adapter) {
         expect(err).to.equal(error);
         expect(adapter).to.be.undefined;
+        mysql_pool.getConnection.should.have.been.calledTwice;
+        mysql_conn_master.release.should.have.been.calledOnce;
         done();
       });
     });
@@ -90,7 +104,8 @@ suite('MySQL Multimaster adapter', function() {
     var adapter;
 
     setup(function() {
-      mysql_conn.query.callsArgWith(2, null, 666)
+      mysql_conn_master.query.callsArgWith(2, null, 666);
+      mysql_conn_slave.query.yields(null, [ { rows: 1 } ], null);
       adapter = new MySQLMultimaster.MySQLMultimaster(config);
     });
 
@@ -104,8 +119,9 @@ suite('MySQL Multimaster adapter', function() {
       var sql_expectation = sinon.match('at = UTC_TIMESTAMP()');
 
       adapter.saveTask(task, function(err, id) {
-        mysql_conn.query
+        mysql_conn_master.query
           .should.have.been.calledWith(sql_expectation, task_to_insert);
+        mysql_conn_master.release.should.have.been.calledOnce;
         done();
       });
     });
@@ -122,8 +138,9 @@ suite('MySQL Multimaster adapter', function() {
 
       adapter.saveTask(task, function(err, id) {
         var task
-        mysql_conn.query
+        mysql_conn_master.query
           .should.have.been.calledWith(sql_expectation, task_to_insert);
+        mysql_conn_master.release.should.have.been.calledOnce;
         done();
       });
     });
@@ -139,8 +156,9 @@ suite('MySQL Multimaster adapter', function() {
       var sql_expectation = sinon.match('at = TIMESTAMPADD(SECOND, 10, UTC_TIMESTAMP())');
 
       adapter.saveTask(task, function(err, id) {
-        mysql_conn.query
+        mysql_conn_master.query
           .should.have.been.calledWith(sql_expectation, task_to_insert);
+        mysql_conn_master.release.should.have.been.calledOnce;
         done();
       });
     });
@@ -157,11 +175,47 @@ suite('MySQL Multimaster adapter', function() {
       var sql_expectation = sinon.match('at = TIMESTAMPADD(SECOND, 100, UTC_TIMESTAMP())');
 
       adapter.saveTask(task, function(err, id) {
-        mysql_conn.query
+        mysql_conn_master.query
           .should.have.been.calledWith(sql_expectation, task_to_insert);
+        mysql_conn_master.release.should.have.been.calledOnce;
         done();
       });
     });
+
+    test('with some task, should call callback only after slave is confirmed to be updated', function(done) {
+      var task = {
+        func_name: 'ebin',
+      };
+      var expected_id = 3548796;
+      var insert_response = { 
+        fieldCount: 0,
+        affectedRows: 1,
+        insertId: expected_id,
+        serverStatus: 2,
+        warningCount: 0,
+        message: '',
+        protocol41: true,
+        changedRows: 0
+      };
+      var where = {
+        id: expected_id
+      };
+
+      mysql_conn_master.query.yields(null, insert_response, undefined);
+
+      adapter.saveTask(task, function(err, id) {
+        mysql_conn_master.query
+          .should.have.been.calledOnce;
+
+        mysql_conn_slave.query.should.have.been.calledOnce;
+        mysql_conn_slave.query.should.have.been.calledWith(any, where);
+        expect(err).to.be.null;
+        expect(id).to.equal(expected_id);
+        done();
+      })
+    });
+
+    test('with some task, should call callback with error if slave not updated');
 
   });
 
@@ -170,7 +224,7 @@ suite('MySQL Multimaster adapter', function() {
     var adapter;
 
     setup(function() {
-      mysql_conn.query.callsArgWith(2, null, 1)
+      mysql_conn_master.query.yields(null, 1)
       adapter = new MySQLMultimaster.MySQLMultimaster(config);
     });
 
@@ -188,8 +242,9 @@ suite('MySQL Multimaster adapter', function() {
       };
 
       adapter.completeTask(task, function(err, rows) {
-        mysql_conn.query
+        mysql_conn_master.query
           .should.have.been.calledWith(any, task_to_delete);
+        mysql_conn_master.release.should.have.been.calledOnce;
         done();
       });
     });
@@ -201,8 +256,8 @@ suite('MySQL Multimaster adapter', function() {
     var adapter;
 
     setup(function() {
-      mysql_conn.beginTransaction.yields(null),
-      mysql_conn.commit.yields(null),
+      mysql_conn_master.beginTransaction.yields(null),
+      mysql_conn_master.commit.yields(null),
 
       adapter = new MySQLMultimaster.MySQLMultimaster(config);
     });
@@ -230,13 +285,14 @@ suite('MySQL Multimaster adapter', function() {
       });
 
       test("doesn't call listener if no rows are returned" , function(done) {
-        mysql_conn.query.yields(null, [], null);
+        mysql_conn_master.query.yields(null, [], null);
 
         var listenerSpy = sandbox.spy();
         adapter.listenTask(listenerSpy);
 
         setTimeout(function() {
-          mysql_conn.query.should.have.been.calledThrice;
+          mysql_conn_master.query.should.have.been.calledThrice;
+          mysql_conn_master.release.should.have.been.calledOnce;
           listenerSpy.should.not.have.been.called;
           done();
         }, 1500);
@@ -285,21 +341,24 @@ suite('MySQL Multimaster adapter', function() {
           at: new Date(),
           task: '{"func_name":"eebenpuu","after":100}'
         };
-        mysql_conn.query.yields(null, [task_from_db], null);
+        mysql_conn_master.query.yields(null, [task_from_db], null);
 
         clock.tick(1500);
 
         listener.should.have.been.calledOnce;
         listener.should.have.been.calledWith(null, task);
+        mysql_conn_master.release.should.have.been.calledOnce;
       });
 
       test("rolls back and doesn't call listener on error", function() {
         adapter._listener = sandbox.spy();
-        mysql_conn.query.yields(new Error());
+        mysql_conn_master.query.yields(new Error());
+        mysql_conn_master.rollback.yields(null);
 
         adapter._poll();
 
-        mysql_conn.rollback.should.have.been.calledOnce;
+        mysql_conn_master.rollback.should.have.been.calledOnce;
+        mysql_conn_master.release.should.have.been.calledOnce;
         adapter._listener.should.not.have.been.called;
       });
 
@@ -400,11 +459,11 @@ suite('MySQL Multimaster adapter', function() {
     var adapter;
 
     setup(function() {
-      mysql_conn.query.callsArgWith(2, null, { affectedRows: 1 })
+      mysql_conn_master.query.callsArgWith(2, null, { affectedRows: 1 })
       adapter = new MySQLMultimaster.MySQLMultimaster(config);
     });
 
-    test('should update at', function() {
+    test('should update at', function(done) {
       var task = {
         id: {
           db_id: 'asdf://foo',
@@ -428,8 +487,10 @@ suite('MySQL Multimaster adapter', function() {
         expect(err).to.be.null;
         rows.should.be.equal(1);
 
-        mysql_conn.query
+        mysql_conn_master.query
           .should.have.been.calledWith(any, [values, where]);
+        mysql_conn_master.release.should.have.been.calledOnce;
+        done();
       });
     });
   });
