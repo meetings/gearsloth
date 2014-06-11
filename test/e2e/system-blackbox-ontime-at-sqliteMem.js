@@ -15,7 +15,7 @@ var Passthrough = require('../../lib/controllers/passthrough').Passthrough;
 chai.should();
 chai.use(sinonChai);
 
-suite.only('blackbox: at on-time with sqlite :memory:', function() {
+suite('blackbox: at on-time with sqlite :memory:', function() {
 
   this.timeout(5000);
 
@@ -32,7 +32,7 @@ suite.only('blackbox: at on-time with sqlite :memory:', function() {
   var port;
   var conf = {
     dbopt: {
-      poll_timeout:0,
+      poll_timeout:50,
       db_name:':memory:'
     },
     servers: [{
@@ -42,14 +42,14 @@ suite.only('blackbox: at on-time with sqlite :memory:', function() {
   };
   var at_2000_task = {
     func_name:'test',
-    payload:'blackbox-10000-ms-delay',
-    at:new Date(new Date().getTime() + 2000)
+    payload:new Date().toISOString(),
+    at:new Date(new Date().getTime() + 10000)
   };
   var after_and_at_task = {
     func_name:'test',
     payload:'blackbox-after-supersedes',
     at:new Date(new Date().getTime() + 1000),
-    after:2
+    after:5
   };
 
   setup(function(done) {
@@ -154,15 +154,14 @@ suite.only('blackbox: at on-time with sqlite :memory:', function() {
       });
   });
   test('task is recieved in bottom level worker after timeout expires', function(done){
-    this.timeout(3000);
+    this.timeout(12000);
     client = new gearman.Client({port:port});
     worker_fail = new gearman.Worker('test', function(payload, worker) {
-      done(new Error('task arrived too quickly'));
+      if(payload.toString() === at_2000_task.payload)
+        done(new Error('task arrived too quickly'));
     }, {port:port});
     worker_fail.on('connect', function(){
       client.submitJob('submitJobDelayed', JSON.stringify(at_2000_task))
-      .on('complete', function(){
-      });
 
       setTimeout(function() {
         async.series([
@@ -174,19 +173,21 @@ suite.only('blackbox: at on-time with sqlite :memory:', function() {
             worker = new gearman.Worker('test', function(payload, worker) {
               var payload = payload.toString();
               expect(payload).to.equal(at_2000_task.payload);
+              console.log(payload);
               done();
               callback();
             }, {port:port});
           }]);
-      }, 1500);
+      }, 5000);
     });
   });
 
   test('task is scheduled according to after if after and at are both specified', function(done){
-    this.timeout(3000);
+    this.timeout(6000);
     client = new gearman.Client({port:port});
     worker_fail = new gearman.Worker('test', function(payload, worker) {
-      done(new Error('task arrived too quickly'));
+      if(payload.toString() === after_and_at_task.payload)
+        done(new Error('task arrived too quickly'));
     }, {port:port});
     worker_fail.on('connect', function(){
       client.submitJob('submitJobDelayed', JSON.stringify(after_and_at_task))
@@ -207,7 +208,7 @@ suite.only('blackbox: at on-time with sqlite :memory:', function() {
               callback();
             }, {port:port});
           }]);
-      }, 1500);
+      }, 3000);
     });
   });
 });
