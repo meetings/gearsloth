@@ -1,4 +1,4 @@
-# Dockerfile for Gearsloth
+# Dockerfile for Gearslothd
 
 FROM ubuntu:trusty
 
@@ -13,12 +13,14 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends
     nodejs-legacy \
     npm
 
-ADD ./package.json /gearsloth/package.json
+RUN mkdir /gearsloth
+ADD ./package.json /gearsloth/
+ADD ./Makefile /gearsloth/
 ADD ./bin /gearsloth/bin
 ADD ./lib /gearsloth/lib
 RUN cd /gearsloth && \
     make build 2> /tmp/make.log
 
-ENTRYPOINT ["/tmp/gearsloth/bin/gearslothd"]
+ENTRYPOINT ["/gearsloth/bin/gearslothd"]
 
 CMD ["--help"]
