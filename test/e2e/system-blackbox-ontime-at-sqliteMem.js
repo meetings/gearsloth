@@ -167,7 +167,6 @@ suite('blackbox: at on-time with sqlite :memory:', function() {
       done(new Error('task arrived too quickly'));
     }, {port:port});
     worker_fail.on('connect', function(){
-        task_sent = true;
         at_2000_task.at = time_in_future;
         client.submitJob('submitJobDelayed', JSON.stringify(at_2000_task));
     });
@@ -199,7 +198,6 @@ suite('blackbox: at on-time with sqlite :memory:', function() {
       done(new Error('task arrived too quickly'));
     }, {port:port});
     worker_2_fail.on('connect', function(){
-        task_sent = true;
         client.submitJob('submitJobDelayed', JSON.stringify(after_and_at_task));
     });
 

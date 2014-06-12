@@ -32,6 +32,10 @@ unit-test: $(GEARMAN_COFFEE)
 e2e-test: $(GEARMAN_COFFEE)
 	$(MOCHA) $(MOCHA_PARAMS) test/e2e
 
+.PHONY: blackbox-test
+blackbox-test: $(GEARMAN_COFFEE)
+	$(MOCHA) $(MOCHA_PARAMS) test/blackbox
+
 .PHONY: coverage
 coverage: $(GEARMAN_COFFEE)
 	-$(ISTANBUL) cover --report cobertura $(MOCHA_ALT) -- $(MOCHA_PARAMS) test/
