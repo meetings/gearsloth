@@ -159,14 +159,31 @@ suite('blackbox: separate gearslothd processes', function() {
     var worker1;
     var worker2;
     var worker3;
-    var test_function = function(payload, worker) {
 
-    }
+    var test_function = function(done, payload, worker) {
+      var payload = payload.toString();
+      worker.complete();
+      expect(payload).to.equal(immediate_task.payload);
+      done();
+    };
+
+    var test_function2 = function(done, payload, worker) {
+      var payload = payload.toString();
+      if (worker) worker.complete();
+      expect(payload).to.equal(delayed_task.payload);
+      done();
+    };
 
     var immediate_task = {
       func_name:'test',
-      payload:'to be executed immediately'
+      payload: 'to be executed immediately'
     };
+
+    var delayed_task = {
+      func_name: 'test',
+      payload: 'task delayed about 6 seconds',
+      after: 6
+    }
 
     setup(function(done) {
       async.series([
@@ -201,6 +218,7 @@ suite('blackbox: separate gearslothd processes', function() {
     });
 
     teardown(function(done) {
+      this.timeout(10000);
       async.series([
         function(callback) {
           worker1.on('disconnect', callback);
@@ -219,28 +237,48 @@ suite('blackbox: separate gearslothd processes', function() {
           client.disconnect();
         },
         function(callback) {
-          spawn.killall([injector_gsd1], function(){});
-          spawn.killall([injector_gsd2], function(){});
           spawn.killall([injector_gsd3], callback);
         },
         function(callback) {
-          spawn.killall([runner_gsd1], function(){});
-          spawn.killall([runner_gsd2], function(){});
+          spawn.killall([injector_gsd2], callback);
+        },
+        function(callback) {
+          spawn.killall([injector_gsd1], callback);
+        },
+        function(callback) {
+          spawn.killall([runner_gsd1], callback);
+        },
+        function(callback) {
+          spawn.killall([runner_gsd2], callback);
+        },
+        function(callback) {
           spawn.killall([runner_gsd3], callback);
         },
         function(callback) {
-          spawn.killall([controller_gsd1], function(){});
-          spawn.killall([controller_gsd2], function(){});
+          spawn.killall([controller_gsd1], callback);
+        },
+        function(callback) {
+          spawn.killall([controller_gsd2], callback);
+        },
+        function(callback) {
           spawn.killall([controller_gsd3], callback);
         },
         function(callback) {
-          spawn.killall([ejector_gsd1], function(){});
-          spawn.killall([ejector_gsd2], function(){});
+          spawn.killall([ejector_gsd1], callback);
+        },
+        function(callback) {
+          spawn.killall([ejector_gsd2], callback);
+        },
+        function(callback) {
           spawn.killall([ejector_gsd3], callback);
         },
         function(callback) {
-          spawn.killall([gearmand1], function(){});
-          spawn.killall([gearmand2], function(){});
+          spawn.killall([gearmand1], callback);
+        },
+        function(callback) {
+          spawn.killall([gearmand2], callback);
+        },
+        function(callback) {
           spawn.killall([gearmand3], callback);
         },
         function(callback) {
@@ -258,7 +296,7 @@ suite('blackbox: separate gearslothd processes', function() {
     });
 
     test('shuold execute a simple task immediately', function(done){
-      this.timeout(500);
+      this.timeout(1000);
       async.series([
         function(callback) {
           client = new MultiserverClient(conf.servers);
@@ -267,42 +305,57 @@ suite('blackbox: separate gearslothd processes', function() {
           });
         },
         function(callback) {
-          worker1 = new MultiserverWorker(conf.servers, 'test', function(payload, worker) {
-            var payload = payload.toString();
-            worker.complete();
-            expect(payload).to.equal(immediate_task.payload);
-            console.log('1');
-            done();
-          });
+          worker1 = new MultiserverWorker(conf.servers, 'test', test_function.bind(null, done));
           worker1.on('connect', function(){
             callback();
           });
         },
         function(callback) {
-          worker2 = new MultiserverWorker(conf.servers, 'test', function(payload, worker) {
-            var payload = payload.toString();
-            worker.complete();
-            expect(payload).to.equal(immediate_task.payload);
-            console.log('2');
-            done();
-          });
+          worker2 = new MultiserverWorker(conf.servers, 'test', test_function.bind(null, done));
           worker2.on('connect', function(){
             callback();
           });
         },
         function(callback) {
-          worker3 = new MultiserverWorker(conf.servers, 'test', function(payload, worker) {
-            var payload = payload.toString();
-            worker.complete();
-            expect(payload).to.equal(immediate_task.payload);
-            console.log('3');
-            done();
-          });
+          worker3 = new MultiserverWorker(conf.servers, 'test', test_function.bind(null, done));
           worker3.on('connect', function(){
             client.submitJob('submitJobDelayed', JSON.stringify(immediate_task));
           });
         }]);
-      
-    });    
+    });
+
+    test('shuold execute a task on expiry', function(done){
+      this.timeout(10000);
+      var spy = sinon.spy(test_function2);
+      async.series([
+        function(callback) {
+          client = new MultiserverClient(conf.servers);
+          client.on('connect', function(){
+            callback();
+          });
+        },
+        function(callback) {
+          worker1 = new MultiserverWorker(conf.servers, 'test', test_function2.bind(null, done));
+          worker1.on('connect', function(){
+            callback();
+          });
+        },
+        function(callback) {
+          worker2 = new MultiserverWorker(conf.servers, 'test', test_function2.bind(null, done));
+          worker2.on('connect', function(){
+            callback();
+          });
+        },
+        function(callback) {
+          worker3 = new MultiserverWorker(conf.servers, 'test', test_function2.bind(null, done));
+          worker3.on('connect', function(){
+            client.submitJob('submitJobDelayed', JSON.stringify(delayed_task));
+            setTimeout(function(){
+              spy.should.not.have.been.called;
+            }, 5000)
+          });
+        }]);
+    });
+
   });
 });

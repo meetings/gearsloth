@@ -129,18 +129,14 @@ suite('(e2e) runner', function() {
     suiteTeardown(function(done){
       async.series([
         function(callback) {
-          // setTimeout(function() {
-            fs.unlink('/tmp/DelayedTasks.sqlite', function() {
-              callback();
-            });
-          // }, 500);
+          fs.unlink('/tmp/DelayedTasks.sqlite', function() {
+            callback();
+          });
         },
         function(callback) {
-          // setTimeout(function() {
-            fs.unlink('/tmp/DelayedTasks.sqlite-journal', function() {
-              callback();
-            });
-          // }, 500);
+          fs.unlink('/tmp/DelayedTasks.sqlite-journal', function() {
+            callback();
+          });
         }
         ], function() {
           done();
