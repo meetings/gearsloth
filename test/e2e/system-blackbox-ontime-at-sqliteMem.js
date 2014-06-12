@@ -26,7 +26,6 @@ suite('blackbox: at on-time with sqlite :memory:', function() {
   var runner;
   var client;
   var worker;
-  // var worker_fail;
   var controller;
 
   var port;

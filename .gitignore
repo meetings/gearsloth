@@ -39,3 +39,6 @@ node_modules
 
 # Test environment
 .vagrant
+
+#random killscript
+killall*
