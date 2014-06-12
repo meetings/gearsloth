@@ -32,6 +32,7 @@
     "istanbul": "*",
     "sinon": "*",
     "sinon-chai": "*",
-    "async": "*"
+    "async": "*",
+    "dockerode": "*"
   }
 }
