@@ -13,9 +13,10 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends
     nodejs-legacy \
     npm
 
-RUN cd /tmp && \
-    git clone https://github.com/meetings/gearsloth.git && \
-    cd gearsloth && \
+ADD ./package.json /gearsloth/package.json
+ADD ./bin /gearsloth/bin
+ADD ./lib /gearsloth/lib
+RUN cd /gearsloth && \
     make build 2> /tmp/make.log
 
 ENTRYPOINT ["/tmp/gearsloth/bin/gearslothd"]
