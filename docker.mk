@@ -1,4 +1,8 @@
-DOCKER := sudo docker
+# Docker image build targets
+
+# User needs to have administrator privileges or be a member of group 'docker'
+
+DOCKER := docker
 IMAGE_PREFIX := meetings
 BUILD_DIR := docker
 VIRT_DIR := virt

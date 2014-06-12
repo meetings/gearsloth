@@ -23,5 +23,3 @@ apt-get install --yes --no-install-recommends \
   nodejs-legacy \
   npm \
   sqlite3
-
-ln -sf /usr/bin/docker.io /usr/local/bin/docker
