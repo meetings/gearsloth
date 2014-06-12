@@ -4,6 +4,8 @@ var gearman = require('gearman-coffee')
   , chai = require('chai')
   , sinon = require('sinon')
   , sinonChai = require('sinon-chai')
+  , spawn = require('../lib/spawn')
+  , async = require('async');
 
 chai.should();
 chai.use(sinonChai);
@@ -13,12 +15,15 @@ suite('(e2e) passthrough controller', function() {
   this.timeout(5000);
 
   var gearmand
-    , port
+    , port = 54730
     , adapter = {}
     , client
     , conf = {
       dbconn: adapter,
-      servers: [{ host: 'localhost' }]
+      servers: [{ 
+        host: 'localhost',
+        port:port
+      }]
     }
     , task = {
       id: '666',
@@ -27,22 +32,42 @@ suite('(e2e) passthrough controller', function() {
     }
 
   setup(function(done) {
-    port = 6660 + Math.floor(Math.random() * 1000);
-    conf.servers[0].port = port;
-
-    gearmand = child_process.exec('gearmand -p ' + port);
-
-    client = new gearman.Client(conf.servers[0]);
-
-    client.on('connect', function() {
-      passthrough(conf);
-      done();
-    });
+    async.series([
+      function(callback) {
+        gearmand = spawn.gearmand(port, function(){
+          callback();
+        });
+      },
+      function(callback) {
+        client = new gearman.Client({
+          port: port
+        });
+        client.on('connect', function() {
+          passthrough(conf);
+          callback();
+        });
+      }
+      ], function(){
+        done();
+      });
   });
 
-  teardown(function() {
-    client.disconnect();
-    gearmand.kill();
+  teardown(function(done) {
+    async.series([
+      function(callback) {
+        client.socket.on('close', function() {
+          callback();
+        });
+        client.disconnect();
+      },
+      function(callback) {
+        spawn.killall([gearmand], function() {
+          callback();
+        });
+      }
+      ], function(){
+        done();
+      })
   });
 
   test('should call correct func_name with correct string payload', function(done) {
