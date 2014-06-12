@@ -9,9 +9,9 @@ var gearmand = exports.gearmand = function(port, done) {
   return gearmand;
 }
 
-var gearslothd = exports.gearslothd = function(port, done) {
-  var gearslothd = child_process.spawn('./bin/gearslothd',
-    ['--db=sqlite', '-v', 'localhost:' + port]);
+var gearslothd = exports.gearslothd = function(conf, done) {
+  var gearslothd = 
+  child_process.spawn('./bin/gearslothd', ['--conf='+JSON.stringify(conf), '-v']);
   readUntilMatch(gearslothd.stdout, /gearslothd: fully connected/, done);
   return gearslothd;
 }

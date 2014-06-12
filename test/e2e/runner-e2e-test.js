@@ -21,16 +21,20 @@ suite('(e2e) runner', function() {
 
     this.timeout(4000);
 
+    var port = 54730;
     var gearmand;
     var adapter = {};
     var worker;
     var e;
     var conf = { dbconn: adapter,
-          servers: [{ host: 'localhost' }]
+          servers: [{
+            host: 'localhost',
+            port: port
+          }]
         };
     var port;
     var runner_in_use;
-
+    
     var new_task1 = {
         controller: 'test',
         func_name: 'log',
@@ -61,11 +65,6 @@ suite('(e2e) runner', function() {
 
     setup(function(done) {
       async.series([
-        function(callback) {
-          port = 6660 + Math.floor(Math.random() * 1000);
-          conf.servers[0].port = port;
-          callback();
-        },
         function(callback) {
           gearmand = spawn.gearmand(port, function(){
             callback();
