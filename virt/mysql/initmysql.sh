@@ -1,14 +1,22 @@
 #!/bin/bash
 
-if [ -z "$1" ]; then
-  echo No multi-master configuration given,
-  echo dropping to shell
-  exec /bin/bash
-fi
+_usage() {
+  echo "Available arguments:"
+  echo " 1 - Multi-master mysql configuration 1"
+  echo " 2 - Multi-master mysql configuration 2"
+  echo " S - Shell only"
+}
 
-if [ -f /etc/mysql/src/multi-master.cnf.$1 ]; then
-  echo Choosing multi-master configuration $1
-  cat /etc/mysql/src/multi-master.cnf.1 > /etc/mysql/conf.d/multi-master.cnf
+if [ -z "$1" ]; then
+  _usage
+  exit 0
+elif [[ $1 =~ ^[sS] ]]; then
+  exec /bin/bash
+elif [ -f /etc/mysql/src/multi-master.cnf.$1 ]; then
+  cat /etc/mysql/src/multi-master.cnf.$1 > /etc/mysql/conf.d/multi-master.cnf
+else
+  _usage
+  exit 1
 fi
 
 /usr/bin/mysqld_safe &
