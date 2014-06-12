@@ -3,6 +3,7 @@ MOCHA_PARAMS ?= --recursive --ui tdd --reporter $(REPORTER)
 MOCHA := ./node_modules/.bin/mocha
 MOCHA_ALT := ./node_modules/.bin/_mocha
 ISTANBUL := ./node_modules/.bin/istanbul
+DOCKER := sudo docker
 
 GEARMAN_COFFEE := node_modules/gearman-coffee/lib-js
 
@@ -19,6 +20,9 @@ endef
 
 .PHONY: build
 build: $(GEARMAN_COFFEE)
+
+.PHONY: test-virt
+test-virt: $(GEARMAN_COFFEE) build-virt
 
 .PHONY: test
 test: $(GEARMAN_COFFEE)
@@ -56,10 +60,16 @@ node_modules: package.json
 	npm install
 	touch $@
 
-.PHONY: build
-build: node_modules
+# Include docker.mk if available
+
+ifneq ("$(wildcard docker.mk)","")
+include docker.mk
+else
+.PHONY: clean-docker
+clean-docker: ;
+endif
 
 .PHONY: clean
-clean:
+clean: clean-docker
 	-rm -rf coverage
 	-rm -rf node_modules
