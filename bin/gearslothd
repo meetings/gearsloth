@@ -9,6 +9,7 @@ try {
   if (!conf) {
     process.exit(0);
   }
+  conf = config.resolveController(conf);
   config.initializeDb(conf, function(err, conf) {
     if (err)
       throw new Error('Error initializing database adapter:', err.message);
