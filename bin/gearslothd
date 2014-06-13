@@ -2,11 +2,13 @@
 
 var config = require('../lib/config');
 var daemon = require('../lib/daemon');
+var log = require('../lib/log');
 
 try {
   var conf = config.initialize(process.argv);
-  if (!conf)
+  if (!conf) {
     process.exit(0);
+  }
   config.initializeDb(conf, function(err, conf) {
     if (err)
       throw new Error('Error initializing database adapter:', err.message);

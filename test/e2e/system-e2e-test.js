@@ -15,6 +15,8 @@ suite('single gearslothd in default mode:', function() {
   var gearslothd;
   var tester;
   var conf = {
+    verbose: 1,
+    db: 'sqlite',
     dbopt: {
       poll_timeout:0,
       db_name:':memory:'
