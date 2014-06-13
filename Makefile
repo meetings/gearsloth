@@ -3,9 +3,6 @@ MOCHA_PARAMS ?= --recursive --ui tdd --reporter $(REPORTER)
 MOCHA := ./node_modules/.bin/mocha
 MOCHA_ALT := ./node_modules/.bin/_mocha
 ISTANBUL := ./node_modules/.bin/istanbul
-DOCKER := sudo docker
-
-GEARMAN_COFFEE := node_modules/gearman-coffee/lib-js
 
 # run local gearman server and gearsloth worker
 define start-local
@@ -19,25 +16,22 @@ define start-local
 endef
 
 .PHONY: build
-build: $(GEARMAN_COFFEE)
-
-.PHONY: test-virt
-test-virt: $(GEARMAN_COFFEE) build-virt
+build: node_modules
 
 .PHONY: test
-test: $(GEARMAN_COFFEE)
+test: node_modules
 	$(MOCHA) $(MOCHA_PARAMS) test/
 
 .PHONY: unit-test
-unit-test: $(GEARMAN_COFFEE)
+unit-test: node_modules
 	$(MOCHA) $(MOCHA_PARAMS) test/unit
 
 .PHONY: e2e-test
-e2e-test: $(GEARMAN_COFFEE)
+e2e-test: node_modules
 	$(MOCHA) $(MOCHA_PARAMS) test/e2e
 
 .PHONY: coverage
-coverage: $(GEARMAN_COFFEE)
+coverage: node_modules
 	-$(ISTANBUL) cover --report cobertura $(MOCHA_ALT) -- $(MOCHA_PARAMS) test/
 
 .PHONY: html-coverage
@@ -45,16 +39,8 @@ html-coverage: coverage
 	-$(ISTANBUL) report html
 
 .PHONY: log-delayed
-log-delayed: $(GEARMAN_COFFEE)
+log-delayed: node_modules
 	-@$(call start-local, ./examples/bin/log-delayed)
-
-$(GEARMAN_COFFEE): node_modules/gearman-coffee/node_modules/coffee-script
-	cd node_modules/gearman-coffee; make
-	touch $@
-
-node_modules/gearman-coffee/node_modules/coffee-script: node_modules
-	cd node_modules/gearman-coffee; npm install
-	touch $@
 
 node_modules: package.json
 	npm install
