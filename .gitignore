@@ -28,7 +28,7 @@ build/Release
 node_modules
 
 # Docker markers
-docker
+/docker
 
 # Users Environment Variables
 .lock-wscript
