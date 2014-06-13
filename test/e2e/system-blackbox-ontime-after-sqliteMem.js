@@ -10,7 +10,7 @@ var child_process = require('child_process');
 var sqlite = require('../../lib/adapters/sqlite');
 var sinon = require('sinon');
 var sinonChai = require('sinon-chai');
-var Passthrough = require('../../lib/controllers/passthrough').Passthrough;
+var Retry = require('../../lib/controllers/retry').Retry;
 
 chai.should();
 chai.use(sinonChai);
@@ -70,7 +70,6 @@ suite('blackbox: on-time with sqlite :memory:', function() {
       function(callback) {
         sqlite.initialize(conf, function(err, dbconn) {
             if (err) {
-              console.log(err, dbconn);
               done("Error initializing database");
             }
             conf.dbconn = dbconn;
@@ -84,36 +83,42 @@ suite('blackbox: on-time with sqlite :memory:', function() {
       },
       function(callback) {
         gearmand = spawn.gearmand(port, function(){
+          
           callback();
         });
       },
       function(callback) {
         runner = new Runner(conf);
         runner.on('connect', function(){
+          
           callback();
         });
       },
       function(callback) {
         injector = new Injector(conf);
         injector.on('connect', function() {
+          
           callback();
         });
       },
       function(callback) {
         ejector = new Ejector(conf);
         ejector.on('connect', function() {
+          
           callback();
         });
       },
       function(callback) {
-        controller = new Passthrough(conf);
+        controller = new Retry(conf);
         controller.on('connect', function(){
+          
           callback();
         });
       }
       ], function() {
+        
         done();
-      })
+      });
   });
 
   teardown(function(done) {
@@ -186,6 +191,7 @@ suite('blackbox: on-time with sqlite :memory:', function() {
       var payload = payload.toString();
       expect(payload).to.equal(after_2_task.payload);
       done();
+      worker.complete();
     }, {port:port});
     worker.on('connect', function(){
       client.submitJob('submitJobDelayed', JSON.stringify(after_2_task))

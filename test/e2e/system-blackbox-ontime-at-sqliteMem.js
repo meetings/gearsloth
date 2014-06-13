@@ -10,7 +10,7 @@ var child_process = require('child_process');
 var sqlite = require('../../lib/adapters/sqlite');
 var sinon = require('sinon');
 var sinonChai = require('sinon-chai');
-var Passthrough = require('../../lib/controllers/passthrough').Passthrough;
+var Retry = require('../../lib/controllers/retry').Retry;
 
 chai.should();
 chai.use(sinonChai);
@@ -95,7 +95,7 @@ suite('blackbox: at on-time with sqlite :memory:', function() {
         });
       },
       function(callback) {
-        controller = new Passthrough(conf);
+        controller = new Retry(conf);
         controller.on('connect', function(){
           callback();
         });

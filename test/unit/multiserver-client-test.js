@@ -109,11 +109,38 @@ suite("multiserver-client", function() {
       sandbox.restore();
     })
 
-    test("submitJob() throws an error", function() {
-      expect(function() {
-        m.submitJob('mita', 'hessu');
-      }).to.throw(Error);
+    test("submits to a client anyway", function(done) {
+      m.submitJob('mita', 'hessu');
+      var called_clients = 0;
+      m._clients.forEach(function(client) {
+        if(client.submitJob.calledOnce) called_clients++;
+      });
+      if(called_clients === 1) done();
+      else if(called_clients > 1) done(new Error('Job was sent to more than one client'));
+      else done(new Error('Job was not sent'));
     });
+
+    test("if multiple jobs are received, sends them to \
+      different clients", function(done) {
+      m.submitJob('mita', 'hessu');
+      m.submitJob('mita', 'hessu');
+
+      var called_clients = 0;
+      var stop = false;
+      m._clients.forEach(function(client) {
+        if(client.submitJob.calledOnce) called_clients++;
+        if(client.submitJob.calledTwice) {
+          done(new Error('Job was sent to same client'));
+          stop = true;
+          return;
+        }
+      });
+      if(stop) return;
+
+      if(called_clients === 2) done();
+      else if(called_clients > 2) done(new Error('Job was sent to too many clients'));
+      else done(new Error('Job was not sent'));
+      });
   });
 
   suite("when given no servers", function() {
