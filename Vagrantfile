@@ -22,5 +22,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provider :virtualbox do |virtualbox|
     virtualbox.name   = "sloth-test-env"
     virtualbox.memory = "1024"
+    virtualbox.cpus = "2"
   end
 end
