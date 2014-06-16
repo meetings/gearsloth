@@ -48,6 +48,7 @@ suite('blackbox: separate gearslothd processes', function() {
     var worker;
 
     var immediate_task = {
+      retry_count: 1,
       func_name:'test',
       payload:'to be executed immediately'
     };
@@ -139,7 +140,7 @@ suite('blackbox: separate gearslothd processes', function() {
 
   });
 
-  suite.only('when multiple instances of everything are spawned', function() {
+  suite('when multiple instances of everything are spawned', function() {
     this.timeout(5000);
 
     var port1 = 54731
@@ -184,22 +185,26 @@ suite('blackbox: separate gearslothd processes', function() {
     var worker1;
     var worker2;
     var worker3;
+    var time_reference;
 
     var immediate_task = {
+      retry_count: 1,
       func_name:'test',
       payload: 'to be executed immediately'
     };
 
     var delayed_task_after = {
+      retry_count: 1,
       func_name: 'test',
-      payload: 'task delayed about 6 seconds',
+      payload: 'task delayed about 5 seconds',
       after: 6
     };
 
     var delayed_task_at = {
+      retry_count: 1,
       func_name: 'test',
-      payload: 'task delayed about 6 seconds',
-      // after: to be se in test to curcumvent oddities
+      payload: 'task delayed about 5 seconds',
+      // after: to be se in test to circumvent oddities
     };
 
     setup(function(done) {
@@ -377,37 +382,55 @@ suite('blackbox: separate gearslothd processes', function() {
         function(callback) {
           worker3 = new MultiserverWorker(conf.servers, 'test', test_imm_func_3.bind(null, done));
           worker3.on('connect', function(){
-            client.submitJob('submitJobDelayed', JSON.stringify(immediate_task));
+            callback();
           });
-        }]);
+        }, 
+        function(callback) {
+          client.submitJob('submitJobDelayed', JSON.stringify(immediate_task));
+          callback();
+        }
+        ]);
     });
 
     var test__after_func_1 = function(done, payload, worker) {
       var payload = payload.toString();
       if (worker) worker.complete();
       expect(payload).to.equal(delayed_task_after.payload);
-      done();
+      var time_now = new Date();
+      if (time_now.getSeconds() - time_reference.getSeconds() < 5) {
+        done(new Error('Task was submitted too early'));
+      } else {
+        done();
+      }
     };
 
     var test__after_func_2 = function(done, payload, worker) {
       var payload = payload.toString();
       if (worker) worker.complete();
       expect(payload).to.equal(delayed_task_after.payload);
-      done();
+      var time_now = new Date();
+      if (time_now.getSeconds() - time_reference.getSeconds() < 5) {
+        done(new Error('Task was submitted too early'));
+      } else {
+        done();
+      }
     };
 
     var test__after_func_3 = function(done, payload, worker) {
       var payload = payload.toString();
       if (worker) worker.complete();
       expect(payload).to.equal(delayed_task_after.payload);
-      done();
+      var time_now = new Date();
+      if (time_now.getSeconds() - time_reference.getSeconds() < 5) {
+        done(new Error('Task was submitted too early'));
+      } else {
+        done();
+      }
     };
 
     test('shuold execute a task on expiry with after field', function(done){
       this.timeout(10000);
-      var spy_after_1 = sinon.spy(test__after_func_1);
-      var spy_after_2 = sinon.spy(test__after_func_2);
-      var spy_after_3 = sinon.spy(test__after_func_3);
+
       async.series([
         function(callback) {
           client = new MultiserverClient(conf.servers);
@@ -430,13 +453,13 @@ suite('blackbox: separate gearslothd processes', function() {
         function(callback) {
           worker3 = new MultiserverWorker(conf.servers, 'test', test__after_func_3.bind(null, done));
           worker3.on('connect', function(){
-            client.submitJob('submitJobDelayed', JSON.stringify(delayed_task_after));
-            setTimeout(function(){
-              spy_after_1.should.not.have.been.called;
-              spy_after_2.should.not.have.been.called;
-              spy_after_3.should.not.have.been.called;
-            }, 5000)
+            callback();
           });
+        },
+        function(callback) {
+          client.submitJob('submitJobDelayed', JSON.stringify(delayed_task_after));
+          time_reference = new Date();
+          callback();
         }]);
     });
 
@@ -444,32 +467,43 @@ suite('blackbox: separate gearslothd processes', function() {
       var payload = payload.toString();
       if (worker) worker.complete();
       expect(payload).to.equal(delayed_task_at.payload);
-      done();
+      var time_now = new Date();
+      if (time_now.getSeconds() - time_reference.getSeconds() < 5) {
+        done(new Error('Task was submitted too early' + time_now +' ' + time_reference));
+      } else {
+        done();
+      }
     };
 
     var test__at_func_2 = function(done, payload, worker) {
       var payload = payload.toString();
       if (worker) worker.complete();
       expect(payload).to.equal(delayed_task_at.payload);
-      done();
+      var time_now = new Date();
+      if (time_now.getSeconds() - time_reference.getSeconds() < 5) {
+        done(new Error('Task was submitted too early' + time_now +' ' + time_reference));
+      } else {
+        done();
+      }
     };
 
     var test__at_func_3 = function(done, payload, worker) {
       var payload = payload.toString();
       if (worker) worker.complete();
       expect(payload).to.equal(delayed_task_at.payload);
-      done();
+      var time_now = new Date();
+      if (time_now.getSeconds() - time_reference.getSeconds() < 5) {
+        done(new Error('Task was submitted too early' + time_now +' ' + time_reference));
+      } else {
+        done();
+      }
     };
 
     test('shuold execute a task on expiry with at field', function(done){
         this.timeout(10000);
         var expiry = new Date();
         expiry.setSeconds(expiry.getSeconds() + 5);
-        delayed_task_after.at = expiry;
-
-        var spy_at_1 = sinon.spy(test__at_func_1);
-        var spy_at_2 = sinon.spy(test__at_func_2);
-        var spy_at_3 = sinon.spy(test__at_func_3);
+        delayed_task_at.at = expiry;
 
         async.series([
           function(callback) {
@@ -493,14 +527,14 @@ suite('blackbox: separate gearslothd processes', function() {
           function(callback) {
             worker3 = new MultiserverWorker(conf.servers, 'test', test__at_func_3.bind(null, done));
             worker3.on('connect', function(){
-              client.submitJob('submitJobDelayed', JSON.stringify(delayed_task_at));
-              setTimeout(function(){
-                spy_at_1.should.not.have.been.called;
-                spy_at_2.should.not.have.been.called;
-                spy_at_3.should.not.have.been.called;
-              }, 5000)
             });
-          }]);
+          },
+          function(callback) {
+            client.submitJob('submitJobDelayed', JSON.stringify(delayed_task_at));
+            time_reference = new Date();
+            callback();
+          }
+          ]);
       });
 
   });
