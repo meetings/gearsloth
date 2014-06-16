@@ -14,6 +14,8 @@ VIRT_IMAGES := gearmand
 
 GEARSLOTHD_MARKER := $(MARKER_BUILD_PREFIX)$(GEARSLOTHD_IMAGE)
 MARKERS := $(addprefix $(MARKER_BUILD_PREFIX),$(VIRT_IMAGES))
+MARKER_TARGETS := $(addprefix $(IMAGE_PREFIX)/,$(GEARSLOTHD_IMAGE) \
+	$(VIRT_IMAGES))
 
 # Source files for running gearslothd daemon
 
@@ -22,13 +24,20 @@ GEARSLOTHD_SRC := package.json $(shell find bin lib -type f)
 .PHONY: build-docker
 build-docker: $(GEARSLOTHD_MARKER) $(MARKERS)
 
-# Gearslothd docker container
+# convenient phony docker image targets
+# eg. meetings/gearslothd
+
+.PHONY: $(MARKER_TARGETS)
+$(MARKER_TARGETS): $(IMAGE_PREFIX)/%: $(MARKER_BUILD_PREFIX)%
+
+# Gearslothd docker image
 
 $(GEARSLOTHD_MARKER): Dockerfile $(GEARSLOTHD_SRC) $(BUILD_DIR)
 	$(DOCKER) build -t $(IMAGE_PREFIX)/$(GEARSLOTHD_IMAGE) .
 	touch $@
 
-# Other custom containers
+# Other custom images under $(VIRT_DIR)
+# eg. docker/docker-gearmand
 
 .SECONDEXPANSION:
 
