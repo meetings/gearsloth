@@ -13,6 +13,8 @@ var gearman = require('gearman-coffee')
 chai.should();
 chai.use(sinonChai);
 
+require('../../lib/log').setOutput();
+
 suite('(e2e) runner', function() {
 
   suite('runner using a real adapter with no conf,', function() {
@@ -161,7 +163,7 @@ suite('(e2e) runner', function() {
         json.first_run = new Date(json.first_run);
         config.dbconn.disableTask.should.have.been.calledWith(json);
         done();
-      }, { port:port 
+      }, { port:port
       });
       config.dbconn.saveTask(expiring_task, function(err, id){});
     });
@@ -173,7 +175,7 @@ suite('(e2e) runner', function() {
         json.first_run = new Date(json.first_run);
         config.dbconn.disableTask.should.not.have.been.calledWith(json);
         done();
-      }, { port:port 
+      }, { port:port
       });
       config.dbconn.saveTask(non_expiring_task, function(err, id){});
     });
@@ -191,5 +193,4 @@ suite('(e2e) runner', function() {
       config.dbconn.saveTask(sample_task, function(err, id){});
     });
   });
-  
 });
