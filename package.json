@@ -37,6 +37,7 @@
     "sinon": "*",
     "sinon-chai": "*",
     "async": "*",
-    "dockerode": "*"
+    "dockerode": "*",
+    "underscore": "*"
   }
 }

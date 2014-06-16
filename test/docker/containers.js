@@ -1,7 +1,8 @@
 var Docker = require('dockerode'),
     mysql  = require('mysql'),
     async  = require('async'),
-    _      = require('underscore');
+    _      = require('underscore'),
+    net    = require('net');
 
 var docker = new Docker({socketPath: '/var/run/docker.sock'});
 
@@ -118,4 +119,93 @@ exports.multimaster_mysql = function(callback) {
       callback(err, config, remover);
     })
   });
+};
+
+/**
+ * Start a gearmand docker container
+ *
+ * @param {Array} cmd - An array with the bin to run and its arguments
+ * @param {boolean} verbose - Whether to attach a stdout to container
+ * @param {Function} callback - Called when gearmand is reachable with a conf {host:host,port:port} as a parameter
+ */
+
+exports.gearmand = function(cmd, talkative, callback) {
+  docker.createContainer({
+    Image:'meetings/gearmand',
+    Cmd:cmd
+  }, function(err, container) {
+    if(err) console.log(err);
+
+    if(talkative) {
+      container.attach({stream: true, stdout: true, stderr: true}, function (err, stream) {
+        stream.pipe(process.stdout);
+      });
+    }
+
+    container.start(function(err, data) {
+      if(err) console.log(err);
+      container.inspect(function(err, data) {
+        var config = {
+          host: data.NetworkSettings.IPAddress,
+          port: 4730
+        };
+        connectUntilSuccess(config.host, config.port, function() {
+          callback(config); 
+        });
+      });
+    });
+  });
+  
+  function connectUntilSuccess(host, port, done) {
+    if(talkative)
+      console.log('Trying to connect to '+ host +':'+ port);
+    var socket = net.connect({
+      host: host,
+      port: port
+    }, function() {
+      socket.end();
+    })
+    .on('error', function(err) {
+      // catch error
+    })
+    .on('close', function(had_err) {
+      if (had_err) {
+        setTimeout(function () {
+          connectUntilSuccess(host, port, done);
+        }, 100);
+      }
+      else {
+        done();
+      }
+    });
+  }
+};
+
+/**
+ * Start a gearslothd docker container
+ *
+ * @param {Array} cmd - An array with the bin to run and its arguments
+ * @param {boolean} talkative - Whether to attach a stdout to container
+ * @param {Function} callback - Called when the container is up and running
+ */
+
+exports.gearslothd = function(cmd, talkative, callback) {
+  docker.createContainer({
+    Image:'meetings/gearslothd',
+    Cmd:cmd,
+    }, function(err, container) {
+    if(err) console.log(err);
+
+    if(talkative) {
+      container.attach({stream: true, stdout: true, stderr: true}, function (err, stream) {
+        stream.pipe(process.stdout);
+      });
+    }
+
+    container.start(function(err, data) {
+      if(err) console.log(err);
+      callback();
+    });
+  });
+
 };

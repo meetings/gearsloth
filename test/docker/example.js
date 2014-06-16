@@ -5,99 +5,60 @@ var async = require('async')
   , Docker = require('dockerode')
   , docker = new Docker({socketPath: '/var/run/docker.sock'})
   , net = require('net')
-  , fs = require('fs');
+  , fs = require('fs')
+  , containers = require('./containers');
 
 chai.should();
 
 suite.only('docker-example', function() {
-  var gearmand_ip;
+  var gearmand_ip
+  var mysqld_config = {};
   setup(function(done) {
-    this.timeout(5000);
+    this.timeout(10000);
     async.series([
       function(callback) {
-        docker.createContainer({
-          Image:'meetings/gearmand',
-          Cmd:['gearmand', '--verbose', 'NOTICE', '-l', 'stderr']
-          }, function(err, container) {
-          if(err) console.log(err);
-          container.attach({stream: true, stdout: true, stderr: true}, function (err, stream) {
-            stream.pipe(process.stdout);
-          });
-          container.start(function(err, data) {
-            if(err) console.log(err);
-            container.inspect(function(err, data) {
-              gearmand_ip = data.NetworkSettings.IPAddress;
-              connectUntilSuccess(gearmand_ip, 4730, callback);
-            });
-          });
+        console.log('starting mysqld...');
+        containers.multimaster_mysql(function(err, config) {
+          mysqld_config = config;
+          callback();
         });
       },
       function(callback) {
-        docker.createContainer({
-          Image:'meetings/gearslothd',
-          Cmd:['gearslothd', '-v', '-i', gearmand_ip],
-          Tty:true
-          }, function(err, container) {
-          if(err) console.log(err);
-          container.defaultOptions.start.Binds = ["/tmp:/var/lib/gearsloth:rw"];
-          container.attach({stream: true, stdout: true, stderr: true}, function (err, stream) {
-            stream.pipe(process.stdout);
-          });
-          container.start(function(err, data) {
-            if(err) console.log(err);
-            callback();
-          });
+        containers.gearmand(['gearmand', '--verbose', 'INFO', '-l', 'stderr'],
+          true, function(config) {
+          gearmand_ip = config.host;
+          callback();
         });
       },
       function(callback) {
-        docker.createContainer({
-          Image:'meetings/gearslothd',
-          Cmd:['gearslothd', '-v', '-r', gearmand_ip],
-          Tty:true
-          }, function(err, container) {
-          if(err) console.log(err);
-          container.defaultOptions.start.Binds = ["/tmp:/var/lib/gearsloth:rw"];
-          container.attach({stream: true, stdout: true, stderr: true}, function (err, stream) {
-            stream.pipe(process.stdout);
-          });
-          container.start(function(err, data) {
-            if(err) console.log(err);
-            callback();
-          });
-        });
+        containers.gearslothd([
+          'gearslothd', '-v', '-i',
+          '--db=mysql-multimaster',
+          '--dbopt='+JSON.stringify(mysqld_config),
+          gearmand_ip
+          ], true, callback);
       },
       function(callback) {
-        docker.createContainer({
-          Image:'meetings/gearslothd',
-          Cmd:['gearslothd', '-v', '-c', gearmand_ip],
-          Tty:true
-          }, function(err, container) {
-          if(err) console.log(err);
-          container.attach({stream: true, stdout: true, stderr: true}, function (err, stream) {
-            stream.pipe(process.stdout);
-          });
-          container.start(function(err, data) {
-            if(err) console.log(err);
-            callback();
-          });
-        });
+        containers.gearslothd([
+          'gearslothd', '-v', '-r',
+          '--db=mysql-multimaster',
+          '--dbopt='+JSON.stringify(mysqld_config),
+          gearmand_ip
+          ], true, callback);
       },
       function(callback) {
-        docker.createContainer({
-          Image:'meetings/gearslothd',
-          Cmd:['gearslothd', '-v', '-e', gearmand_ip],
-          Tty:true
-          }, function(err, container) {
-          if(err) console.log(err);
-          container.defaultOptions.start.Binds = ["/tmp:/var/lib/gearsloth:rw"];
-          container.attach({stream: true, stdout: true, stderr: true}, function (err, stream) {
-            stream.pipe(process.stdout);
-          });
-          container.start(function(err, data) {
-            if(err) console.log(err);
-            callback();
-          });
-        });
+        containers.gearslothd([
+          'gearslothd', '-v', '-e',
+          '--db=mysql-multimaster',
+          '--dbopt='+JSON.stringify(mysqld_config),
+          gearmand_ip
+          ], true, callback);
+      },
+      function(callback) {
+        containers.gearslothd([
+          'gearslothd', '-v', '-c',
+          gearmand_ip
+          ], true, callback);
       }],
     done);
   });
@@ -113,8 +74,6 @@ suite.only('docker-example', function() {
           });
         callback();
         })
-      }, function(callback) {
-       fs.unlink('/tmp/gearsloth.sqlite', callback); 
       }], done);
   });
   test('test', function(done) {
@@ -134,23 +93,3 @@ suite.only('docker-example', function() {
   });
 });
 
-function connectUntilSuccess(host, port, done) {
-  console.log('trying to connect to 'host +':'+ port);
-  var socket = net.connect({
-    host: host,
-    port: port
-  }, function() {
-    socket.end();
-  })
-  .on('error', function(err) {
-    // catch error
-  })
-  .on('close', function(had_err) {
-    if (had_err) {
-      connectUntilSuccess(host, port, done);
-    }
-    else {
-      done();
-    }
-  });
-}
