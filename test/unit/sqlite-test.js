@@ -179,10 +179,10 @@ suite('sqlite-adapter', function() {
 
           if (items <= 0) {
             done();
-            fs.open('/tmp/DelayedTasks.sqlite', 'r', function(err) {
-              fs.unlink('/tmp/DelayedTasks.sqlite', function() {});
+            fs.open('DelayedTasks.sqlite', 'r', function(err) {
+              fs.unlink('DelayedTasks.sqlite', function() {});
             });
-          }
+          } 
         });
 
         dbconn.saveTask(test_json_unset_delivery, function(err, id) {});
