@@ -135,16 +135,14 @@ suite.only('docker-example', function() {
 });
 
 function connectUntilSuccess(host, port, done) {
-  console.log(host + port);
+  console.log('trying to connect to 'host +':'+ port);
   var socket = net.connect({
     host: host,
     port: port
   }, function() {
-    console.log('asdas');
     socket.end();
   })
   .on('error', function(err) {
-    console.log('asdas');
     // catch error
   })
   .on('close', function(had_err) {
@@ -152,7 +150,6 @@ function connectUntilSuccess(host, port, done) {
       connectUntilSuccess(host, port, done);
     }
     else {
-      console.log('asdas');
       done();
     }
   });
