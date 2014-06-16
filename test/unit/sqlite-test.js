@@ -19,7 +19,7 @@ suite('sqlite-adapter', function() {
   
   var test_config_with_file = {
     dbopt:{
-      db_name:'test-database.sqlite',
+      db_name:'/tmp/test-database.sqlite',
       table_name:"sloth",
       poll_timeout:1000
     }
@@ -179,8 +179,8 @@ suite('sqlite-adapter', function() {
 
           if (items <= 0) {
             done();
-            fs.open('DelayedTasks.sqlite', 'r', function(err) {
-              fs.unlink('DelayedTasks.sqlite', function() {});
+            fs.open('/temp/test-database.sqlite', 'r', function(err) {
+              fs.unlink('/temp/test-database.sqlite', function() {});
             });
           } 
         });
@@ -188,7 +188,7 @@ suite('sqlite-adapter', function() {
         dbconn.saveTask(test_json_unset_delivery, function(err, id) {});
         dbconn.saveTask(test_json_unset_delivery, function() {});
       }
-      adapter.initialize(null, testScript);
+      adapter.initialize(test_config, testScript);
     });
 
   });
@@ -328,10 +328,10 @@ suite('sqlite-adapter', function() {
       adapter.initialize(test_config_with_file, function() {
         setTimeout(checkFile, 1000);
         function checkFile () {
-          fs.open('test-database.sqlite', 'r', function(err) {
+          fs.open('/tmp/test-database.sqlite', 'r', function(err) {
             if(!err) done();
             else done(new Error('file does not exist'));
-            fs.unlink('test-database.sqlite', function() {});
+            fs.unlink('/tmp/test-database.sqlite', function() {});
           });
         }
       });

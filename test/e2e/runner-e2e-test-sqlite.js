@@ -17,7 +17,7 @@ require('../../lib/log').setOutput();
 
 suite('(e2e) runner', function() {
 
-  suite('runner using a real adapter with no conf,', function() {
+  suite('using a real adapter with conf,', function() {
 
     this.timeout(4000);
 
@@ -30,12 +30,15 @@ suite('(e2e) runner', function() {
     var running_runner;
 
     var config = {
-      dbpopt: {poll_timeout : 0},
+      dbopt: {
+        poll_timeout : 0,
+        db_name: '/tmp/DelayedTasks.sqlite'
+      },
       servers: [{
         host: 'localhost',
         port: port
       }]
-    }
+    };
 
     var new_task = {
         controller: 'test',
@@ -68,14 +71,17 @@ suite('(e2e) runner', function() {
     setup(function(done) {
       async.series([
         function(callback) {
-          gearmand = spawn.gearmand(port, function(){
+          sqlite.initialize(config, function(err, dbconn) {
+            if (err) {
+              console.log(err, dbconn);
+              done(err);
+            }
+            config.dbconn = dbconn;
             callback();
           });
         },
         function(callback) {
-          sqlite.initialize(config, function(err, dbconn) {
-            if (err) console.log(err, dbconn);        
-            config.dbconn = dbconn;
+          gearmand = spawn.gearmand(port, function(){
             callback();
           });
         },
@@ -117,8 +123,8 @@ suite('(e2e) runner', function() {
         },
         function(callback) {
           setTimeout(function() {
-            fs.unlink('DelayedTasks.sqlite', function(err) {
-              if (err) console.log(err);
+            fs.unlink('/tmp/DelayedTasks.sqlite', function(err) {
+              if (err) console.log('Error removing temps:', err);
               callback();
             });
           }, 500);
@@ -131,12 +137,12 @@ suite('(e2e) runner', function() {
     suiteTeardown(function(done){
       async.series([
         function(callback) {
-          fs.unlink('DelayedTasks.sqlite', function() {
+          fs.unlink('/tmp/DelayedTasks.sqlite', function() {
             callback();
           });
         },
         function(callback) {
-          fs.unlink('DelayedTasks.sqlite-journal', function() {
+          fs.unlink('/tmp/DelayedTasks.sqlite-journal', function() {
             callback();
           });
         }
