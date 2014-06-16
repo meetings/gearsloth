@@ -17,7 +17,7 @@ suite.only('docker-example', function() {
       function(callback) {
         docker.createContainer({
           Image:'meetings/gearmand',
-          Cmd:['gearmand', '--verbose', 'INFO', '-l', 'stderr']
+          Cmd:['gearmand', '--verbose', 'NOTICE', '-l', 'stderr']
           }, function(err, container) {
           if(err) console.log(err);
           container.attach({stream: true, stdout: true, stderr: true}, function (err, stream) {
@@ -52,7 +52,7 @@ suite.only('docker-example', function() {
       function(callback) {
         docker.createContainer({
           Image:'meetings/gearslothd',
-          Cmd:['gearslothd', '-vv', '-r', gearmand_ip],
+          Cmd:['gearslothd', '-v', '-r', gearmand_ip],
           Tty:true
           }, function(err, container) {
           if(err) console.log(err);
@@ -124,7 +124,8 @@ suite.only('docker-example', function() {
     var client = new gearman.Client({host:gearmand_ip, debug:true});
     var worker = new gearman.Worker('test', function(payload, worker) {
       expect(payload.toString()).to.equal(sent_payload);
-      setTimeout(done, 1000);
+      setTimeout(done, 100);
+      worker.complete();
     }, {host:gearmand_ip, debug:true});
     client.submitJob('submitJobDelayed', JSON.stringify({
       func_name:'test',
