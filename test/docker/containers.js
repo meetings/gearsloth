@@ -17,7 +17,7 @@ exports.mysql = function(server_id, callback) {
   }
 
   var container_options = {
-    Image: 'gearsloth/mysql',
+    Image: 'meetings/mysql',
     Cmd: server_id,
     AttachStdout: false,
     AttachStderr: false,
