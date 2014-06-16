@@ -170,7 +170,14 @@ suite('blackbox: separate gearslothd processes', function() {
     var test_function2 = function(done, payload, worker) {
       var payload = payload.toString();
       if (worker) worker.complete();
-      expect(payload).to.equal(delayed_task.payload);
+      expect(payload).to.equal(delayed_task_after.payload);
+      done();
+    };
+
+    var test_function3 = function(done, payload, worker) {
+      var payload = payload.toString();
+      if (worker) worker.complete();
+      expect(payload).to.equal(delayed_task_at.payload);
       done();
     };
 
@@ -179,11 +186,17 @@ suite('blackbox: separate gearslothd processes', function() {
       payload: 'to be executed immediately'
     };
 
-    var delayed_task = {
+    var delayed_task_after = {
       func_name: 'test',
       payload: 'task delayed about 6 seconds',
       after: 6
-    }
+    };
+
+    var delayed_task_at = {
+      func_name: 'test',
+      payload: 'task delayed about 6 seconds',
+      // after: to be se in test to curcumvent oddities
+    };
 
     setup(function(done) {
       async.series([
@@ -324,7 +337,7 @@ suite('blackbox: separate gearslothd processes', function() {
         }]);
     });
 
-    test('shuold execute a task on expiry', function(done){
+    test('shuold execute a task on expiry with after field', function(done){
       this.timeout(10000);
       var spy = sinon.spy(test_function2);
       async.series([
@@ -349,7 +362,7 @@ suite('blackbox: separate gearslothd processes', function() {
         function(callback) {
           worker3 = new MultiserverWorker(conf.servers, 'test', test_function2.bind(null, done));
           worker3.on('connect', function(){
-            client.submitJob('submitJobDelayed', JSON.stringify(delayed_task));
+            client.submitJob('submitJobDelayed', JSON.stringify(delayed_task_after));
             setTimeout(function(){
               spy.should.not.have.been.called;
             }, 5000)
@@ -357,5 +370,43 @@ suite('blackbox: separate gearslothd processes', function() {
         }]);
     });
 
+    test('shuold execute a task on expiry with at field', function(done){
+        this.timeout(10000);
+        var expiry = new Date();
+        expiry.setSeconds(expiry.getSeconds() + 5);
+        delayed_task_after.at = expiry;
+
+        var spy = sinon.spy(test_function2);
+        async.series([
+          function(callback) {
+            client = new MultiserverClient(conf.servers);
+            client.on('connect', function(){
+              callback();
+            });
+          },
+          function(callback) {
+            worker1 = new MultiserverWorker(conf.servers, 'test', test_function3.bind(null, done));
+            worker1.on('connect', function(){
+              callback();
+            });
+          },
+          function(callback) {
+            worker2 = new MultiserverWorker(conf.servers, 'test', test_function3.bind(null, done));
+            worker2.on('connect', function(){
+              callback();
+            });
+          },
+          function(callback) {
+            worker3 = new MultiserverWorker(conf.servers, 'test', test_function3.bind(null, done));
+            worker3.on('connect', function(){
+              client.submitJob('submitJobDelayed', JSON.stringify(delayed_task_at));
+              setTimeout(function(){
+                spy.should.not.have.been.called;
+              }, 5000)
+            });
+          }]);
+      });
+
   });
+
 });
