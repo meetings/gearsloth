@@ -6,13 +6,19 @@ var Docker = require('dockerode'),
 var docker = new Docker({socketPath: '/var/run/docker.sock'});
 
 /* 
- * Spawns a mysql container. Takes one parameter, callback(remover).
- * When called, `remover` will stop and remove the created container.
+ * Spawns a mysql container. mysql([server_id], callback(err, config, remover)).
+ * When called, `remover` will stop and remove the created container. Config 
+ * will contain the configuration object for the MySQL connection.
  */
-exports.mysql = function(callback) {
+exports.mysql = function(server_id, callback) {
+  if(!callback && typeof(server_id) === 'function') {
+    callback = server_id;
+    server_id = 1;
+  }
+
   var container_options = {
     Image: 'gearsloth/mysql',
-    Cmd: 1,
+    Cmd: server_id,
     AttachStdout: false,
     AttachStderr: false,
   };
@@ -37,7 +43,7 @@ exports.mysql = function(callback) {
 
           function tryConnect (cb) {
             var conn = mysql.createConnection(config);
-            conn.connect(function(err) {
+            conn.query('SET GLOBAL server_id = ?', server_id, function(err) {
               conn.destroy();
               cb(err, config);
             });
@@ -57,11 +63,59 @@ exports.mysql = function(callback) {
           });
         };
 
-        if(err)
-          return console.error('Error starting container: ' + err);
-
-        callback(stopAndRemoveContainer);
+        callback(err, config, stopAndRemoveContainer);
       });
     });
+  });
+};
+
+exports.multimaster_mysql = function(callback) {
+  async.parallel({
+    master: async.apply(exports.mysql, 1),
+    slave: async.apply(exports.mysql, 2)
+  }, function(err, results) {
+    var remover = function() {
+      results.master[1]();
+      results.slave[1]();
+    };
+
+    var config = {
+      master: results.master[0],
+      slave: results.slave[0]
+    }
+
+    var conn_m = mysql.createConnection(config.master);
+    var conn_s = mysql.createConnection(config.slave);
+
+    async.parallel([
+      function(callback) {
+        conn_m.query('SHOW MASTER STATUS', function(err, result) {
+          async.series([
+            _.bind(conn_s.query, conn_s, 'CHANGE MASTER TO MASTER_HOST=?, ' +
+              'MASTER_LOG_FILE=?, ' +
+              'MASTER_LOG_POS=?, ' +
+              'MASTER_PORT=3306, ' +
+              "MASTER_USER='replication', MASTER_PASSWORD='replication'", 
+              [config.master.host, result[0].File, result[0].Position]),
+            _.bind(conn_s.query, conn_s, 'SLAVE START')
+          ], callback);
+        });
+      },
+      function(callback) {
+        conn_s.query('SHOW MASTER STATUS', function(err, result) {
+          async.series([
+            _.bind(conn_m.query, conn_m, 'CHANGE MASTER TO MASTER_HOST=?, ' +
+              'MASTER_LOG_FILE=?, ' +
+              'MASTER_LOG_POS=?, ' +
+              'MASTER_PORT=3306, ' +
+              "MASTER_USER='replication', MASTER_PASSWORD='replication'", 
+              [config.slave.host, result[0].File, result[0].Position]),
+            _.bind(conn_m.query, conn_m, 'SLAVE START')
+          ], callback);
+        });
+      }
+    ], function(err) {
+      callback(err, config, remover);
+    })
   });
 };
