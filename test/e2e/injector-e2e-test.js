@@ -127,7 +127,7 @@ suite('(e2e) injector', function() {
       client.submitJob('submitJobDelayed', JSON.stringify(invalid_at_task))
       .on('warning', function(handle, error){
         expect(adapter.saveTask).not.have.been.called;
-        expect(error).to.equal("Injector: invalid date format.");
+        expect(error).to.equal("injector: invalid date format.");
       })
       .on('fail', function(){
         done();
@@ -139,7 +139,7 @@ suite('(e2e) injector', function() {
       client.submitJob('submitJobDelayed', JSON.stringify(invalid_after_task))
       .on('warning', function(handle, error){
         expect(adapter.saveTask).not.to.have.been.called;
-        expect(error).to.equal("Injector: invalid 'after' format.");
+        expect(error).to.equal("injector: invalid 'after' format.");
       })
       .on('fail', function(){
         done();
@@ -151,7 +151,7 @@ suite('(e2e) injector', function() {
       client.submitJob('submitJobDelayed', JSON.stringify(no_func_name_task))
       .on('warning', function(handle, error){
         expect(adapter.saveTask).not.to.have.been.called;
-        expect(error).to.equal("Injector: no function name (func_name) defined in task.");
+        expect(error).to.equal("injector: no function name (func_name) defined in task.");
       })
       .on('fail', function(){
         done();
