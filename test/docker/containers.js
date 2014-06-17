@@ -122,7 +122,7 @@ exports.multimaster_mysql = function(callback) {
 };
 
 /**
- * Start a gearmand docker container
+ * Start a gearmand docker container, and returns it in a callback param.
  *
  * @param {Array} cmd - An array with the bin to run and its arguments
  * @param {boolean} verbose - Whether to attach a stdout to container
@@ -150,7 +150,7 @@ exports.gearmand = function(cmd, talkative, callback) {
           port: 4730
         };
         connectUntilSuccess(config.host, config.port, function() {
-          callback(config); 
+          callback(config, container); 
         });
       });
     });
@@ -182,7 +182,7 @@ exports.gearmand = function(cmd, talkative, callback) {
 };
 
 /**
- * Start a gearslothd docker container
+ * Start a gearslothd docker container, and returns it in a callback param.
  *
  * @param {Array} cmd - An array with the bin to run and its arguments
  * @param {boolean} talkative - Whether to attach a stdout to container
@@ -204,8 +204,39 @@ exports.gearslothd = function(cmd, talkative, callback) {
 
     container.start(function(err, data) {
       if(err) console.log(err);
-      callback();
+      callback(container);
     });
   });
 
+};
+
+/**
+ * Stops and removes all containers in docker.
+ *
+ * @param {Function} done - Called with error if one occurs, or with no params when completed
+ */
+exports.stopAndRemoveAll = function(done) {
+  async.waterfall([
+    function(callback) {
+      docker.listContainers(function (err, containers) {
+        if(err) done(err);
+        async.each(containers, function(container_info, callback) {
+           docker.getContainer(container_info.Id).stop(function(err, data) {
+             if(err) done(err);
+          });
+        }, function() {
+          callback(null, containers);
+        });
+      });
+    },
+    function(containers, callback) {
+      async.each(containers, function(container_info, callback) {
+        docker.getContainer(container_info.Id).remove(function(err, data) {
+          if(err) done(err);
+        });
+      }, callback);
+    }],
+    function() {
+      done();
+    });
 };

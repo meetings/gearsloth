@@ -10,7 +10,7 @@ var async = require('async')
 
 chai.should();
 
-suite.only('docker-example', function() {
+suite('docker-example', function() {
   var gearmand_ip
   var mysqld_config = {};
   setup(function(done) {
@@ -36,7 +36,9 @@ suite.only('docker-example', function() {
           '--db=mysql-multimaster',
           '--dbopt='+JSON.stringify(mysqld_config),
           gearmand_ip
-          ], true, callback);
+          ], true, function() {
+           callback(); 
+          });
       },
       function(callback) {
         containers.gearslothd([
@@ -44,7 +46,9 @@ suite.only('docker-example', function() {
           '--db=mysql-multimaster',
           '--dbopt='+JSON.stringify(mysqld_config),
           gearmand_ip
-          ], true, callback);
+          ], true, function() {
+           callback(); 
+          });
       },
       function(callback) {
         containers.gearslothd([
@@ -52,29 +56,24 @@ suite.only('docker-example', function() {
           '--db=mysql-multimaster',
           '--dbopt='+JSON.stringify(mysqld_config),
           gearmand_ip
-          ], true, callback);
+          ], true, function() {
+            callback(); 
+          });
       },
       function(callback) {
         containers.gearslothd([
           'gearslothd', '-v', '-c',
           gearmand_ip
-          ], true, callback);
+          ], true, function() {
+            callback(); 
+          });
       }],
     done);
   });
 
   teardown(function(done) {
-    async.series([
-      function(callback) {
-        docker.listContainers(function (err, containers) {
-          if(err) console.log(err);
-          containers.forEach(function (containerInfo) {
-            console.log('stopping container ' + JSON.stringify(containerInfo));
-            docker.getContainer(containerInfo.Id).stop(callback);
-          });
-        callback();
-        })
-      }], done);
+    this.timeout(20000);
+    containers.stopAndRemoveAll(done);
   });
   test('test', function(done) {
     this.timeout(5000);
