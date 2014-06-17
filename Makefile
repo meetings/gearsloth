@@ -30,6 +30,10 @@ unit-test: node_modules
 e2e-test: node_modules
 	$(MOCHA) $(MOCHA_PARAMS) test/e2e
 
+.PHONY: blackbox-test
+blackbox-test: $(GEARMAN_COFFEE)
+	$(MOCHA) $(MOCHA_PARAMS) test/blackbox
+
 .PHONY: coverage
 coverage: node_modules
 	-$(ISTANBUL) cover --report cobertura $(MOCHA_ALT) -- $(MOCHA_PARAMS) test/
