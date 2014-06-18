@@ -6,65 +6,59 @@ var async = require('async')
   , docker = new Docker({socketPath: '/var/run/docker.sock'})
   , net = require('net')
   , fs = require('fs')
-  , containers = require('./containers');
+  , containers = require('./containers')
+  , merge = require('../../lib/merge');
 
 chai.should();
 
-suite('docker-example', function() {
-  var gearmand_ip
-  var mysqld_config = {};
+suite.only('docker-example', function() {
+  var gearmand_ip;
+  var gearslothd_config = {
+    db:'mysql-multimaster'
+  };
   setup(function(done) {
     this.timeout(10000);
     async.series([
       function(callback) {
         console.log('starting mysqld...');
         containers.multimaster_mysql(function(err, config) {
-          mysqld_config = config;
+          gearslothd_config = merge(gearslothd_config, {dbopt: config});
           callback();
         });
       },
       function(callback) {
         containers.gearmand(['gearmand', '--verbose', 'INFO', '-l', 'stderr'],
           true, function(config) {
-          gearmand_ip = config.host;
+          gearslothd_config.servers = config;
           callback();
         });
       },
       function(callback) {
-        containers.gearslothd([
-          'gearslothd', '-v', '-i',
-          '--db=mysql-multimaster',
-          '--dbopt='+JSON.stringify(mysqld_config),
-          gearmand_ip
-          ], true, function() {
+        console.log(gearslothd_config);
+        containers.gearslothd(
+          merge(gearslothd_config, {injector:true})
+          , true, function() {
            callback(); 
           });
       },
       function(callback) {
-        containers.gearslothd([
-          'gearslothd', '-v', '-r',
-          '--db=mysql-multimaster',
-          '--dbopt='+JSON.stringify(mysqld_config),
-          gearmand_ip
-          ], true, function() {
+        containers.gearslothd(
+          merge(gearslothd_config, {runner:true})
+          , true, function() {
            callback(); 
           });
       },
       function(callback) {
-        containers.gearslothd([
-          'gearslothd', '-v', '-e',
-          '--db=mysql-multimaster',
-          '--dbopt='+JSON.stringify(mysqld_config),
-          gearmand_ip
-          ], true, function() {
+        containers.gearslothd(
+          merge(gearslothd_config, {ejector:true})
+          , true, function() {
             callback(); 
           });
       },
       function(callback) {
-        containers.gearslothd([
-          'gearslothd', '-v', '-c',
-          gearmand_ip
-          ], true, function() {
+        containers.gearslothd(
+            merge(gearslothd_config, {controller:true})
+            , true, function() {
             callback(); 
           });
       }],

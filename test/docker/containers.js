@@ -145,11 +145,11 @@ exports.gearmand = function(cmd, talkative, callback) {
     container.start(function(err, data) {
       if(err) console.log(err);
       container.inspect(function(err, data) {
-        var config = {
+        var config = [{
           host: data.NetworkSettings.IPAddress,
           port: 4730
-        };
-        connectUntilSuccess(config.host, config.port, function() {
+        }];
+        connectUntilSuccess(config[0].host, config[0].port, function() {
           callback(config, container); 
         });
       });
@@ -189,10 +189,10 @@ exports.gearmand = function(cmd, talkative, callback) {
  * @param {Function} callback - Called when the container is up and running
  */
 
-exports.gearslothd = function(cmd, talkative, callback) {
+exports.gearslothd = function(config, talkative, callback) {
   docker.createContainer({
     Image:'meetings/gearslothd',
-    Cmd:cmd,
+    Cmd:['gearslothd', '--conf='+JSON.stringify(config)]
     }, function(err, container) {
     if(err) console.log(err);
 
