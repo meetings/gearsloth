@@ -72,10 +72,10 @@ suite("multiserver-client", function() {
         ClientStub);
 
       m.connected = true;
-      m._clients.forEach(function(client) {
+      m._connections.forEach(function(client) {
         client.submitJob = sandbox.spy();
       });
-      m._clients[sampleServers.length-1].connected = true;
+      m._connections[sampleServers.length-1].connected = true;
     });
     teardown(function() {
       sandbox.restore();
@@ -83,11 +83,11 @@ suite("multiserver-client", function() {
 
     test("submits to that server", function() {
       m.submitJob('mita', 'hessu');
-      expect(m._clients[0].submitJob)
+      expect(m._connections[0].submitJob)
       .to.not.have.been.called;
-      expect(m._clients[1].submitJob)
+      expect(m._connections[1].submitJob)
       .to.not.have.been.called;
-      expect(m._clients[sampleServers.length-1].submitJob)
+      expect(m._connections[sampleServers.length-1].submitJob)
       .to.have.been.calledOnce;
     });
   });
@@ -100,7 +100,7 @@ suite("multiserver-client", function() {
         sampleServers,
         ClientStub);
 
-      m._clients.forEach(function(client) {
+      m._connections.forEach(function(client) {
         client.submitJob = sandbox.spy();
       });
 
@@ -111,12 +111,12 @@ suite("multiserver-client", function() {
 
     test("submits to a client anyway", function(done) {
       m.submitJob('mita', 'hessu');
-      var called_clients = 0;
-      m._clients.forEach(function(client) {
-        if(client.submitJob.calledOnce) called_clients++;
+      var called_connections = 0;
+      m._connections.forEach(function(client) {
+        if(client.submitJob.calledOnce) called_connections++;
       });
-      if(called_clients === 1) done();
-      else if(called_clients > 1) done(new Error('Job was sent to more than one client'));
+      if(called_connections === 1) done();
+      else if(called_connections > 1) done(new Error('Job was sent to more than one client'));
       else done(new Error('Job was not sent'));
     });
 
@@ -125,10 +125,10 @@ suite("multiserver-client", function() {
       m.submitJob('mita', 'hessu');
       m.submitJob('mita', 'hessu');
 
-      var called_clients = 0;
+      var called_connections = 0;
       var stop = false;
-      m._clients.forEach(function(client) {
-        if(client.submitJob.calledOnce) called_clients++;
+      m._connections.forEach(function(client) {
+        if(client.submitJob.calledOnce) called_connections++;
         if(client.submitJob.calledTwice) {
           done(new Error('Job was sent to same client'));
           stop = true;
@@ -137,8 +137,8 @@ suite("multiserver-client", function() {
       });
       if(stop) return;
 
-      if(called_clients === 2) done();
-      else if(called_clients > 2) done(new Error('Job was sent to too many clients'));
+      if(called_connections === 2) done();
+      else if(called_connections > 2) done(new Error('Job was sent to too many clients'));
       else done(new Error('Job was not sent'));
       });
   });
@@ -170,7 +170,7 @@ suite("multiserver-client", function() {
         ClientStub);
       client = new EventEmitter();
 
-      m._clients.forEach(function(client) {
+      m._connections.forEach(function(client) {
         client.disconnect = sandbox.spy();
       });
     });
@@ -181,16 +181,16 @@ suite("multiserver-client", function() {
 
     test("should call disconnect for all clients", function() {
       m.disconnect();
-      m._clients.forEach(function(client) {
+      m._connections.forEach(function(client) {
         expect(client.disconnect).to.have.been.calledOnce;
       });
     });
     test("should emit disconnect event", function(done) {
         this.timeout(500);
         m.on('disconnect', done);
-        m._connected_count = m._clients.length;
+        m._connected_count = m._connections.length;
         m.disconnect();
-        m._clients.forEach(function(client) {
+        m._connections.forEach(function(client) {
           client.reconnecter.emit('disconnect');
         });
     });
