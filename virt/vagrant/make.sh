@@ -3,7 +3,7 @@
 
 DIR=$HOME/gearsloth
 
-mkdir -p $DIR || exit 1
-cd /vagrant && git archive master | tar -xC $DIR
+mkdir -p $DIR
+git clone /vagrant gearsloth
 
-cd $DIR && make build 2> /tmp/make.log
+cd $DIR && sg docker -c 'make build build-docker 2> /tmp/make.log'

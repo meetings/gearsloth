@@ -28,6 +28,14 @@ function Passthrough(conf) {
     if (that._client.connected)
       that._emitConnected();
   });
+  this._worker.on('disconnect', function() {
+    if (!that._client.connected)
+      that._emitDisconnected();
+  });
+  this._client.on('disconnect', function() {
+    if (!that._worker.connected)
+      that._emitDisconnected();
+  });
 }
 
 util.inherits(Passthrough, events.EventEmitter);
@@ -35,6 +43,16 @@ util.inherits(Passthrough, events.EventEmitter);
 Passthrough.prototype._emitConnected = function() {
   logger.info('controller:', 'connected');
   this.emit('connect');
+}
+
+Passthrough.prototype.disconnect = function() {
+  this._client.disconnect();
+  this._worker.disconnect();
+}
+
+Passthrough.prototype._emitDisconnected = function() {
+  logger.info('controller: ', 'disconnected');
+  this.emit('disconnect');
 }
 
 Passthrough.prototype._runTask = function(task) {

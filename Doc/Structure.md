@@ -1,21 +1,12 @@
-## Introduction
-
-Gearsloth is a system that enables delayed tasks and persistent storage schemes
-in Gearman queue server. It consists of a small javascript helper library and a
-daemon that functions as both a gearman worker listening to delayed tasks and a
-client submitting those tasks at a specified time. The gearslothd daemon
-supports a database backend architecture which abstracts persisting delayed
-tasks to a database.
-
 ## Gearslothd daemon modes
 
-Gearslothd daemon running as *injector* receives delayed tasks sent by gearsloth
+Gearslothd daemon running as *injector* receives delayed tasks sent by gearman
 clients. These are saved to a persistent storage. Gearsloth *runners* then
 receive pending tasks from the persistent storage and send these forward at a
 specified time to *controllers* whose job is to submit the task to the final
 destination, wait for the completion/failure of the task and rely this
 information to *ejectors*, which in turn will remove the task from the
-persistent store.
+persistent storage.
 
 ### Controllers
 
@@ -43,27 +34,3 @@ In a nutshell, a controller does the following:
 3.  When the task completes, pass the task object to the ejector component
     (gearman function `delayedJobDone`). The field `.id` that identifies a task
     must be passed to the ejector unchanged.
-
-## Client interface (subject to change, controllers not implemented)
-
-Gearsloth injector daemon adds the following functions to the gearman server:
-
-### submitJobDelayed
-
-Submits a task to be executed at a specified time. The task is given as a
-UTF-8 encoded JSON object.
-
-See the [task format specification](Task format specification.md)
-
-## Client helper library (subject to change, strategies not implemented)
-
-The file 'lib/gearsloth.js' includes some helper functions for Javascript
-clients which aid in encoding, decoding and validating gearsloth tasks.
-
-**`encodeTask(Object task)` -> `String`**
-
-Encodes a task as a JSON string that can be passed to gearman.
-
-**`decodeTask(String|Buffer task)` -> `Object`**
-
-Decodes and validates a delayed task to a JSON task object.

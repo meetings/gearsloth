@@ -14,6 +14,18 @@ suite('single gearslothd in default mode:', function() {
   var gearmand;
   var gearslothd;
   var tester;
+  var conf = {
+    verbose: 1,
+    db: 'sqlite',
+    dbopt: {
+      poll_timeout: 0,
+      db_name: ':memory:'
+    },
+    servers: [{
+      host: 'localhost',
+      port: port
+    }]
+  };
 
   setup(function(done) {
     async.series([
@@ -21,7 +33,7 @@ suite('single gearslothd in default mode:', function() {
         gearmand = spawn.gearmand(port, callback);
       },
       function(callback) {
-        gearslothd = spawn.gearslothd(port, callback);
+        gearslothd = spawn.gearslothd(conf, callback);
       },
       function(callback) {
         tester = new Tester(port, callback);

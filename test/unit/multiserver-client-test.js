@@ -51,13 +51,14 @@ suite("multiserver-client", function() {
       expect(ClientStub).to.be
       .calledWith(sampleServers[1]);
     });
-    test("should have a submitJob() function function", function() {
+    test("should have a submitJob() function", function() {
       expect(m).to.have.property('submitJob');
     });
     test("should have a submitJobBg() function", function() {
       expect(m).to.have.property('submitJobBg');
     });
     test("should call submitJob with correct arguments", function() {
+      m.connected = true;
       m.submitJob('kikkens', 'sinep');
       expect(ClientStub.prototype.submitJob).to.have.been.calledWith('kikkens', 'sinep');
     });
@@ -120,7 +121,7 @@ suite("multiserver-client", function() {
     });
 
     test("if multiple jobs are received, sends them to \
-different clients", function(done) {
+      different clients", function(done) {
       m.submitJob('mita', 'hessu');
       m.submitJob('mita', 'hessu');
 
@@ -135,20 +136,11 @@ different clients", function(done) {
         }
       });
       if(stop) return;
-      
+
       if(called_clients === 2) done();
       else if(called_clients > 2) done(new Error('Job was sent to too many clients'));
       else done(new Error('Job was not sent'));
-    });
-    
-    test("emits a disconnect event after all servers have been tried", function(done) {
-      this.timeout(500);
-      m.connected = true;
-      m.on('disconnect', done);
-      m.submitJob('mita', 'hessu');
-      m.submitJob('mita', 'hessu');
-      m.submitJob('mita', 'hessu');
-    });
+      });
   });
 
   suite("when given no servers", function() {
