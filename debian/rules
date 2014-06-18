@@ -1,0 +1,12 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+export DH_VERBOSE=1
+
+%:
+	dh $@
+
+# If tests fail, but you regardless want to
+# build the package, uncomment following lines:
+#override_dh_auto_test:
+#	echo Tests redacted
