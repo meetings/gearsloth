@@ -30,6 +30,10 @@ unit-test: node_modules
 e2e-test: node_modules
 	$(MOCHA) $(MOCHA_PARAMS) test/e2e
 
+.PHONY: docker-test
+docker-test: node_modules
+	$(MOCHA) $(MOCHA_PARAMS) test/docker
+
 .PHONY: coverage
 coverage: node_modules
 	-$(ISTANBUL) cover --report cobertura $(MOCHA_ALT) -- $(MOCHA_PARAMS) test/

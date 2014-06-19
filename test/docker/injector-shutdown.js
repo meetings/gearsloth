@@ -89,5 +89,6 @@ suite('Docker test: killing injectors', function(){
           ]);
       }
       ]);
+    done();
   });
 });
