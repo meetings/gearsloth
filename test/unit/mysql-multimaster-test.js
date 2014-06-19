@@ -12,7 +12,8 @@ chai.use(sinonchai);
 
 suite('MySQL Multimaster adapter', function() {
   
-  var config = {
+  var config = {};
+  config.dbopt = {
     host: 'example',
     user: 'example_user',
     password: 'example_secret'
@@ -263,7 +264,7 @@ suite('MySQL Multimaster adapter', function() {
     });
 
     test('should return function to remove listener', function() {
-      var adapter = new MySQLMultimaster.MySQLMultimaster({});
+      var adapter = new MySQLMultimaster.MySQLMultimaster({dbopt:{}});
       var listener = function() {};
 
       var remover = adapter.listenTask(listener);
@@ -447,7 +448,7 @@ suite('MySQL Multimaster adapter', function() {
     });
     test("should differ if config is different", function() {
       adapter1 = new MySQLMultimaster.MySQLMultimaster(config);
-      config.host = "goabase.net"
+      config.dbopt.host = "goabase.net"
       adapter2 = new MySQLMultimaster.MySQLMultimaster(config);
       adapter1.db_id.should.not.equal(adapter2.db_id)
     });
