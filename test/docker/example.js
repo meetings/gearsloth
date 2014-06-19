@@ -11,7 +11,7 @@ var async = require('async')
 
 chai.should();
 
-suite.only('docker-example', function() {
+suite('docker-example', function() {
   var gearmand_ip;
   var gearslothd_config = {
     db:'mysql-multimaster'
@@ -27,7 +27,9 @@ suite.only('docker-example', function() {
         });
       },
       function(callback) {
-        containers.gearmand(['gearmand', '--verbose', 'INFO', '-l', 'stderr'],
+        containers.gearmand(['gearmand', 
+          '--verbose', 'INFO', 
+          '-l', 'stderr'],
           true, function(config) {
           gearslothd_config.servers = config;
           callback();
