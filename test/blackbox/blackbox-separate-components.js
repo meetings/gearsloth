@@ -527,6 +527,7 @@ suite('blackbox: separate gearslothd processes', function() {
           function(callback) {
             worker3 = new MultiserverWorker(conf.servers, 'test', test__at_func_3.bind(null, done));
             worker3.on('connect', function(){
+              callback();
             });
           },
           function(callback) {
