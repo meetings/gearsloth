@@ -23,7 +23,9 @@
   "dependencies": {
     "gearman-coffee": "^2.0.1",
     "mysql": "^2.3.2",
-    "sqlite3": "^2.2.3"
+    "sqlite3": "^2.2.3",
+    "underscore": "*",
+    "async": "*"
   },
   "files": [
     "LICENSE",

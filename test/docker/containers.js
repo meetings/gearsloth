@@ -116,6 +116,9 @@ exports.multimaster_mysql = function(callback) {
         });
       }
     ], function(err) {
+      conn_m.destroy();
+      conn_s.destroy();
+      
       callback(err, config, remover);
     })
   });
