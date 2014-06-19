@@ -6,7 +6,7 @@ var Docker = require('dockerode');
 var docker = new Docker({socketPath: '/var/run/docker.sock'});
 var net = require('net');
 var fs = require('fs');
-var containers = require('../containers');
+var containers = require('./containers');
 var merge = require('../../lib/merge');
 
 chai.should();
