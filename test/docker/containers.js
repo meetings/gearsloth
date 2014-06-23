@@ -53,17 +53,7 @@ exports.mysql = function(server_id, callback) {
           async.retry(10, async.apply(setTimeout, tryConnect, 500), callback);
         }
       ], function(err, config) {
-        var stopAndRemoveContainer = function () {
-          async.series([
-            _.bind(container.stop, container),
-            _.bind(container.remove, container)
-          ], function(err) {
-            if(err)
-              console.error('Error stopping container: ' + err);
-          });
-        };
-
-        callback(err, config, stopAndRemoveContainer);
+        callback(err, config, container);
       });
     });
   });
@@ -74,10 +64,8 @@ exports.multimaster_mysql = function(callback) {
     master: async.apply(exports.mysql, 1),
     slave: async.apply(exports.mysql, 2)
   }, function(err, results) {
-    var remover = function() {
-      results.master[1]();
-      results.slave[1]();
-    };
+    var master_container = results.master[1];
+    var slave_container = results.slave[1];
 
     var config = {
       master: results.master[0],
@@ -117,8 +105,8 @@ exports.multimaster_mysql = function(callback) {
     ], function(err) {
       conn_m.destroy();
       conn_s.destroy();
-      
-      callback(err, config, remover);
+
+      callback(err, config, master_container, slave_container);
     })
   });
 };
