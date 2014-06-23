@@ -29,9 +29,9 @@ while [ $RETRY -ne 0 ]; do
   RETRY=$?
 done
 
+mysql -u root -e "CREATE DATABASE gearsloth"
 mysql -u root -e "GRANT REPLICATION SLAVE ON *.* TO 'replication'@'%' IDENTIFIED BY 'replication'"
 mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'sloth'@'%' WITH GRANT OPTION"
 mysql -u root -e "FLUSH PRIVILEGES"
-mysql -u root < /etc/mysql/src/multimaster-schema.sql
 
 while :; do sleep 99; done
