@@ -11,7 +11,7 @@ var merge = require('../../lib/merge');
 
 chai.should();
 
-suite('Docker test: killing injectors', function(){
+suite.only('Docker test: killing injectors', function(){
   var gearman_ip;
   var gearslothd_config = {
     db:'mysql-multimaster'
@@ -114,12 +114,12 @@ suite('Docker test: killing injectors', function(){
   };
 
   test('one of two, immediate task is executed', function(done) {
-    this.timeout(5000);
+    this.timeout(10000);
     async.series([
       function(callback_outer) {
         async.series([
           function(callback) {
-            worker = new gearman.Worker('test', function(payload, woker){
+            worker = new gearman.Worker('test', function(payload, worker){
               payload = payload.toString();
               worker.complete();
               expect(payload).to.equal(simple_task.payload);
@@ -142,27 +142,26 @@ suite('Docker test: killing injectors', function(){
           function(callback) {
             callback_outer();
             callback();
-          }
-          ]);
+          }]);
       },
       function(callback_outer) {
-        async.parallel([
+        async.series([
+          function(callback) {
+            injector_container.kill(function(){
+              injector_container.remove(function() {
+                callback();
+              })
+            });
+          },
           function(callback) {
             client.submitJob('submitJobDelayed', JSON.stringify(simple_task));
             callback();
-          },
-          function(callback) {
-            injector_container.stop(function(){
-              callback();
-            });
           },
           function(callback) {
             callback_outer();
             callback();
           }
           ]);
-      }
-      ]);
-    // done();
+      }]);
   });
 });
