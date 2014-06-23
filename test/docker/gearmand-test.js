@@ -104,7 +104,7 @@ suite('(docker) two gearmand servers', function() {
     this.timeout(10000);
     containers.stopAndRemoveAll(done);
   });
-  test.only('one goes down, task is still executed', function(done) {
+  test('one goes down, task is still executed', function(done) {
     this.timeout(5000);
     var sent_payload = new Date().toISOString();
     var work_handler = function() {};
