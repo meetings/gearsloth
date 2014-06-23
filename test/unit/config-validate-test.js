@@ -35,14 +35,11 @@ suite('validate', function() {
 
   // valid servers
   var valid_servers = [
-    [undefined,                           { host: 'localhost', port: 4730 }],
-    [{},                                  { host: 'localhost', port: 4730 }],
     [{ host: 'meetin.gs' },               { host: 'meetin.gs', port: 4730 }],
     [{ port: 4731 },                      { host: 'localhost', port: 4731 }],
     [{ port: '4731' },                    { host: 'localhost', port: 4731 }],
     [{ host: 'meetin.gs', port: 4731 },   { host: 'meetin.gs', port: 4731 }],
     [{ host: 'meetin.gs', port: '4731' }, { host: 'meetin.gs', port: 4731 }],
-    [{ foo: 'bar' },          { foo: 'bar', host: 'localhost', port: 4730 }],
     [{ port: 4731, foo: 'b'},   { foo: 'b', host: 'localhost', port: 4731 }]
   ];
 
@@ -57,8 +54,8 @@ suite('validate', function() {
 
     // invalid servers
     // should it fail when called with an array?
-    [ 'asdf', 0, 1, { host: 123 }, { port: 0 }, { port: 99999 },
-      { port: '0' }, { port: '99999' } ].
+    [ undefined, {}, { foo: 'bar' }, 'asdf', 0, 1, { host: 123 }, { port: 0 },
+      { port: 99999 }, { port: '0' }, { port: '99999' } ].
     forEach(function(t) {
       test('server(' + util.inspect(t) + ') should throw', function() {
         shouldThrow(function() {
