@@ -35,7 +35,7 @@ function afterInit(err, database) {
 
   database.completeTask({}, function(err, task) {
     if (err) log.debug('[[[ ERR ]]]', err);
-    log.debug('completeTask: deleted::', task);
+    log.debug('completeTask', 'deleted::', task);
   });
 
   var stop = database.listenTask(function (err, task) {
@@ -46,6 +46,6 @@ function afterInit(err, database) {
 
     stop();
 
-    log.debug("listenTask(): received:", task);
+    log.debug("listenTask()", "Received:", task);
   });
 }

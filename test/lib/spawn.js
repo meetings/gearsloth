@@ -12,7 +12,7 @@ var gearmand = exports.gearmand = function(port, done) {
 var gearslothd = exports.gearslothd = function(conf, done) {
   var conf_arg = '--conf=' + JSON.stringify(conf);
   var gearslothd = child_process.spawn('./bin/gearslothd', [ conf_arg, '-v' ] );
-  readUntilMatch(gearslothd.stdout, /gearslothd: connected/, done);
+  readUntilMatch(gearslothd.stdout, /gearslothd: Connected/, done);
   return gearslothd;
 }
 

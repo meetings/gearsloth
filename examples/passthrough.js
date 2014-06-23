@@ -4,7 +4,7 @@ var MultiserverClient = require('../gearman/multiserver-client')
   .MultiserverClient;
 var MultiserverWorker = require('../gearman/multiserver-worker')
   .MultiserverWorker;
-var logger = require('../log');
+var log = require('../log');
 
 /**
  * Passthrough component. Emits 'connect' when at least one server for both
@@ -41,7 +41,7 @@ function Passthrough(conf) {
 util.inherits(Passthrough, events.EventEmitter);
 
 Passthrough.prototype._emitConnected = function() {
-  logger.info('controller:', 'connected');
+  log.info('controller', 'Connected');
   this.emit('connect');
 }
 
@@ -51,7 +51,7 @@ Passthrough.prototype.disconnect = function() {
 }
 
 Passthrough.prototype._emitDisconnected = function() {
-  logger.info('controller: ', 'disconnected');
+  log.info('controller', 'Disconnected');
   this.emit('disconnect');
 }
 
