@@ -119,7 +119,7 @@ suite.only('Docker test: killing injectors', function(){
       function(callback_outer) {
         async.series([
           function(callback) {
-            worker = new gearman.Worker('test', function(payload, woker){
+            worker = new gearman.Worker('test', function(payload, worker){
               payload = payload.toString();
               worker.complete();
               expect(payload).to.equal(simple_task.payload);
@@ -152,7 +152,7 @@ suite.only('Docker test: killing injectors', function(){
             callback();
           },
           function(callback) {
-            injector_container.stop(function(){
+            injector_container.kill(function(){
               injector_container.remove(function() {
                 callback();
               })
@@ -165,6 +165,5 @@ suite.only('Docker test: killing injectors', function(){
           ]);
       }
       ]);
-    // done();
   });
 });
