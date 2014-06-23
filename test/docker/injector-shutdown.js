@@ -114,7 +114,7 @@ suite.only('Docker test: killing injectors', function(){
   };
 
   test('one of two, immediate task is executed', function(done) {
-    this.timeout(5000);
+    this.timeout(10000);
     async.series([
       function(callback_outer) {
         async.series([
@@ -142,15 +142,10 @@ suite.only('Docker test: killing injectors', function(){
           function(callback) {
             callback_outer();
             callback();
-          }
-          ]);
+          }]);
       },
       function(callback_outer) {
-        async.parallel([
-          function(callback) {
-            client.submitJob('submitJobDelayed', JSON.stringify(simple_task));
-            callback();
-          },
+        async.series([
           function(callback) {
             injector_container.kill(function(){
               injector_container.remove(function() {
@@ -159,11 +154,14 @@ suite.only('Docker test: killing injectors', function(){
             });
           },
           function(callback) {
+            client.submitJob('submitJobDelayed', JSON.stringify(simple_task));
+            callback();
+          },
+          function(callback) {
             callback_outer();
             callback();
           }
           ]);
-      }
-      ]);
+      }]);
   });
 });
