@@ -11,7 +11,7 @@ var async = require('async')
 
 chai.should();
 
-suite.only('docker-example', function() {
+suite('docker-example', function() {
   var gearmand_ip;
   var gearslothd_config = {
     verbose: 1,

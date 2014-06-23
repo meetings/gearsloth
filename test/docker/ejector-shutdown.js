@@ -11,40 +11,32 @@ var merge = require('../../lib/merge');
 
 chai.should();
 
-suite('Docker test: killing injectors', function(){
+suite('Docker test: killing ejectors', function(){
   var gearman_ip;
   var gearslothd_config = {
     db:'mysql-multimaster'
   };
 
-  var injector_container;
+  var ejector_container;
   var worker;
   var client;
 
   setup(function(done) {
     this.timeout(10000);
-  	async.series([
-  		function(callback) {
-  			containers.multimaster_mysql(function(err, config) {
+    async.series([
+      function(callback) {
+        containers.multimaster_mysql(function(err, config) {
           gearslothd_config = merge(gearslothd_config, {dbopt: config});
           callback();
-  			});
-  		},
+        });
+      },
       function(callback) {
         containers.gearmand([
           'gearmand',
-          '--verbose', 'INFO',
+          '--verbose', 'NOTICE',
           '-l', 'stderrr'
           ], true, function(config) {
             gearslothd_config.servers = config;
-            callback();
-          });
-      },
-      function(callback) {
-        containers.gearslothd(
-          merge(gearslothd_config, {injector: true})
-          , true, function(container) {
-            injector_container = container;
             callback();
           });
       },
@@ -65,7 +57,14 @@ suite('Docker test: killing injectors', function(){
       function(callback) {
         containers.gearslothd(
           merge(gearslothd_config, {ejector: true})
-          , true, function() {
+          , true, function(container) {
+            ejector_container = container;
+            callback();
+          });
+      },function(callback) {
+        containers.gearslothd(
+          merge(gearslothd_config, {ejector: true})
+          , true, function(container) {
             callback();
           });
       },
@@ -149,10 +148,10 @@ suite('Docker test: killing injectors', function(){
       function(callback_outer) {
         async.series([
           function(callback) {
-            injector_container.kill(function(){
-              injector_container.remove(function() {
+            ejector_container.kill(function(){
+              ejector_container.remove(function() {
                 callback();
-              })
+              });
             });
           },
           function(callback) {
