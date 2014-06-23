@@ -10,13 +10,15 @@ configuration options:
 * `-r, --runner`: Run the daemon as runner.
 * `-c, --controller`: Run the daemon as default controller.
 * `-e, --ejector`: Run the daemon as ejector.
+* `--controllername`: Controller module name. Can also be specified in the config file.
+* `--db`: Database module name. Can also be specified in the config file.
 * `-f, --file=FILENAME`: Define the JSON configuration file. By default
   `gearsloth.json` in the currenct directory will be used. Options specified
   in this file are overwritten by any options defined by command line options.
 * `    --conf=JSON`: Provide a JSON formatted configuration object on the
   command line. Any options defined by this object are overwritten by other
   command line options.
-* `    --db=NAME`: Database adapter to be used by the daemon. By default `mem`
+* `    --db=NAME`: Database adapter to be used by the daemon. By default `sqlite`
   is used.
 * `    --dbopt=JSON`: Provide a JSON formatted freefirn configuration object for
   the database adapter.
@@ -43,6 +45,8 @@ are interpreted:
   servers may contain fields `.host` and `.port`. If only one the fields is
   specified, a default value is used. The default gearman server is
   `localhost:4730`.
+* `.db {String}`: Database module name.
+* `.controllername {String}:` Controller module name.
 
 ### Example configuration
 

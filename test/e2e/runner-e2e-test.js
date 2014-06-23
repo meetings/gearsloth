@@ -5,7 +5,6 @@ var gearman = require('gearman-coffee')
   , sinon = require('sinon')
   , sinonChai = require('sinon-chai')
   , expect = chai.expect
-  , sqlite = require('../../lib/adapters/sqlite')
   , fs = require('fs')
   , async = require('async')
   , spawn = require('../lib/spawn');

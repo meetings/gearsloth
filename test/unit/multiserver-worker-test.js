@@ -40,9 +40,9 @@ suite("multiserver-worker", function() {
     test("should spawn as many worker instances", function() {
       expect(exports.Worker).to.be.calledTwice;
       expect(exports.Worker).to.be
-      .calledWith('sample', dummy_func, sampleServers[0]);
+      .calledWith('sample', sinon.match.any, sampleServers[0]);
       expect(exports.Worker).to.be
-      .calledWith('sample', dummy_func, sampleServers[1]);
+      .calledWith('sample', sinon.match.any, sampleServers[1]);
     });
   });
   suite("when given no servers", function() {
@@ -81,16 +81,16 @@ suite("multiserver-worker", function() {
 
     test("should call disconnect for all workers", function() {
       m.disconnect();
-      m._workers.forEach(function(worker) {
+      m._connections.forEach(function(worker) {
         expect(worker.disconnect).to.have.been.calledOnce;
       });
     });
     test("should emit disconnect event", function(done) {
       this.timeout(500);
       m.on('disconnect', done);
-      m._connected_count = m._workers.length;
+      m._connected_count = m._connections.length;
       m.disconnect();
-      m._workers.forEach(function(worker) {
+      m._connections.forEach(function(worker) {
         worker.reconnecter.emit('disconnect');
       });
     });

@@ -11,9 +11,10 @@ var async = require('async')
 
 chai.should();
 
-suite('docker-example', function() {
+suite.only('docker-example', function() {
   var gearmand_ip;
   var gearslothd_config = {
+    verbose: 2,
     db:'mysql-multimaster'
   };
   setup(function(done) {
@@ -32,6 +33,7 @@ suite('docker-example', function() {
           '-l', 'stderr'],
           true, function(config) {
           gearslothd_config.servers = config;
+          gearslothd_config.servers[0].debug = true;
           callback();
         });
       },
@@ -75,12 +77,12 @@ suite('docker-example', function() {
     this.timeout(5000);
     var sent_payload = new Date().toISOString();
     var work_handler = function() {};
-    var client = new gearman.Client({host:gearmand_ip, debug:true});
+    var client = new gearman.Client(gearslothd_config.servers[0]);
     var worker = new gearman.Worker('test', function(payload, worker) {
       expect(payload.toString()).to.equal(sent_payload);
       setTimeout(done, 100);
       worker.complete();
-    }, {host:gearmand_ip, debug:true});
+    }, gearslothd_config.servers[0]);
     client.submitJob('submitJobDelayed', JSON.stringify({
       func_name:'test',
       payload:sent_payload
