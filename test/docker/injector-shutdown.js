@@ -11,7 +11,7 @@ var merge = require('../../lib/merge');
 
 chai.should();
 
-suite('Docker test: killing injectors', function(){
+suite.only('Docker test: killing injectors', function(){
   var gearman_ip;
   var gearslothd_config = {
     db:'mysql-multimaster'
@@ -153,7 +153,9 @@ suite('Docker test: killing injectors', function(){
           },
           function(callback) {
             injector_container.stop(function(){
-              callback();
+              injector_container.remove(function() {
+                callback();
+              })
             });
           },
           function(callback) {
