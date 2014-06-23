@@ -10,8 +10,8 @@ configuration options:
 * `-r, --runner`: Run the daemon as runner.
 * `-c, --controller`: Run the daemon as default controller.
 * `-e, --ejector`: Run the daemon as ejector.
-* `--controllername`: Controller module name. Can also be specified in the config file.
-* `--db`: Database module name. Can also be specified in the config file.
+* `--controllername`: Specify the controller module by name. Can also be specified in the config file. If the input contains forward slashes, the module is looked up in relation to your current dir.
+* `--db`: Specify the database module by name. Can also be specified in the config file. If the input contains forward slashes, the module is looked up in relation to your current dir.
 * `-f, --file=FILENAME`: Define the JSON configuration file. By default
   `gearsloth.json` in the currenct directory will be used. Options specified
   in this file are overwritten by any options defined by command line options.
