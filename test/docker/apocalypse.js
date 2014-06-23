@@ -22,7 +22,7 @@ chai.should();
  * The task must be executed.
  */
 
-suite.only('(docker) on apocalypse', function() {
+suite('(docker) on apocalypse', function() {
   var container_array = [];
   var gearslothd_config;
   var gearslothd_config = {
