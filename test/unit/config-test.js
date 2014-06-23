@@ -67,17 +67,17 @@ suite('config', function() {
     testHelp('should return help string with --injector --help',
       [ '--injector', '--help' ]);
     testConf('should set injector with -ir',
-      [ '-ir' ], 'injector', true);
+      [ '-ir', 'localhost' ], 'injector', true);
     testConf('should set runner with -ir',
-      [ '-ir' ], 'runner', true);
+      [ '-ir', 'localhost' ], 'runner', true);
     testConf('should set injector with -i -r',
-      [ '-i', '-r' ], 'injector', true);
+      [ '-i', '-r', 'localhost' ], 'injector', true);
     testConf('should set runner with -i -r',
-      [ '-i', '-r' ], 'runner', true);
+      [ '-i', '-r', 'localhost' ], 'runner', true);
     testConf('should set injector with --injector --runner',
-      [ '--injector', '--runner' ], 'injector', true);
+      [ '--injector', '--runner', 'localhost' ], 'injector', true);
     testConf('should set runner with --injector --runner',
-      [ '--injector', '--runner' ], 'runner', true);
+      [ '--injector', '--runner', 'localhost' ], 'runner', true);
     testConf('should set runner=true with -f ok.json -ri',
       [ '-f', ok_json, '-ri' ], 'runner', true);
     testServ('should set server list with --file=ok.json',
@@ -95,8 +95,6 @@ suite('config', function() {
       [ '-ri', '--file=' + ok_json,
       '--servers=[{"host":"asdf","port":1234}]' ],
       { host: 'asdf', port: 1234 });
-    testServ('should set default server',
-      [], { host: 'localhost', port: 4730 });
     testServ('should set default port if not set',
       [ 'asdf' ], { host: 'asdf', port: 4730 });
     testServ('should set default port if not set with colon',
@@ -119,6 +117,8 @@ suite('config', function() {
       [ '-f', ok_json, '--conf={ "mode": "both" }' ], 'runner', true);
 
     // illegal configuration options
+    testThrow('should throw when no servers are given',
+      []);
     testThrow('should throw on crap json conf after short opt',
       [ '-f', crap_json ]);
     testThrow('should throw on crap json conf after long opt',

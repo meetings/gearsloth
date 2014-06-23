@@ -14,7 +14,7 @@ db.initialize(config, afterInit);
 function afterInit(err, dbconn) {
 
   if (err) {
-    log.debug(err);
+    log.debug('sqlite-example', err);
     return;
   }
 	
@@ -31,17 +31,17 @@ function afterInit(err, dbconn) {
 	};
 
   dbconn.saveTask(example_task, function(err) {
-  log.debug(err); 
-    log.debug("Task saved: " + new Date());
+  log.debug('sqlite-example', 'Error:', err.message); 
+    log.debug('sqlite-example', "Task saved: " + new Date());
   });
   
   var stop = dbconn.listenTask(function (err, task) {
       if (err) {
-        log.debug(err);
+        log.debug('sqlite-example', err);
         return;
       }
       
-      log.debug("Recieved task:");
+      log.debug('sqlite-example', "Recieved task:");
       console.log(task);
       console.log(new Date());
       dbconn.completeTask(task, function () {} );
