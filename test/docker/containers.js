@@ -240,7 +240,6 @@ exports.stopAndRemoveAll = function(done) {
           callback();
         });
       }, function(err) {
-        console.log(err);
         if (err) done(err);
         callback();
       });
