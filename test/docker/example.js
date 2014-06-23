@@ -14,7 +14,7 @@ chai.should();
 suite.only('docker-example', function() {
   var gearmand_ip;
   var gearslothd_config = {
-    verbose: 2,
+    verbose: 1,
     db:'mysql-multimaster'
   };
   setup(function(done) {
@@ -29,11 +29,10 @@ suite.only('docker-example', function() {
       },
       function(callback) {
         containers.gearmand(['gearmand', 
-          '--verbose', 'INFO', 
+          '--verbose', 'NOTICE', 
           '-l', 'stderr'],
           true, function(config) {
           gearslothd_config.servers = config;
-          gearslothd_config.servers[0].debug = true;
           callback();
         });
       },
