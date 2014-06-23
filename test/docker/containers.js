@@ -226,8 +226,9 @@ exports.stopAndRemoveAll = function(done) {
         async.each(containers, function(container_info, callback) {
            docker.getContainer(container_info.Id).stop(function(err, data) {
              if(err) done(err);
+             callback();
           });
-        }, function() {
+        }, function(err) {
           callback(null, containers);
         });
       });
@@ -236,8 +237,11 @@ exports.stopAndRemoveAll = function(done) {
       async.each(containers, function(container_info, callback) {
         docker.getContainer(container_info.Id).remove(function(err, data) {
           if(err) done(err);
+          callback();
         });
-      }, callback);
+      }, function(err) {
+        if (err) done(err);
+      });
     }],
     function() {
       done();
