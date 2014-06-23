@@ -18,6 +18,8 @@ suite('Docker test: killing injectors', function(){
   };
 
   var injector_container;
+  var worker;
+  var client;
 
   setup(function(done) {
     this.timeout(10000);
@@ -44,51 +46,123 @@ suite('Docker test: killing injectors', function(){
           , true, function(container) {
             injector_container = container;
             callback();
-          }
-          );
+          });
+      },
+      function(callback) {
+        containers.gearslothd(
+          merge(gearslothd_config, {injector: true})
+          , true, function() {
+            callback();
+          });
       },
       function(callback) {
         containers.gearslothd(
           merge(gearslothd_config, {runner: true})
           , true, function() {
             callback();
-          }
-          );
+          });
       },
       function(callback) {
         containers.gearslothd(
           merge(gearslothd_config, {ejector: true})
-          , true, function() {  
+          , true, function() {
             callback();
-          }
-          );
+          });
       },
       function(callback) {
         containers.gearslothd(
           merge(gearslothd_config, {controller: true})
           , true, function() {
             callback();
-          }
-          );
+          });
       }], done);
   });
 
   teardown(function(done) {
-    this.timeout(20000);
-    containers.stopAndRemoveAll(done);
+    this.timeout(30000);
+    async.series([
+      function(callback) {
+        if (client) {
+          client.socket.on('close', function(){
+            callback();
+          })
+          client.disconnect();
+        } else {
+          callback();
+        }
+      },
+      function(callback) {
+        if (worker) {
+          worker.socket.on('close', function() {
+            callback();
+          });
+          worker.disconnect();
+        } else {
+          callback();
+        }
+      },
+      function(callback) {
+        containers.stopAndRemoveAll(done);
+        callback();
+      }
+      ]);
   });
 
-  test('troll', function(done) {
+  var simple_task = {
+    func_name : 'test',
+    payload : 'test payload'
+  };
+
+  test('one of two, immediate task is executed', function(done) {
+    this.timeout(5000);
     async.series([
       function(callback_outer) {
         async.series([
+          function(callback) {
+            worker = new gearman.Worker('test', function(payload, woker){
+              payload = payload.toString();
+              worker.complete();
+              expect(payload).to.equal(simple_task.payload);
+              done();
+            }, {port: gearslothd_config.servers[0].port,
+              host: gearslothd_config.servers[0].host
+            });
+            worker.on('connect', function() {
+              callback();
+            });
+          },
+          function(callback) {
+            client = new gearman.Client({port: gearslothd_config.servers[0].port,
+              host: gearslothd_config.servers[0].host
+            });
+            client.on('connect', function() {
+              callback();
+            });
+          }, 
+          function(callback) {
+            callback_outer();
+            callback();
+          }
           ]);
       },
       function(callback_outer) {
         async.parallel([
+          function(callback) {
+            client.submitJob('submitJobDelayed', JSON.stringify(simple_task));
+            callback();
+          },
+          function(callback) {
+            injector_container.stop(function(){
+              callback();
+            });
+          },
+          function(callback) {
+            callback_outer();
+            callback();
+          }
           ]);
       }
       ]);
-    done();
+    // done();
   });
 });

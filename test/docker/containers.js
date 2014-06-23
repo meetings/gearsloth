@@ -85,6 +85,9 @@ exports.multimaster_mysql = function(callback) {
       slave: results.slave[0]
     }
 
+    config.master.database = 'gearsloth';
+    config.slave.database = 'gearsloth';
+
     var conn_m = mysql.createConnection(config.master);
     var conn_s = mysql.createConnection(config.slave);
 
