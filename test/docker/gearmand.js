@@ -27,12 +27,13 @@ suite('(docker) two gearmand servers', function() {
   var gearmand0_host;
   var gearslothd_config;
   var gearslothd_config = {
-    verbose: 1,
+    verbose: 2,
     db:'mysql-multimaster',
     servers: []
   };
   var gearmand1_container;
-  setup(function(done) {
+  var gearmand0_container;
+  suiteSetup(function(done) {
     this.timeout(10000);
     async.series([
       function(callback) {
@@ -48,9 +49,10 @@ suite('(docker) two gearmand servers', function() {
             containers.gearmand(['gearmand', 
               '--verbose', 'NOTICE', 
               '-l', 'stderr'],
-              true, function(config) {
+              true, function(config, container) {
               gearslothd_config.servers = gearslothd_config.servers.concat(config);
               gearmand0_host = config[0].host;
+              gearmand0_container = container;
               callback();
             });
           },
@@ -100,31 +102,30 @@ suite('(docker) two gearmand servers', function() {
     done);
   });
 
-  teardown(function(done) {
+  suiteTeardown(function(done) {
     this.timeout(10000);
     containers.stopAndRemoveAll(done);
   });
-  test.only('one goes down, task is still executed', function(done) {
+  test('one goes down, task is still executed', function(done) {
     this.timeout(5000);
     var sent_payload = new Date().toISOString();
     var work_handler = function() {};
     var client = new gearman.Client({host:gearmand0_host});
 
-    var worker = new gearman.Worker('test', function(payload, worker) {
+    var worker = new gearman.Worker('test1', function(payload, worker) {
       expect(payload.toString()).to.equal(sent_payload);
       setTimeout(done, 100);
       worker.complete();
     }, {host:gearmand0_host})
     
     .on('connect', function() {
-      console.log('----- KILLING GEARMAND CONTAINER -----');
+      console.log('----- KILLING GEARMAND CONTAINER 1 -----');
       gearmand1_container.kill(function(err, data) {
         if(err) console.log(err);
         gearmand1_container.remove(function(err, data) {
           if(err) console.log(err);
-          first_run = false;
           client.submitJob('submitJobDelayed', JSON.stringify({
-            func_name:'test',
+            func_name:'test1',
             payload:sent_payload
           }))
         });
