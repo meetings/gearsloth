@@ -6,7 +6,8 @@ var async = require('async')
   , docker = new Docker({socketPath: '/var/run/docker.sock'})
   , net = require('net')
   , fs = require('fs')
-  , containers = require('./containers');
+  , containers = require('./containers')
+  , merge = require('../../lib/merge');
 
 chai.should();
 
@@ -23,71 +24,78 @@ chai.should();
  */
 
 suite('(docker) two gearmand servers', function() {
-  var gearmand_config = [];
-  var mysqld_config = {};
+  var gearmand0_host;
+  var gearslothd_config;
+  var gearslothd_config = {
+    verbose: 1,
+    db:'mysql-multimaster',
+    servers: []
+  };
   var gearmand1_container;
   setup(function(done) {
     this.timeout(10000);
     async.series([
       function(callback) {
-        console.log('starting mysqld...');
-        containers.multimaster_mysql(function(err, config) {
-          mysqld_config = config;
-          callback();
-        });
-      },
-      function(callback) {
-        containers.gearmand(['gearmand', '--verbose', 'INFO', '-l', 'stderr'],
-          true, function(config) {
-          gearmand_config.push(config);
-          callback();
-        });
-      },
-      function(callback) {
-        containers.gearmand(['gearmand', '--verbose', 'INFO', '-l', 'stderr'],
-          true, function(config, container) {
-          gearmand_config.push(config);
-          gearmand1_container = container;
-          callback();
-        });
-      },
-      function(callback) {
-        containers.gearslothd([
-          'gearslothd', '-vv', '-i',
-          '--db=mysql-multimaster',
-          '--dbopt='+JSON.stringify(mysqld_config),
-          '--servers='+JSON.stringify(gearmand_config)
-          ], true, function() {
-           callback(); 
+        async.parallel([
+          function(callback) {
+            console.log('starting mysqld...');
+            containers.multimaster_mysql(function(err, config) {
+              gearslothd_config = merge(gearslothd_config, {dbopt: config});
+              callback();
+            });
+          },
+          function(callback) {
+            containers.gearmand(['gearmand', 
+              '--verbose', 'NOTICE', 
+              '-l', 'stderr'],
+              true, function(config) {
+              gearslothd_config.servers = gearslothd_config.servers.concat(config);
+              gearmand0_host = config[0].host;
+              callback();
+            });
+          },
+          function(callback) {
+            containers.gearmand(['gearmand', 
+              '--verbose', 'NOTICE', 
+              '-l', 'stderr'],
+              true, function(config, container) {
+              gearslothd_config.servers = gearslothd_config.servers.concat(config);
+              gearmand1_container = container;
+              callback();
           });
+        }], function() { callback() });
       },
       function(callback) {
-        containers.gearslothd([
-          'gearslothd', '-v', '-r',
-          '--db=mysql-multimaster',
-          '--dbopt='+JSON.stringify(mysqld_config),
-          '--servers='+JSON.stringify(gearmand_config)
-          ], true, function() {
-           callback(); 
-          });
-      },
-      function(callback) {
-        containers.gearslothd([
-          'gearslothd', '-v', '-e',
-          '--db=mysql-multimaster',
-          '--dbopt='+JSON.stringify(mysqld_config),
-          '--servers='+JSON.stringify(gearmand_config)
-          ], true, function() {
-            callback(); 
-          });
-      },
-      function(callback) {
-        containers.gearslothd([
-          'gearslothd', '-v', '-c',
-          '--servers='+JSON.stringify(gearmand_config)
-          ], true, function() {
-            callback(); 
-          });
+        async.parallel([
+          function(callback) {
+            console.log(gearslothd_config);
+            containers.gearslothd(
+              merge(gearslothd_config, {injector:true})
+              , true, function() {
+               callback(); 
+              });
+          },
+          function(callback) {
+            containers.gearslothd(
+              merge(gearslothd_config, {runner:true})
+              , true, function() {
+               callback(); 
+              });
+          },
+          function(callback) {
+            containers.gearslothd(
+              merge(gearslothd_config, {ejector:true})
+              , true, function() {
+                callback(); 
+              });
+          },
+          function(callback) {
+            containers.gearslothd(
+                merge(gearslothd_config, {controller:true})
+                , true, function() {
+                callback(); 
+              });
+          }], function() { callback() });
       }],
     done);
   });
@@ -96,26 +104,30 @@ suite('(docker) two gearmand servers', function() {
     this.timeout(10000);
     containers.stopAndRemoveAll(done);
   });
-  test('one goes down, task is still executed', function(done) {
+  test.only('one goes down, task is still executed', function(done) {
     this.timeout(5000);
     var sent_payload = new Date().toISOString();
     var work_handler = function() {};
-    var client = new gearman.Client({host:gearmand_config[0].host, debug:true});
+    var client = new gearman.Client({host:gearmand0_host});
 
     var worker = new gearman.Worker('test', function(payload, worker) {
       expect(payload.toString()).to.equal(sent_payload);
       setTimeout(done, 100);
       worker.complete();
-    }, {host:gearmand_config[0].host, debug:true})
+    }, {host:gearmand0_host})
     
     .on('connect', function() {
       console.log('----- KILLING GEARMAND CONTAINER -----');
       gearmand1_container.kill(function(err, data) {
         if(err) console.log(err);
-        client.submitJob('submitJobDelayed', JSON.stringify({
-          func_name:'test',
-          payload:sent_payload
-        }))
+        gearmand1_container.remove(function(err, data) {
+          if(err) console.log(err);
+          first_run = false;
+          client.submitJob('submitJobDelayed', JSON.stringify({
+            func_name:'test',
+            payload:sent_payload
+          }))
+        });
       });
     });
   });
