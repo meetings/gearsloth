@@ -128,6 +128,45 @@ suite('mysql-multimaster (docker)', function() {
           });
         });
       });
+    });
+
+    suite('updateTask', function() {
+
+      test('should respect `after` field', function(done) {
+        var task = {
+          func_name: 'ebin'
+        };
+
+        var task_from_poll = {
+          id: {
+            db_id: adapter.db_id,
+            task_id: 1
+          },
+          after: 500,
+          func_name: 'ebin',
+        };
+        var task_id;
+
+        async.series([
+          function(callback) {
+            adapter.saveTask(task, function(err, id) {
+              task_from_poll.id.task_id = id;
+              task_id = id;
+              callback(err)
+            });
+          },
+          function(callback) {
+            adapter.updateTask(task_from_poll, callback);
+          },
+          function(callback) {
+            var sql = 'SELECT * FROM gearsloth WHERE id = ? AND at > TIMESTAMPADD(SECOND, 490, UTC_TIMESTAMP())';
+            master.query(sql, task_id, function(err, rows) {
+              rows.should.not.be.empty;
+              callback(err);
+            });
+          }
+        ], done);
+      });
 
     });
   });
@@ -136,7 +175,7 @@ suite('mysql-multimaster (docker)', function() {
 function setupMultimaster (callback) {
   containers.multimaster_mysql(function(err, conf, master_c, slave_c) {
     if(err)
-      return done(err);
+      return callback(err);
 
     master_container = master_c;
     slave_container = slave_c;

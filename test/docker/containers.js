@@ -64,6 +64,8 @@ exports.multimaster_mysql = function(callback) {
     master: async.apply(exports.mysql, 1),
     slave: async.apply(exports.mysql, 2)
   }, function(err, results) {
+    if(err)
+      return callback(err);
     var master_container = results.master[1];
     var slave_container = results.slave[1];
 
