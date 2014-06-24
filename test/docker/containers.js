@@ -151,8 +151,6 @@ exports.gearmand = function(cmd, talkative, callback) {
   });
   
   function connectUntilSuccess(host, port, done) {
-    if(talkative)
-      console.log('Trying to connect to '+ host +':'+ port);
     var socket = net.connect({
       host: host,
       port: port
