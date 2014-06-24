@@ -52,6 +52,8 @@ $(MARKERS): $(MARKER_BUILD_PREFIX)%: $$(wildcard $(VIRT_DIR)/%/*) $(BUILD_DIR)
 
 $(BUILD_DIR):
 	mkdir -p $@
+	touch $(DOCKER_MARKERS)
+	sleep 1
 	touch $@
 
 # Remove image markers, but leave actual images
