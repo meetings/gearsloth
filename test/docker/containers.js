@@ -123,10 +123,11 @@ exports.multimaster_mysql = function(callback) {
  * @param {Function} callback - Called when gearmand is reachable with a conf {host:host,port:port} as a parameter
  */
 
-exports.gearmand = function(cmd, talkative, callback) {
+exports.gearmand = function(cmd, talkative, callback, host_port) {
   docker.createContainer({
     Image:'meetings/gearmand',
-    Cmd:cmd
+    Cmd:cmd,
+    ExposedPorts:{"4730/tcp":{}}
   }, function(err, container) {
     if(err) console.log(err);
 
@@ -136,12 +137,19 @@ exports.gearmand = function(cmd, talkative, callback) {
       });
     }
 
+    if(host_port) {
+      container.defaultOptions.start.PortBindings = {
+        "4730/tcp": [{"HostPort": host_port}]
+      };
+    }
+
     container.start(function(err, data) {
       if(err) console.log(err);
+
       container.inspect(function(err, data) {
         var config = [{
-          host: data.NetworkSettings.IPAddress,
-          port: 4730
+          host: (data.HostConfig.PortBindings) ? data.NetworkSettings.Gateway : data.NetworkSettings.IPAddress,
+          port: (data.HostConfig.PortBindings) ? host_port : "4730"
         }];
         connectUntilSuccess(config[0].host, config[0].port, function() {
           callback(config, container); 
@@ -151,6 +159,7 @@ exports.gearmand = function(cmd, talkative, callback) {
   });
   
   function connectUntilSuccess(host, port, done) {
+    console.log('Connecting to '+host+':'+port);
     var socket = net.connect({
       host: host,
       port: port
