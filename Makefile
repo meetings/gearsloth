@@ -20,7 +20,7 @@ build: node_modules
 
 .PHONY: test
 test: node_modules
-	$(MOCHA) $(MOCHA_PARAMS) test/
+	$(MOCHA) $(MOCHA_PARAMS) test/unit test/e2e test/blackbox
 
 .PHONY: unit-test
 unit-test: node_modules
@@ -30,12 +30,8 @@ unit-test: node_modules
 e2e-test: node_modules
 	$(MOCHA) $(MOCHA_PARAMS) test/e2e
 
-.PHONY: docker-test
-docker-test: node_modules
-	$(MOCHA) $(MOCHA_PARAMS) test/docker
-
 .PHONY: blackbox-test
-blackbox-test: $(GEARMAN_COFFEE)
+blackbox-test: node_modules
 	$(MOCHA) $(MOCHA_PARAMS) test/blackbox
 
 .PHONY: coverage
@@ -56,11 +52,17 @@ node_modules: package.json
 
 # Include docker.mk if available
 
+.PHONY: test-all build-all
 ifneq ("$(wildcard docker.mk)","")
 include docker.mk
+test-all: node_modules $(DOCKER_MARKERS)
+	$(MOCHA) $(MOCHA_PARAMS) test
+build-all: build build-docker
 else
 .PHONY: clean-docker
 clean-docker: ;
+test-all: test
+build-all: build
 endif
 
 .PHONY: clean
