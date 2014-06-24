@@ -1,6 +1,6 @@
 # /etc/init/gearsloth.conf
 
-description "Gearman delayed task workers and persistent storage"
+description "Delayed task workers and persistent storage schemes for Gearman"
 author      "Tuomas Starck <tuomas@meetin.gs>"
 
 start on (local-filesystems and net-device-up IFACE!=lo)
@@ -13,6 +13,8 @@ setuid nobody
 setgid nogroup
 
 script
+  [ -r /etc/default/gearsloth ] && . /etc/default/gearsloth
+
   set -e
   FIFO=`mktemp --dry-run`
   mkfifo $FIFO
@@ -21,5 +23,12 @@ script
   exec >$FIFO
   rm $FIFO
 
-  exec /usr/bin/gearslothd
+  case "$GEARSLOTH_ENABLED" in
+    [Nn]*)
+      echo Gearsloth disabled
+      exit 0
+      ;;
+  esac
+
+  exec /usr/bin/gearslothd $GEARSLOTH_ARGS
 end script
