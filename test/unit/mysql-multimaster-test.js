@@ -306,8 +306,6 @@ suite('MySQL Multimaster adapter', function() {
         clock.tick(1600);
       });
 
-      test('sets task.first_run on the first run');
-  
       test('polls every second by default', function() {
         var pollSpy = sandbox.spy(adapter, '_poll');
 
