@@ -11,10 +11,10 @@ DOCKER=/usr/bin/docker.io
 ASSUMED_FILE=mysql-bin.000001
 
 echo Starting 1st container...
-ID_ONE=$($DOCKER run -d mysql-1); sleep 2
+ID_ONE=$($DOCKER run -d meetings/mysql 1); sleep 2
 
 echo Starting 2nd container...
-ID_TWO=$($DOCKER run -d mysql-2); sleep 2
+ID_TWO=$($DOCKER run -d meetings/mysql 2); sleep 2
 
 IP_ONE=$($DOCKER inspect -f "{{.NetworkSettings.IPAddress}}" $ID_ONE)
 IP_TWO=$($DOCKER inspect -f "{{.NetworkSettings.IPAddress}}" $ID_TWO)

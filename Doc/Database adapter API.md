@@ -9,6 +9,9 @@ The database adapters implement the interface that should be used from within *i
 * `completeTask(task, callback)`: Deletes the given `task` from the database. On error the callback is called with an error object. If the operation succeeded the callback is called with a 'null' error object and the number of rows affected by the operation, as first and secdond argument respectively. The number of affected rows should be 1 if the delete operation succeeded, else the task was not found in the database (not present or wrong id in the `task` JSON object).
 * `disableTask(task, callback)`: Disables the `task` from being run. On error the callback is called with an error object, else with a 'null' error object and the number of affected rows. This is used then the *runner_retry_count* of the task falls to zero after being non-zero, and action should be taken to take care of the problem. This situation will arise if the *controller* responsible for the task has repeatedly been unavailable or has not called upon the *ejector* to complete the task.
 
+In addition to these functions, database adapters have the following instance variables:
+* `db_id`: A string that identifies the database to which the adapter is connected. This is adapter-dependent.
+* `connected`: A boolean that implies whether the database is reachable or not.
 
 # Adapters
 

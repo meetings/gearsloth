@@ -1,6 +1,6 @@
 {
   "name": "gearsloth",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Delayed task workers and persistent storage schemes for Gearman",
   "main": "./lib/gearsloth",
   "repository": {
@@ -23,7 +23,9 @@
   "dependencies": {
     "gearman-coffee": "^2.0.1",
     "mysql": "^2.3.2",
-    "sqlite3": "^2.2.3"
+    "sqlite3": "^2.2.3",
+    "underscore": "*",
+    "async": "*"
   },
   "files": [
     "LICENSE",
@@ -37,6 +39,7 @@
     "sinon": "*",
     "sinon-chai": "*",
     "async": "*",
-    "dockerode": "*"
+    "dockerode": "*",
+    "underscore": "*"
   }
 }

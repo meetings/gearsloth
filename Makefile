@@ -30,6 +30,10 @@ unit-test: node_modules
 e2e-test: node_modules
 	$(MOCHA) $(MOCHA_PARAMS) test/e2e
 
+.PHONY: docker-test
+docker-test: node_modules
+	$(MOCHA) $(MOCHA_PARAMS) test/docker
+
 .PHONY: blackbox-test
 blackbox-test: $(GEARMAN_COFFEE)
 	$(MOCHA) $(MOCHA_PARAMS) test/blackbox
