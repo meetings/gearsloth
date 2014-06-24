@@ -26,7 +26,7 @@ suite('(docker) on apocalypse', function() {
   var container_array = [];
   var gearslothd_config;
   var gearslothd_config = {
-    verbose: 1,
+    verbose: 0,
     db:'mysql-multimaster',
   };
   var gearmand1_container;
@@ -37,16 +37,13 @@ suite('(docker) on apocalypse', function() {
       function(callback) {
         async.parallel([
           function(callback) {
-            console.log('starting mysqld...');
             containers.multimaster_mysql(function(err, config) {
               gearslothd_config = merge(gearslothd_config, {dbopt:config});
               callback();
             });
           },
           function(callback) {
-            containers.gearmand(['gearmand', 
-              '--verbose', 'NOTICE', 
-              '-l', 'stderr'],
+            containers.gearmand(null,
               true, function(config, container) {
               gearslothd_config.servers = config;
               container_array.push(container);
@@ -89,20 +86,16 @@ suite('(docker) on apocalypse', function() {
     client.submitJob('submitJobDelayed', JSON.stringify(sent_payload))
     .on('complete', function() {
       setTimeout(function() {
-        console.log('----- KILL EVERYTHING -----')
         async.each(container_array, function(container, callback) {
           container.kill(function() {
             container.remove(function() {
-              console.log(container.id + ' has died');
               callback();
             });
           });
         }, function() {
           async.series([
             function(callback) {
-              containers.gearmand(['gearmand', 
-                '--verbose', 'NOTICE', 
-                '-l', 'stderr'],
+              containers.gearmand(null,
                 true, function(config, container) {
                   gearslothd_config.servers = config;
                   gearmand0_host = config[0].host;
@@ -129,7 +122,6 @@ suite('(docker) on apocalypse', function() {
 function startGearslothStack(gearslothd_config, container_array, callback) {
   async.parallel([
     function(callback) {
-      console.log(gearslothd_config);
       containers.gearslothd(
         merge(gearslothd_config, {injector:true})
         , true, function(container) {

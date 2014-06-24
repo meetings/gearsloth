@@ -111,7 +111,6 @@ suite('(docker) two gearmand servers', function() {
     }, {host:gearmand0_host})
     
     .on('connect', function() {
-      console.log('----- KILLING GEARMAND CONTAINER 1 -----');
       gearmand1_container.kill(function(err, data) {
         if(err) console.log(err);
         gearmand1_container.remove(function(err, data) {
