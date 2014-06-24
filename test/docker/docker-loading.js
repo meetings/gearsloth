@@ -156,7 +156,7 @@ suite.only('Docker test: load test', function(){
 
   test('with 10 tasks submitted simultaneously, immediate tasks are executed', function(done) {
     var task_counter = 0;
-    this.timeout(10000);
+    this.timeout(20000);
 
     async.series([
       function(callback_outer) {
@@ -164,7 +164,7 @@ suite.only('Docker test: load test', function(){
           function(callback) {
             worker1 = new gearman.Worker('test', function(payload, worker){
               payload = payload.toString();
-              console.log(task_counter++);
+              console.log(++task_counter);
               expect(payload).to.equal(simple_task.payload);
               if (task_counter === 10) {
                 done();
@@ -179,7 +179,7 @@ suite.only('Docker test: load test', function(){
           },function(callback) {
             worker2 = new gearman.Worker('test', function(payload, worker){
               payload = payload.toString();
-              console.log(task_counter++);
+              console.log(++task_counter);
               expect(payload).to.equal(simple_task.payload);
               if (task_counter === 10) {
                 done();
@@ -208,43 +208,103 @@ suite.only('Docker test: load test', function(){
       function(callback_outer) {
         async.parallel([
           function(callback) {
-            client.submitJob('submitJobDelayed', JSON.stringify(simple_task));
+            client.submitJob('submitJobDelayed', JSON.stringify(simple_task))
+            .on('complete', function() {
+              console.log('task complete');
+            })
+            .on('fail', function() {
+              console.log('task failed');
+            });
             callback();
           },
           function(callback) {
-            client.submitJob('submitJobDelayed', JSON.stringify(simple_task));
+            client.submitJob('submitJobDelayed', JSON.stringify(simple_task))
+            .on('complete', function() {
+              console.log('task complete');
+            })
+            .on('fail', function() {
+              console.log('task failed');
+            });
             callback();
           },
           function(callback) {
-            client.submitJob('submitJobDelayed', JSON.stringify(simple_task));
+            client.submitJob('submitJobDelayed', JSON.stringify(simple_task))
+            .on('complete', function() {
+              console.log('task complete');
+            })
+            .on('fail', function() {
+              console.log('task failed');
+            });
             callback();
           },
           function(callback) {
-            client.submitJob('submitJobDelayed', JSON.stringify(simple_task));
+            client.submitJob('submitJobDelayed', JSON.stringify(simple_task))
+            .on('complete', function() {
+              console.log('task complete');
+            })
+            .on('fail', function() {
+              console.log('task failed');
+            });
             callback();
           },
           function(callback) {
-            client.submitJob('submitJobDelayed', JSON.stringify(simple_task));
+            client.submitJob('submitJobDelayed', JSON.stringify(simple_task))
+            .on('complete', function() {
+              console.log('task complete');
+            })
+            .on('fail', function() {
+              console.log('task failed');
+            });
             callback();
           },
           function(callback) {
-            client.submitJob('submitJobDelayed', JSON.stringify(simple_task));
+            client.submitJob('submitJobDelayed', JSON.stringify(simple_task))
+            .on('complete', function() {
+              console.log('task complete');
+            })
+            .on('fail', function() {
+              console.log('task failed');
+            });
             callback();
           },
           function(callback) {
-            client.submitJob('submitJobDelayed', JSON.stringify(simple_task));
+            client.submitJob('submitJobDelayed', JSON.stringify(simple_task))
+            .on('complete', function() {
+              console.log('task complete');
+            })
+            .on('fail', function() {
+              console.log('task failed');
+            });
             callback();
           },
           function(callback) {
-            client.submitJob('submitJobDelayed', JSON.stringify(simple_task));
+            client.submitJob('submitJobDelayed', JSON.stringify(simple_task))
+            .on('complete', function() {
+              console.log('task complete');
+            })
+            .on('fail', function() {
+              console.log('task failed');
+            });
             callback();
           },
           function(callback) {
-            client.submitJob('submitJobDelayed', JSON.stringify(simple_task));
+            client.submitJob('submitJobDelayed', JSON.stringify(simple_task))
+            .on('complete', function() {
+              console.log('task complete');
+            })
+            .on('fail', function() {
+              console.log('task failed');
+            });
             callback();
           },
           function(callback) {
-            client.submitJob('submitJobDelayed', JSON.stringify(simple_task));
+            client.submitJob('submitJobDelayed', JSON.stringify(simple_task))
+            .on('complete', function() {
+              console.log('task complete');
+            })
+            .on('fail', function() {
+              console.log('task failed');
+            });
             callback();
           },
           function(callback) {
