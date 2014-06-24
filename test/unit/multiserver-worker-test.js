@@ -5,6 +5,7 @@ var expect = chai.expect;
 chai.use(require('sinon-chai'));
 
 var MultiserverWorker = require("../../lib/gearman/multiserver-worker").MultiserverWorker;
+var gearman = require('gearman-coffee');
 
 exports.Worker = events.EventEmitter;
 
@@ -12,8 +13,9 @@ var dummy_func = function() {};
 
 suite("multiserver-worker", function() {
   var sandbox = sinon.sandbox.create();
+  var WorkerSpy;
   suite("when given multiple servers", function() {
-    var m, workerStub, workerSpy;
+    var m, workerStub;
 
     var sampleServers = [{
       host:'localhost',
@@ -24,13 +26,12 @@ suite("multiserver-worker", function() {
     }];
 
     setup(function() {
-      sandbox.spy(exports, 'Worker');
-      exports.Worker.prototype.reconnecter = new events.EventEmitter();
+      WorkerSpy = sandbox.spy(gearman, 'Worker');
+      WorkerSpy.prototype.reconnecter = new events.EventEmitter();
       m = new MultiserverWorker(
         sampleServers,
         'sample',
-        dummy_func,
-        exports.Worker);
+        dummy_func);
     });
 
     teardown(function() {
@@ -38,41 +39,39 @@ suite("multiserver-worker", function() {
     });
 
     test("should spawn as many worker instances", function() {
-      expect(exports.Worker).to.be.calledTwice;
-      expect(exports.Worker).to.be
+      expect(WorkerSpy).to.be.calledTwice;
+      expect(WorkerSpy).to.be
       .calledWith('sample', sinon.match.any, sampleServers[0]);
-      expect(exports.Worker).to.be
+      expect(WorkerSpy).to.be
       .calledWith('sample', sinon.match.any, sampleServers[1]);
     });
   });
   suite("when given no servers", function() {
     setup(function() {
-      sandbox.spy(exports, 'Worker');
+      WorkerSpy = sandbox.spy(gearman, 'Worker');
       m = new MultiserverWorker(
         null,
         'sample',
-        dummy_func,
-        exports.Worker);
+        dummy_func);
     });
     teardown(function() {
       sandbox.restore();
     });
 
     test("should spawn a worker with default config", function() {
-      expect(exports.Worker).to.have.been.calledOnce;
+      expect(WorkerSpy).to.have.been.calledOnce;
     });
   });
 
   suite("disconnect()", function() {
     setup(function() {
-      sandbox.spy(exports, 'Worker');
-      exports.Worker.prototype.disconnect = sandbox.spy();
-      exports.Worker.prototype.reconnecter = new events.EventEmitter();
+      WorkerSpy = sandbox.spy(gearman, 'Worker');
+      WorkerSpy.prototype.disconnect = sandbox.spy();
+      WorkerSpy.prototype.reconnecter = new events.EventEmitter();
       m = new MultiserverWorker(
         null,
         'sample',
-        dummy_func,
-        exports.Worker);
+        dummy_func);
     });
 
     teardown(function() {

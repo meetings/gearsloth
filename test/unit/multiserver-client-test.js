@@ -3,10 +3,8 @@ var sinon = require('sinon');
 var expect = chai.expect;
 chai.use(require('sinon-chai'));
 var EventEmitter = require('events').EventEmitter;
-
-
-var MultiserverClient = require("../../lib/gearman/multiserver-client").MultiserverClient;
-var Client = require("gearman-coffee").Client;
+var MultiserverClient = require('../../lib/gearman').MultiserverClient;
+var gearman = require("gearman-coffee");
 
 
 var dummy_func = function() {};
@@ -28,14 +26,12 @@ suite("multiserver-client", function() {
 
 
     setup(function() {
-      ClientStub = sandbox.spy(Client);
+      ClientStub = sandbox.spy(gearman, 'Client');
       ClientStub.prototype.submitJob = sandbox.stub();
       ClientStub.prototype.submitJob.returns({on:function() {}});
       ClientStub.prototype.connected = true;;
       
-      m = new MultiserverClient(
-        sampleServers,
-        ClientStub);
+      m = new MultiserverClient(sampleServers);
     });
 
     teardown(function() {
@@ -65,11 +61,9 @@ suite("multiserver-client", function() {
   });
   suite("when all but one server are down", function() {
     setup(function() {
-      ClientStub = sandbox.spy(Client);
+      ClientStub = sandbox.spy(gearman, 'Client');
 
-      m = new MultiserverClient(
-        sampleServers,
-        ClientStub);
+      m = new MultiserverClient(sampleServers)
 
       m.connected = true;
       m._connections.forEach(function(client) {
@@ -94,11 +88,9 @@ suite("multiserver-client", function() {
 
   suite("when all servers are down", function() {
     setup(function() {
-      ClientStub = sandbox.spy(Client);
+      ClientStub = sandbox.spy(gearman, 'Client');
 
-      m = new MultiserverClient(
-        sampleServers,
-        ClientStub);
+      m = new MultiserverClient(sampleServers);
 
       m._connections.forEach(function(client) {
         client.submitJob = sandbox.spy();
@@ -146,10 +138,11 @@ suite("multiserver-client", function() {
   suite("when given no servers", function() {
     var ClientStub;
     setup(function() {
-      ClientStub = sandbox.spy(Client);
-      m = new MultiserverClient(
-        null,
-        ClientStub);
+      ClientStub = sandbox.spy(gearman, 'Client');
+      m = new MultiserverClient();
+    });
+    teardown(function() {
+      sandbox.restore();
     });
 
     test("should return a client with default config", function() {
@@ -160,14 +153,12 @@ suite("multiserver-client", function() {
   
   suite("when disconnect is called", function() {
     setup(function() {
-      ClientStub = sandbox.spy(Client);
+      ClientStub = sandbox.spy(gearman, 'Client');
       ClientStub.prototype.connected = true;
       ClientStub.prototype.reconnecter = new EventEmitter();
 
 
-      m = new MultiserverClient(
-        sampleServers,
-        ClientStub);
+      m = new MultiserverClient(sampleServers);
       client = new EventEmitter();
 
       m._connections.forEach(function(client) {
