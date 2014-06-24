@@ -156,7 +156,7 @@ suite('Docker test: killing injectors', function(){
           }]);
       },
       function(callback_outer) {
-        async.series([
+        async.parallel([
           function(callback) {
             injector_container.kill(function(){
               injector_container.remove(function() {

@@ -11,13 +11,13 @@ var merge = require('../../lib/merge');
 
 chai.should();
 
-suite('Docker test: killing ejectors', function(){
+suite('Docker test: killing runners', function(){
   var gearman_ip;
   var gearslothd_config = {
     db:'mysql-multimaster'
   };
 
-  var ejector_container;
+  var runner_container;
   var worker;
   var client;
 
@@ -56,15 +56,15 @@ suite('Docker test: killing ejectors', function(){
           function(callback) {
             containers.gearslothd(
               merge(gearslothd_config, {runner: true})
-              , true, function() {
+              , true, function(container) {
+                runner_container = container;
                 callback();
               });
           },
           function(callback) {
             containers.gearslothd(
-              merge(gearslothd_config, {ejector: true})
+              merge(gearslothd_config, {runner: true})
               , true, function(container) {
-                ejector_container = container;
                 callback();
               });
           },
@@ -158,8 +158,8 @@ suite('Docker test: killing ejectors', function(){
       function(callback_outer) {
         async.parallel([
           function(callback) {
-            ejector_container.kill(function(){
-              ejector_container.remove(function() {
+            runner_container.kill(function(){
+              runner_container.remove(function() {
                 callback();
               });
             });
