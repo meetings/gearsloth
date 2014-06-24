@@ -442,14 +442,14 @@ suite('MySQL Multimaster adapter', function() {
 
   suite("db_id", function() {
     test("should be the same with two adapters with same config", function() {
-      adapter1 = new MySQLMultimaster.MySQLMultimaster(config);
-      adapter2 = new MySQLMultimaster.MySQLMultimaster(config);
+      adapter1 = new MySQLMultimaster.MySQLMultimaster(config.dbopt);
+      adapter2 = new MySQLMultimaster.MySQLMultimaster(config.dbopt);
       adapter1.db_id.should.equal(adapter2.db_id)
     });
-    test("should differ if config is different", function() {
-      adapter1 = new MySQLMultimaster.MySQLMultimaster(config);
+    test("should differ if config.dbopt is different", function() {
+      adapter1 = new MySQLMultimaster.MySQLMultimaster(config.dbopt);
       config.dbopt.host = "goabase.net"
-      adapter2 = new MySQLMultimaster.MySQLMultimaster(config);
+      adapter2 = new MySQLMultimaster.MySQLMultimaster(config.dbopt);
       adapter1.db_id.should.not.equal(adapter2.db_id)
     });
 
