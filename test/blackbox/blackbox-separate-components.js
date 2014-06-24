@@ -501,9 +501,6 @@ suite('blackbox: separate gearslothd processes', function() {
 
     test('shuold execute a task on expiry with at field', function(done){
         this.timeout(10000);
-        var expiry = new Date();
-        expiry.setSeconds(expiry.getSeconds() + 5);
-        delayed_task_at.at = expiry;
 
         async.series([
           function(callback) {
@@ -531,6 +528,9 @@ suite('blackbox: separate gearslothd processes', function() {
             });
           },
           function(callback) {
+            var expiry = new Date();
+            expiry.setSeconds(expiry.getSeconds() + 5);
+            delayed_task_at.at = expiry;
             client.submitJob('submitJobDelayed', JSON.stringify(delayed_task_at));
             time_reference = new Date();
             callback();
