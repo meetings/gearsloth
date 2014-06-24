@@ -25,56 +25,66 @@ suite('Docker test: killing ejectors', function(){
     this.timeout(10000);
     async.series([
       function(callback) {
-        containers.multimaster_mysql(function(err, config) {
-          gearslothd_config = merge(gearslothd_config, {dbopt: config});
-          callback();
-        });
+        async.parallel([
+          function(callback) {
+            containers.multimaster_mysql(function(err, config) {
+              gearslothd_config = merge(gearslothd_config, {dbopt: config});
+              callback();
+            });
+          },
+          function(callback) {
+            containers.gearmand([
+              'gearmand',
+              '--verbose', 'NOTICE',
+              '-l', 'stderrr'
+              ], true, function(config) {
+                gearslothd_config.servers = config;
+                callback();
+              });
+          }
+        ], callback);
       },
       function(callback) {
-        containers.gearmand([
-          'gearmand',
-          '--verbose', 'NOTICE',
-          '-l', 'stderrr'
-          ], true, function(config) {
-            gearslothd_config.servers = config;
-            callback();
-          });
-      },
-      function(callback) {
-        containers.gearslothd(
-          merge(gearslothd_config, {injector: true})
-          , true, function() {
-            callback();
-          });
-      },
-      function(callback) {
-        containers.gearslothd(
-          merge(gearslothd_config, {runner: true})
-          , true, function() {
-            callback();
-          });
-      },
-      function(callback) {
-        containers.gearslothd(
-          merge(gearslothd_config, {ejector: true})
-          , true, function(container) {
-            ejector_container = container;
-            callback();
-          });
-      },function(callback) {
-        containers.gearslothd(
-          merge(gearslothd_config, {ejector: true})
-          , true, function(container) {
-            callback();
-          });
-      },
-      function(callback) {
-        containers.gearslothd(
-          merge(gearslothd_config, {controller: true})
-          , true, function() {
-            callback();
-          });
-      }], done);
+        async.parallel([
+          function(callback) {
+            containers.gearslothd(
+              merge(gearslothd_config, {injector: true})
+              , true, function() {
+                callback();
+              });
+          },
+          function(callback) {
+            containers.gearslothd(
+              merge(gearslothd_config, {runner: true})
+              , true, function() {
+                callback();
+              });
+          },
+          function(callback) {
+            containers.gearslothd(
+              merge(gearslothd_config, {ejector: true})
+              , true, function(container) {
+                ejector_container = container;
+                callback();
+              });
+          },
+          function(callback) {
+            containers.gearslothd(
+                merge(gearslothd_config, {ejector: true})
+                , true, function(container) {
+                  callback();
+                });
+          },
+          function(callback) {
+            containers.gearslothd(
+                merge(gearslothd_config, {controller: true})
+                , true, function() {
+                  callback();
+                });
+          }
+        ], callback);
+      }
+    ], done);
   });
 
   teardown(function(done) {

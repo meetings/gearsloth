@@ -14,58 +14,61 @@ chai.should();
 suite('docker-example', function() {
   var gearmand_ip;
   var gearslothd_config = {
-    verbose: 1,
+    verbose: 0,
     db:'mysql-multimaster'
   };
   setup(function(done) {
     this.timeout(10000);
     async.series([
       function(callback) {
-        console.log('starting mysqld...');
-        containers.multimaster_mysql(function(err, config) {
-          gearslothd_config = merge(gearslothd_config, {dbopt: config});
-          callback();
-        });
+        async.parallel([
+          function(callback) {
+            containers.multimaster_mysql(function(err, config) {
+              gearslothd_config = merge(gearslothd_config, {dbopt: config});
+              callback();
+            });
+          },
+          function(callback) {
+            containers.gearmand(null, true, function(config) {
+              gearslothd_config.servers = config;
+              callback();
+            });
+          }
+        ], callback);
       },
       function(callback) {
-        containers.gearmand(['gearmand', 
-          '--verbose', 'NOTICE', 
-          '-l', 'stderr'],
-          true, function(config) {
-          gearslothd_config.servers = config;
-          callback();
-        });
-      },
-      function(callback) {
-        console.log(gearslothd_config);
-        containers.gearslothd(
-          merge(gearslothd_config, {injector:true})
-          , true, function() {
-           callback(); 
-          });
-      },
-      function(callback) {
-        containers.gearslothd(
-          merge(gearslothd_config, {runner:true})
-          , true, function() {
-           callback(); 
-          });
-      },
-      function(callback) {
-        containers.gearslothd(
-          merge(gearslothd_config, {ejector:true})
-          , true, function() {
-            callback(); 
-          });
-      },
-      function(callback) {
-        containers.gearslothd(
-            merge(gearslothd_config, {controller:true})
-            , true, function() {
-            callback(); 
-          });
-      }],
-    done);
+        async.parallel([
+            function(callback) {
+              containers.gearslothd(
+                merge(gearslothd_config, {injector:true})
+                , true, function() {
+                  callback(); 
+                });
+            },
+            function(callback) {
+              containers.gearslothd(
+                merge(gearslothd_config, {runner:true})
+                , true, function() {
+                  callback(); 
+                });
+            },
+            function(callback) {
+              containers.gearslothd(
+                merge(gearslothd_config, {ejector:true})
+                , true, function() {
+                  callback(); 
+                });
+            },
+            function(callback) {
+              containers.gearslothd(
+                merge(gearslothd_config, {controller:true})
+                , true, function() {
+                  callback(); 
+                });
+            }
+        ], callback);
+      }
+    ], done);
   });
 
   teardown(function(done) {

@@ -27,7 +27,7 @@ suite('(docker) two gearmand servers', function() {
   var gearmand0_host;
   var gearslothd_config;
   var gearslothd_config = {
-    verbose: 2,
+    verbose: 0,
     db:'mysql-multimaster',
     servers: []
   };
@@ -39,17 +39,13 @@ suite('(docker) two gearmand servers', function() {
       function(callback) {
         async.parallel([
           function(callback) {
-            console.log('starting mysqld...');
             containers.multimaster_mysql(function(err, config) {
               gearslothd_config = merge(gearslothd_config, {dbopt: config});
               callback();
             });
           },
           function(callback) {
-            containers.gearmand(['gearmand', 
-              '--verbose', 'NOTICE', 
-              '-l', 'stderr'],
-              true, function(config, container) {
+            containers.gearmand(null, true, function(config, container) {
               gearslothd_config.servers = gearslothd_config.servers.concat(config);
               gearmand0_host = config[0].host;
               gearmand0_container = container;
@@ -57,20 +53,16 @@ suite('(docker) two gearmand servers', function() {
             });
           },
           function(callback) {
-            containers.gearmand(['gearmand', 
-              '--verbose', 'NOTICE', 
-              '-l', 'stderr'],
-              true, function(config, container) {
+            containers.gearmand(null, true, function(config, container) {
               gearslothd_config.servers = gearslothd_config.servers.concat(config);
               gearmand1_container = container;
               callback();
           });
-        }], function() { callback() });
+        }], callback);
       },
       function(callback) {
         async.parallel([
           function(callback) {
-            console.log(gearslothd_config);
             containers.gearslothd(
               merge(gearslothd_config, {injector:true})
               , true, function() {
