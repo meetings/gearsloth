@@ -166,7 +166,6 @@ suite('(e2e) runner', function() {
       worker = new gearman.Worker('test', function(payload, worker) {
         var json = JSON.parse(payload.toString());
         json.at = new Date(json.at);
-        json.first_run = new Date(json.first_run);
         config.dbconn.disableTask.should.have.been.calledWith(json);
         done();
       }, { port:port
@@ -190,7 +189,6 @@ suite('(e2e) runner', function() {
       worker = new gearman.Worker('test', function(payload, worker) {
         var json = JSON.parse(payload.toString());
         json.at = new Date(json.at);
-        json.first_run = new Date(json.first_run);
         config.dbconn.updateTask.should.have.been.calledWith(json);
         config.dbconn.completeTask(json, function(err, id){});
         done();
