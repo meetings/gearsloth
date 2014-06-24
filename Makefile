@@ -90,11 +90,11 @@ endif
 
 .PHONY: coverage
 coverage: node_modules $(DOCKER_MARKERS)
-	-$(ISTANBUL) cover --report cobertura $(MOCHA_ALT) -- $(MOCHA_PARAMS) test
+	-@$(ISTANBUL) cover --report cobertura $(MOCHA_ALT) -- $(MOCHA_PARAMS) test
 
 .PHONY: html-coverage
 html-coverage: coverage
-	-$(ISTANBUL) report html
+	-@$(ISTANBUL) report html
 
 .PHONY: clean
 clean: clean-docker
