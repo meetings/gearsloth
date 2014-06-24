@@ -12,18 +12,22 @@ chai.use(sinonchai);
 
 suite('MySQL Multimaster adapter', function() {
   
-  var config = {};
-  config.dbopt = {
-    host: 'example',
-    user: 'example_user',
-    password: 'example_secret'
-  };
+  var config;
+  var init_config;
   var sandbox = sinon.sandbox.create();
   var mysql_conn_master;
   var mysql_conn_slave;
   var mysql_pool;
 
   setup(function() {
+    config = {
+      host: 'example',
+      user: 'example_user',
+      password: 'example_secret'
+    };
+    init_config = {
+      dbopt: config
+    };
     sandbox.stub(mysql, 'createPoolCluster');
     mysql_conn_master = {
       query: sandbox.stub(),
@@ -69,13 +73,14 @@ suite('MySQL Multimaster adapter', function() {
         changedRows: 0 
       };
 
+      mysql_conn_master.query.yields(null);
 
-      var multimaster = MySQLMultimaster.initialize(config, function(err, adapter) {
+      MySQLMultimaster.initialize(init_config, function(err, adapter) {
         expect(err).to.be.null;
         expect(adapter).to.not.be.null;
-        mysql_pool.getConnection.should.have.been.calledTwice;
-        mysql_conn_master.release.should.have.been.calledOnce;
-        mysql_conn_slave.release.should.have.been.calledOnce;
+        mysql_pool.getConnection.callCount.should.equal(4);
+        mysql_conn_master.release.should.have.been.calledTwice;
+        mysql_conn_slave.release.should.have.been.calledTwice;
         done();
       });
     });
@@ -90,7 +95,7 @@ suite('MySQL Multimaster adapter', function() {
 
       mysql_pool.getConnection.withArgs('SLAVE').yields(error);
 
-      var multimaster = MySQLMultimaster.initialize(config, function(err, adapter) {
+      var multimaster = MySQLMultimaster.initialize(init_config, function(err, adapter) {
         expect(err).to.equal(error);
         expect(adapter).to.be.undefined;
         mysql_pool.getConnection.should.have.been.calledTwice;
@@ -301,8 +306,6 @@ suite('MySQL Multimaster adapter', function() {
         clock.tick(1600);
       });
 
-      test('sets task.first_run on the first run');
-  
       test('polls every second by default', function() {
         var pollSpy = sandbox.spy(adapter, '_poll');
 
@@ -391,14 +394,14 @@ suite('MySQL Multimaster adapter', function() {
     });
 
     test("should be true after connecting", function() {
-      MySQLMultimaster.initialize(config, function(err, adapter1) {
+      MySQLMultimaster.initialize(init_config, function(err, adapter1) {
         adapter1.connected.should.be.true;
       });
     });
 
     test("should be false when connection is lost", function() {
       var ad;
-      MySQLMultimaster.initialize(config, function(err, adapter1) {
+      MySQLMultimaster.initialize(init_config, function(err, adapter1) {
         ad = adapter1;
       });
       mysql_conn.connect = sinon.stub().callsArgWith(0, new Error());
@@ -448,7 +451,7 @@ suite('MySQL Multimaster adapter', function() {
     });
     test("should differ if config is different", function() {
       adapter1 = new MySQLMultimaster.MySQLMultimaster(config);
-      config.dbopt.host = "goabase.net"
+      config.host = "goabase.net";
       adapter2 = new MySQLMultimaster.MySQLMultimaster(config);
       adapter1.db_id.should.not.equal(adapter2.db_id)
     });
