@@ -397,7 +397,7 @@ suite('blackbox: separate gearslothd processes', function() {
       if (worker) worker.complete();
       expect(payload).to.equal(delayed_task_after.payload);
       var time_now = new Date();
-      if (time_now.getSeconds() - time_reference.getSeconds() < 5) {
+      if (time_now.getSeconds() - time_reference.getSeconds() <= 4) {
         done(new Error('Task was submitted too early'));
       } else {
         done();
@@ -409,7 +409,7 @@ suite('blackbox: separate gearslothd processes', function() {
       if (worker) worker.complete();
       expect(payload).to.equal(delayed_task_after.payload);
       var time_now = new Date();
-      if (time_now.getSeconds() - time_reference.getSeconds() < 5) {
+      if (time_now.getSeconds() - time_reference.getSeconds() <= 4) {
         done(new Error('Task was submitted too early'));
       } else {
         done();
@@ -421,7 +421,7 @@ suite('blackbox: separate gearslothd processes', function() {
       if (worker) worker.complete();
       expect(payload).to.equal(delayed_task_after.payload);
       var time_now = new Date();
-      if (time_now.getSeconds() - time_reference.getSeconds() < 5) {
+      if (time_now.getSeconds() - time_reference.getSeconds() <= 4) {
         done(new Error('Task was submitted too early'));
       } else {
         done();
