@@ -51,7 +51,7 @@ help:
 
 .PHONY: test
 test: node_modules
-	$(MOCHA) $(MOCHA_PARAMS) test/unit test/e2e test/blackbox
+	$(MOCHA) $(MOCHA_PARAMS) test/blackbox test/e2e test/unit
 
 .PHONY: unit-test
 unit-test: node_modules
