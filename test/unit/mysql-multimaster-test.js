@@ -127,7 +127,9 @@ suite('MySQL Multimaster adapter', function() {
       adapter.saveTask(task, function(err, id) {
         mysql_conn_master.query
           .should.have.been.calledWith(sql_expectation, task_to_insert);
-        mysql_conn_master.release.should.have.been.calledTwice;
+        mysql_pool.getConnection.should.have.been.calledTwice;
+        mysql_conn_master.release.should.have.been.calledOnce;
+        mysql_conn_slave.release.should.have.been.calledOnce;
         done();
       });
     });
@@ -146,7 +148,9 @@ suite('MySQL Multimaster adapter', function() {
         var task
         mysql_conn_master.query
           .should.have.been.calledWith(sql_expectation, task_to_insert);
-        mysql_conn_master.release.should.have.been.calledTwice;
+        mysql_pool.getConnection.should.have.been.calledTwice;
+        mysql_conn_master.release.should.have.been.calledOnce;
+        mysql_conn_slave.release.should.have.been.calledOnce;
         done();
       });
     });
@@ -164,7 +168,9 @@ suite('MySQL Multimaster adapter', function() {
       adapter.saveTask(task, function(err, id) {
         mysql_conn_master.query
           .should.have.been.calledWith(sql_expectation, task_to_insert);
-        mysql_conn_master.release.should.have.been.calledTwice;
+        mysql_pool.getConnection.should.have.been.calledTwice;
+        mysql_conn_master.release.should.have.been.calledOnce;
+        mysql_conn_slave.release.should.have.been.calledOnce;
         done();
       });
     });
@@ -183,7 +189,9 @@ suite('MySQL Multimaster adapter', function() {
       adapter.saveTask(task, function(err, id) {
         mysql_conn_master.query
           .should.have.been.calledWith(sql_expectation, task_to_insert);
-        mysql_conn_master.release.should.have.been.calledTwice;
+        mysql_pool.getConnection.should.have.been.calledTwice;
+        mysql_conn_master.release.should.have.been.calledOnce;
+        mysql_conn_slave.release.should.have.been.calledOnce;
         done();
       });
     });
