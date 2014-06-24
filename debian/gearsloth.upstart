@@ -1,0 +1,25 @@
+# /etc/init/gearsloth.conf
+
+description "Gearman delayed task workers and persistent storage"
+author      "Tuomas Starck <tuomas@meetin.gs>"
+
+start on (local-filesystems and net-device-up IFACE!=lo)
+stop  on shutdown
+
+respawn
+respawn limit 5 5
+
+setuid nobody
+setgid nogroup
+
+script
+  set -e
+  FIFO=`mktemp --dry-run`
+  mkfifo $FIFO
+  (logger -t gearsloth -p local7.info <$FIFO &)
+  exec 2>$FIFO
+  exec >$FIFO
+  rm $FIFO
+
+  exec /usr/bin/gearslothd
+end script
