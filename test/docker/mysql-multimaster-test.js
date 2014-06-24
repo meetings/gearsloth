@@ -67,7 +67,7 @@ suite('mysql-multimaster (docker)', function() {
     });
   });
 
-  suite.only('with new container for every test', function() {  
+  suite('with new container for every test', function() {  
 
     setup(function(done) {
       this.timeout(10000);
