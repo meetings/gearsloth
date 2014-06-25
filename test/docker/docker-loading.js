@@ -11,7 +11,7 @@ var merge = require('../../lib/merge');
 
 chai.should();
 
-suite.only('Docker test: load test', function(){
+suite('Docker test: load test', function(){
   var gearman_ip;
   var gearslothd_config = {
     db:'mysql-multimaster'
