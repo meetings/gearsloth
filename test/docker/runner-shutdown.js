@@ -18,6 +18,7 @@ suite('Docker test: killing runners', function(){
   };
 
   var runner_container;
+  var runner_container2;
   var worker;
   var client;
 
@@ -65,6 +66,7 @@ suite('Docker test: killing runners', function(){
             containers.gearslothd(
               merge(gearslothd_config, {runner: true})
               , true, function(container) {
+                runner_container2 = container;
                 callback();
               });
           },
@@ -173,6 +175,72 @@ suite('Docker test: killing runners', function(){
             callback();
           }
           ]);
+      }]);
+  });
+
+test('two of two, then one is brought up, immediate task is executed', function(done) {
+    this.timeout(10000);
+    async.series([
+      function(callback_outer) {
+        async.series([
+          function(callback) {
+            worker = new gearman.Worker('test', function(payload, worker){
+              payload = payload.toString();
+              worker.complete();
+              expect(payload).to.equal(simple_task.payload);
+              done();
+            }, {port: gearslothd_config.servers[0].port,
+              host: gearslothd_config.servers[0].host
+            });
+            worker.on('connect', function() {
+              callback();
+            });
+          },
+          function(callback) {
+            client = new gearman.Client({port: gearslothd_config.servers[0].port,
+              host: gearslothd_config.servers[0].host
+            });
+            client.on('connect', function() {
+              callback();
+            });
+          }, 
+          function(callback) {
+            callback_outer();
+            callback();
+          }]);
+      },
+      function(callback_outer) {
+        async.series([
+          function(callback) {
+            runner_container.kill(function(){
+              runner_container.remove(function() {
+                callback();
+              });
+            });
+          },
+          function(callback) {
+            runner_container2.kill(function(){
+              runner_container2.remove(function() {
+                callback();
+              });
+            });
+          },
+          function(callback) {
+            client.submitJob('submitJobDelayed', JSON.stringify(simple_task));
+            callback();
+          },  
+          function(callback) {
+            callback_outer();
+            callback();
+          }
+          ]);
+      },
+      function(callback_outer) {
+        containers.gearslothd(
+          merge(gearslothd_config, {runner: true})
+          , true, function() {
+            callback_outer();
+          });
       }]);
   });
 });
