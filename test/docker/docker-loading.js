@@ -8,10 +8,14 @@ var net = require('net');
 var fs = require('fs');
 var containers = require('./containers');
 var merge = require('../../lib/merge');
+var MultiserverClient = require('../../lib/gearman/multiserver-client')
+  .MultiserverClient;
+var MultiserverWorker = require('../../lib/gearman/multiserver-worker')
+  .MultiserverWorker;
 
 chai.should();
 
-suite('Docker test: load test', function(){
+suite.only('Docker test: load test', function(){
   var gearman_ip;
   var gearslothd_config = {
     db:'mysql-multimaster'
@@ -20,6 +24,7 @@ suite('Docker test: load test', function(){
   var worker1;
   var worker2;
   var client;
+  var task_counter;
 
   setup(function(done) {
     this.timeout(10000);
@@ -27,20 +32,31 @@ suite('Docker test: load test', function(){
       function(callback) {
         async.parallel([
           function(callback) {
+            task_counter = 0;
             containers.multimaster_mysql(function(err, config) {
               gearslothd_config = merge(gearslothd_config, {dbopt: config});
               callback();
             });
           },
           function(callback) {
-            containers.gearmand([
-              'gearmand',
-              '--verbose', 'INFO',
-              '-l', 'stderrr'
-              ], true, function(config) {
+            containers.gearmand([], true, function(config) {
+              if (!gearslothd_config.servers) {
                 gearslothd_config.servers = config;
-                callback();
-              });
+              } else {
+                gearslothd_config.servers[1] = config[0];
+              }
+              callback();
+            });
+          },
+          function(callback) {
+            containers.gearmand([], true, function(config) {
+              if (!gearslothd_config.servers) {
+                gearslothd_config.servers = config;
+              } else {
+                gearslothd_config.servers[1] = config[0];
+              }
+              callback();
+            });
           }
         ], callback);
       },
@@ -112,7 +128,7 @@ suite('Docker test: load test', function(){
     async.series([
       function(callback) {
         if (client) {
-          client.socket.on('close', function(){
+          client.on('disconnect', function(){
             callback();
           })
           client.disconnect();
@@ -122,7 +138,7 @@ suite('Docker test: load test', function(){
       },
       function(callback) {
         if (worker1) {
-          worker1.socket.on('close', function() {
+          worker1.on('disconnect', function() {
             callback();
           });
           worker1.disconnect();
@@ -132,7 +148,7 @@ suite('Docker test: load test', function(){
       },
       function(callback) {
         if (worker2) {
-          worker2.socket.on('close', function() {
+          worker2.on('disconnect', function() {
             callback();
           });
           worker2.disconnect();
@@ -154,48 +170,46 @@ suite('Docker test: load test', function(){
     payload : 'test payload'
   };
 
+  var test_func1 = function(done, payload, worker){
+    payload = payload.toString();
+    expect(payload).to.equal(simple_task.payload);
+    ++task_counter;
+    if (task_counter >= 10) {
+      done();
+    }
+    worker.complete();
+  };
+
+  var test_func2 = function(done, payload, worker){
+    payload = payload.toString();
+    expect(payload).to.equal(simple_task.payload);
+    ++task_counter;
+    if (task_counter >= 10) {
+      done();
+    }
+    worker.complete();
+  };
+
   test('with 10 tasks submitted simultaneously, immediate tasks are executed', function(done) {
-    var task_counter = 0;
     this.timeout(20000);
 
     async.series([
       function(callback_outer) {
-        async.series([
+        async.parallel([
           function(callback) {
-            worker1 = new gearman.Worker('test', function(payload, worker){
-              payload = payload.toString();
-              expect(payload).to.equal(simple_task.payload);
-              ++task_counter;
-              if (task_counter >= 10) {
-                done();
-              }
-              worker.complete();
-            }, {port: gearslothd_config.servers[0].port,
-              host: gearslothd_config.servers[0].host
-            });
+            worker1 = new MultiserverWorker(gearslothd_config.servers, 'test', test_func1.bind(null, done));
             worker1.on('connect', function() {
               callback();
             });
-          },function(callback) {
-            worker2 = new gearman.Worker('test', function(payload, worker){
-              payload = payload.toString();
-              expect(payload).to.equal(simple_task.payload);
-              ++task_counter;
-              if (task_counter >= 10) {
-                done();
-              }
-              worker.complete();
-            }, {port: gearslothd_config.servers[0].port,
-              host: gearslothd_config.servers[0].host
-            });
+          },
+          function(callback) {
+            worker2 = new MultiserverWorker(gearslothd_config.servers, 'test', test_func2.bind(null, done));
             worker2.on('connect', function() {
               callback();
             });
           },
           function(callback) {
-            client = new gearman.Client({port: gearslothd_config.servers[0].port,
-              host: gearslothd_config.servers[0].host
-            });
+            client = new MultiserverClient(gearslothd_config.servers);
             client.on('connect', function() {
               callback();
             });
