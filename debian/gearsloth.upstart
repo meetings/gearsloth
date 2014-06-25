@@ -1,0 +1,34 @@
+# /etc/init/gearsloth.conf
+
+description "Delayed task workers and persistent storage schemes for Gearman"
+author      "Tuomas Starck <tuomas@meetin.gs>"
+
+start on (local-filesystems and net-device-up IFACE!=lo)
+stop  on shutdown
+
+respawn
+respawn limit 5 5
+
+setuid nobody
+setgid nogroup
+
+script
+  [ -r /etc/default/gearsloth ] && . /etc/default/gearsloth
+
+  set -e
+  FIFO=`mktemp --dry-run`
+  mkfifo $FIFO
+  (logger -t gearsloth -p local7.info <$FIFO &)
+  exec 2>$FIFO
+  exec >$FIFO
+  rm $FIFO
+
+  case "$GEARSLOTH_ENABLED" in
+    [Nn]*)
+      echo Gearsloth disabled
+      exit 0
+      ;;
+  esac
+
+  exec /usr/bin/gearslothd $GEARSLOTH_ARGS
+end script

@@ -1,0 +1,25 @@
+Source: gearsloth
+Section: net
+Priority: extra
+Maintainer: Gearsloth Team <gearsloth@meetin.gs>
+Uploaders: Tuomas Starck <tuomas@meetin.gs>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.4
+Homepage: https://github.com/meetings/gearsloth
+
+Package: gearsloth
+Architecture: all
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ nodejs (>= 0.10.24)
+Suggests:
+ sqlite3,
+ node-sqlite3 (>= 2.2)
+Description: Delayed task workers and persistent storage schemes for Gearman
+ Gearsloth enables delayed tasks and persistent storage schemes in Gearman
+ queue server. It consists of a small javascript helper library and a daemon
+ that functions as both a gearman worker listening to delayed tasks and a
+ client submitting those tasks at a specified time. The gearslothd daemon
+ supports a database backend architecture which abstracts persisting delayed
+ tasks to a database.
