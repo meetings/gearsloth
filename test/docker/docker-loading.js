@@ -173,7 +173,7 @@ suite.only('Docker test: load test', function(){
   var test_func1 = function(done, payload, worker){
     payload = payload.toString();
     expect(payload).to.equal(simple_task.payload);
-    ++task_counter;
+    console.log(++task_counter);
     if (task_counter >= 10) {
       done();
     }
@@ -183,7 +183,7 @@ suite.only('Docker test: load test', function(){
   var test_func2 = function(done, payload, worker){
     payload = payload.toString();
     expect(payload).to.equal(simple_task.payload);
-    ++task_counter;
+    console.log(++task_counter);
     if (task_counter >= 10) {
       done();
     }
@@ -267,5 +267,63 @@ suite.only('Docker test: load test', function(){
           }
           ]);
       }]);
+  });
+
+  var test_func1_1000 = function(done, payload, worker){
+      payload = payload.toString();
+      expect(payload).to.equal(simple_task.payload);
+      console.log(++task_counter);
+      if (task_counter >= 1000) {
+        done();
+      }
+      worker.complete();
+  };
+
+  var test_func2_1000 = function(done, payload, worker){
+    payload = payload.toString();
+    expect(payload).to.equal(simple_task.payload);
+    console.log(++task_counter);
+    if (task_counter >= 1000) {
+      done();
+    }
+    worker.complete();
+  };
+
+  test('with 1000 tasks submitted simultaneously, immediate tasks are executed', function(done) {
+    this.timeout(2000000);
+
+    async.series([
+      function(callback_outer) {
+        async.parallel([
+          function(callback) {
+            worker1 = new MultiserverWorker(gearslothd_config.servers, 'test', test_func1_1000.bind(null, done));
+            worker1.on('connect', function() {
+              callback();
+            });
+          },
+          function(callback) {
+            worker2 = new MultiserverWorker(gearslothd_config.servers, 'test', test_func2_1000.bind(null, done));
+            worker2.on('connect', function() {
+              callback();
+            });
+          },
+          function(callback) {
+            client = new MultiserverClient(gearslothd_config.servers);
+            client.on('connect', function() {
+              callback();
+            });
+          }, 
+          function(callback) {
+            callback_outer();
+            callback();
+          }
+        ]);
+      },
+      function(callback_outer) {
+        async.times(1000, function() {
+          client.submitJob('submitJobDelayed', JSON.stringify(simple_task));
+        }, callback_outer);
+      }
+    ]);
   });
 });
