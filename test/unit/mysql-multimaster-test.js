@@ -485,7 +485,6 @@ suite('MySQL Multimaster adapter', function() {
         func_name: 'asdf'
       }
       var values = {
-        at: new Date('2014-05-22'),
         task: JSON.stringify({
           at: new Date('2014-05-22'),
           func_name: 'asdf'
