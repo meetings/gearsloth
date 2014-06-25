@@ -12,10 +12,14 @@ EOL
 
 export DEBIAN_FRONTEND=noninteractive
 
-apt-get update || exit 1
+# latest docker
+wget -qO- https://get.docker.io/gpg | apt-key add -
+echo deb http://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list
+
+apt-get update
 
 apt-get install --yes --no-install-recommends \
-  docker.io \
+  lxc-docker \
   gearman \
   git \
   mysql-client \
