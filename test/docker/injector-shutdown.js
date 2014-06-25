@@ -11,7 +11,7 @@ var merge = require('../../lib/merge');
 
 chai.should();
 
-suite.only('Docker test: killing injectors', function(){
+suite('Docker test: killing injectors', function(){
   var gearman_ip;
   var gearslothd_config = {
     db:'mysql-multimaster'
@@ -184,7 +184,7 @@ test('two of two, then bring one up, immediate task is executed', function(done)
       function(callback_outer) {
         async.series([
           function(callback) {
-            worker = new gearman.Worker('test', function(payload, worker){
+              worker = new gearman.Worker('test', function(payload, worker){
               payload = payload.toString();
               worker.complete();
               expect(payload).to.equal(simple_task.payload);
