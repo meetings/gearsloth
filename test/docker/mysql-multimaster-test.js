@@ -138,10 +138,7 @@ suite('mysql-multimaster (docker)', function() {
         };
 
         var task_from_poll = {
-          id: {
-            db_id: adapter.db_id,
-            task_id: 1
-          },
+          id: undefined,
           after: 500,
           func_name: 'ebin',
         };
@@ -150,7 +147,7 @@ suite('mysql-multimaster (docker)', function() {
         async.series([
           function(callback) {
             adapter.saveTask(task, function(err, id) {
-              task_from_poll.id.task_id = id;
+              task_from_poll.id = id;
               task_id = id;
               callback(err)
             });

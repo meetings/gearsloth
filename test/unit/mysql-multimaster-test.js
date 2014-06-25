@@ -245,9 +245,7 @@ suite('MySQL Multimaster adapter', function() {
     test('should call query correctly', function(done) {
 
       var task = {
-        id: {
-          task_id: 666
-        },
+        id: 666,
         func_name: 'ebin',
         after: 10
       };
@@ -336,10 +334,7 @@ suite('MySQL Multimaster adapter', function() {
 
       test('calls listener with correct task', function() {
         var task = {
-          id: {
-            db_id: adapter.db_id,
-            task_id: 13
-          },
+          id: 13,
           at: sinon.match.date,
           func_name: "eebenpuu",
           after: 100
@@ -451,22 +446,6 @@ suite('MySQL Multimaster adapter', function() {
     
   });
 
-  suite("db_id", function() {
-    test("should be the same with two adapters with same config", function() {
-      adapter1 = new MySQLMultimaster.MySQLMultimaster(config);
-      adapter2 = new MySQLMultimaster.MySQLMultimaster(config);
-      adapter1.db_id.should.equal(adapter2.db_id)
-    });
-    test("should differ if config is different", function() {
-      adapter1 = new MySQLMultimaster.MySQLMultimaster(config);
-      config.host = "goabase.net";
-      adapter2 = new MySQLMultimaster.MySQLMultimaster(config);
-      adapter1.db_id.should.not.equal(adapter2.db_id)
-    });
-
-  });
-
-
   suite('updateTask', function() {
     var adapter;
 
@@ -477,10 +456,7 @@ suite('MySQL Multimaster adapter', function() {
 
     test('should update at', function(done) {
       var task = {
-        id: {
-          db_id: 'asdf://foo',
-          task_id: 53
-        },
+        id: 53,
         at: new Date('2014-05-22'),
         func_name: 'asdf'
       }
