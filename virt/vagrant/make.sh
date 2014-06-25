@@ -6,4 +6,4 @@ DIR=$HOME/gearsloth
 mkdir -p $DIR
 git clone /vagrant gearsloth
 
-cd $DIR && sg docker -c 'make build build-docker 2> /tmp/make.log'
+cd $DIR && sg docker -c 'make all 2> /tmp/make.log'
