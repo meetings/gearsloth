@@ -1,5 +1,6 @@
 # Vagrantfile for Gearsloth test environment
 # vi: set sw=2 ts=2 sts=2 ft=ruby :
+require_relative 'virt/vagrant/host.rb'
 
 VAGRANTFILE_API_VERSION = "2"
 
@@ -21,7 +22,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   #
   config.vm.provider :virtualbox do |virtualbox|
     virtualbox.name   = "sloth-test-env"
-    virtualbox.memory = "1024"
-    virtualbox.cpus = "2"
+    virtualbox.memory = (Host.total_memory || 2048) / 2
+    virtualbox.cpus   = Host.processor_count || 2
   end
 end

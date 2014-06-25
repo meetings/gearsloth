@@ -16,13 +16,18 @@ GEARSLOTHD_MARKER := $(MARKER_BUILD_PREFIX)$(GEARSLOTHD_IMAGE)
 MARKERS := $(addprefix $(MARKER_BUILD_PREFIX),$(VIRT_IMAGES))
 MARKER_TARGETS := $(addprefix $(IMAGE_PREFIX)/,$(GEARSLOTHD_IMAGE) \
 	$(VIRT_IMAGES))
+DOCKER_MARKERS := $(GEARSLOTHD_MARKER) $(MARKERS)
 
 # Source files for running gearslothd daemon
 
 GEARSLOTHD_SRC := package.json $(shell find bin lib -type f)
 
+.PHONY: docker-test
+docker-test: node_modules $(DOCKER_MARKERS)
+	$(MOCHA) $(MOCHA_PARAMS) test/docker
+
 .PHONY: build-docker
-build-docker: $(GEARSLOTHD_MARKER) $(MARKERS)
+build-docker: $(DOCKER_MARKERS)
 
 # convenient phony docker image targets
 # eg. meetings/gearslothd
@@ -47,6 +52,8 @@ $(MARKERS): $(MARKER_BUILD_PREFIX)%: $$(wildcard $(VIRT_DIR)/%/*) $(BUILD_DIR)
 
 $(BUILD_DIR):
 	mkdir -p $@
+	touch $(DOCKER_MARKERS)
+	sleep 1
 	touch $@
 
 # Remove image markers, but leave actual images

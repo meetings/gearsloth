@@ -1,0 +1,7 @@
+# Set to 'yes' to allow Gearsloth to run at boot.
+#
+GEARSLOTH_ENABLED=no
+
+# Optional command line arguments passed to gearslothd.
+#
+GEARSLOTH_ARGS=""

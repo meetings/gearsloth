@@ -9,7 +9,13 @@ chai.use(sinonChai);
 suite('composite-adapter', function() {
   var sandbox = sinon.sandbox.create()
     , callback
-    , config = {dbopt:[]}
+    , config = {
+        dbopt:[
+          {db:'sqlite',db_id:0},
+          {db:'sqlite',db_id:1},
+          {db:'sqlite',db_id:2}
+        ]
+      }
     , config_helper = {}
     , adapters = [];
 
@@ -42,8 +48,8 @@ suite('composite-adapter', function() {
     test('populates _databases array correctly', function() {
       composite.initialize(config, callback, config_helper);
       var _databases = callback.args[0][1]._databases;
-      expect(_databases[0]).to.have.property('db_id');
-      expect(_databases[1]).to.have.property('db_id');
+      expect(_databases[0]).to.be.ok;
+      expect(_databases[1]).to.be.ok;
     });
   });
 
@@ -60,7 +66,7 @@ suite('composite-adapter', function() {
       sandbox.restore();
     });
     test('saves a task to some database', function() {
-      var task = {};
+      var task = {id:{}};
       var savetask_callback = sandbox.spy();
       dbconn.saveTask(task, savetask_callback);
       expect(adapters[0].saveTask).to.have.been.calledOnce;
@@ -82,7 +88,6 @@ suite('composite-adapter', function() {
         dbconn.saveTask({}, function() {});
         expect(dbconn._databases[0].saveTask).to.have.been.calledOnce;
         expect(dbconn._databases[1].saveTask).to.have.been.calledOnce;
-        expect(dbconn._databases[2].saveTask).to.not.have.been.called;
       });
       test('calls callback with error if _databases contains no dbs', function() {
         dbconn._databases = new Array();
@@ -126,7 +131,6 @@ suite('composite-adapter', function() {
       dbconn.listenTask(listentask_callback);
       dbconn._databases.forEach(function(db) {
         expect(db.listenTask).to.have.been.calledOnce;
-        expect(db.listenTask).to.have.been.calledWith(listentask_callback);
       });
     });
   });
@@ -208,19 +212,18 @@ suite('composite-adapter', function() {
         config_helper);
     });
     test('returns null if database is not found', function() {
-      expect(dbconn._findDbById(930)).to.be.null;
+      expect(dbconn._findDbById(930)).to.not.be.ok;
     });
     test('returns a correct database object', function() {
       expect(dbconn._findDbById(1))
-      .to.have.property('db_id', 1);
+      .to.be.an.Object;
     });
   });
   // helper function
   function initSandbox() {
     config_helper.initializeDb = sandbox.stub();
     for(var i = 0; i < 5; ++i) {
-      config.dbopt.push({db:'sqlite'});
-      var adapter = {db_id: i};
+      var adapter = {};
       adapter.saveTask = sandbox.spy();
       adapter.listenTask = sandbox.spy();
       adapter.updateTask = sandbox.spy();
@@ -228,7 +231,7 @@ suite('composite-adapter', function() {
       adapter.disableTask = sandbox.spy();
       adapter.connected = true;
       adapters[i] = adapter;
-      var aug_conf = {dbconn: adapter}
+      var aug_conf = {dbconn: adapter, dbopt:{db:'sqlite',db_id:i}};
       config_helper.initializeDb.onCall(i).callsArgWith(1, null, aug_conf);
     }
   }

@@ -162,8 +162,6 @@ suite('sqlite-adapter', function() {
               expect(task).to.have.property('payload');
               expect(task).to.have.property('strategy');
               expect(task).to.have.property('id');
-              expect(task.id).to.have.property('task_id');
-              expect(task.id).to.have.property('db_id');
 
               var now = new Date();
               var utc = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
@@ -260,12 +258,12 @@ suite('sqlite-adapter', function() {
           task.after = 0;
           dbconn.updateTask(task, function(){});
           if (count === 1){
-            disabled_task_id = task.id.task_id;
+            disabled_task_id = task.id;
             dbconn.disableTask(task, function(){});
           }
           if (count > 1) {
             try {
-              expect(disabled_task_id).not.to.equal(task.id.task_id);
+              expect(disabled_task_id).not.to.equal(task.id);
             } catch (err) {
               done(err);
             }
