@@ -40,10 +40,12 @@ suite("multiserver-worker", function() {
 
     test("should spawn as many worker instances", function() {
       expect(WorkerSpy).to.be.calledTwice;
-      // expect(WorkerSpy).to.be
-      // .calledWith('sample', sinon.match.any, sampleServers[0]);
-      // expect(WorkerSpy).to.be
-      // .calledWith('sample', sinon.match.any, sampleServers[1]);
+      expect(WorkerSpy).to.be.calledWith('sample');
+      expect(WorkerSpy.args[0][2].host).to.equal(sampleServers[0].host);
+      expect(WorkerSpy.args[0][2].port).to.equal(sampleServers[0].port);
+      expect(WorkerSpy).to.be.calledWith('sample');
+      expect(WorkerSpy.args[1][2].host).to.equal(sampleServers[1].host);
+      expect(WorkerSpy.args[1][2].port).to.equal(sampleServers[1].port);
     });
   });
   suite("when given no servers", function() {
