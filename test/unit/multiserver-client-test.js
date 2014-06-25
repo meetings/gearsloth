@@ -30,7 +30,6 @@ suite("multiserver-client", function() {
       ClientStub.prototype.submitJob = sandbox.stub();
       ClientStub.prototype.submitJob.returns({on:function() {}});
       ClientStub.prototype.connected = true;;
-      
       m = new MultiserverClient(sampleServers);
     });
 
@@ -40,12 +39,12 @@ suite("multiserver-client", function() {
 
     test("should spawn as many client instances", function() {
       expect(ClientStub).to.be.calledThrice;
-      // expect(ClientStub).to.be
-      // .calledWith(sampleServers[0]);
-      // expect(ClientStub).to.be
-      // .calledWith(sampleServers[1]);
-      // expect(ClientStub).to.be
-      // .calledWith(sampleServers[1]);
+      expect(ClientStub.args[0][0].host).to.equal(sampleServers[0].host);
+      expect(ClientStub.args[0][0].port).to.equal(sampleServers[0].port);
+      expect(ClientStub.args[1][0].host).to.equal(sampleServers[1].host);
+      expect(ClientStub.args[1][0].port).to.equal(sampleServers[1].port);
+      expect(ClientStub.args[2][0].host).to.equal(sampleServers[1].host);
+      expect(ClientStub.args[2][0].port).to.equal(sampleServers[1].port);
     });
     test("should have a submitJob() function", function() {
       expect(m).to.have.property('submitJob');
