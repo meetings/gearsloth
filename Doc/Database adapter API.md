@@ -44,11 +44,10 @@ adapter.initialize(null, someScriptToExecute);
 
 None of the functions implemented in the adapter provide rollback, so it is important that they are used correctly. At the moment the database calls are NOT sanitized, all effort will be made to make this happen.
 
+# Developing adapters
 
+The following guidelines should be followed for adapters:
 
-
-
-
-
-
+* External functions should be fail-fast, so minimize connection timeouts and queueing by default. Retrying will be handled in the component that uses the adapter.
+* Do not throw exceptions, instead propagate errors through callbacks.
 
