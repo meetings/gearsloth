@@ -127,7 +127,7 @@ suite('blackbox: on-time with sqlite :memory:', function() {
         runner.on('disconnect', function() {
           callback();
         })
-        runner.stop();
+        runner.disconnect();
       },
       function(callback) {
         injector.on('disconnect', function() {
