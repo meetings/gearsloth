@@ -1,3 +1,9 @@
+gearsloth (0.2.1-1) unstable; urgency=low
+
+  * New release after a night of fixing bugs
+
+ -- Tuomas Starck <tuomas@meetin.gs>  Thu, 26 Jun 2014 09:50:34 +0000
+
 gearsloth (0.1.0-2) unstable; urgency=low
 
   * Mad amount of commits and fixes, but nobody touched version number
