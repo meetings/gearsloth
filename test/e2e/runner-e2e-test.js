@@ -114,7 +114,9 @@ suite('(e2e) runner', function() {
     test('should disable task when runner_retry_count reaches 0', function(done) {
       worker = new gearman.Worker('test', function(payload, worker) {
         var json = JSON.parse(payload.toString());
-        adapter.disableTask.should.have.been.calledWith(json);
+        adapter.disableTask.should.have.been.calledOnce;
+        var disabled_task = adapter.disableTask.firstCall.args[0];
+        disabled_task.id.should.equal(expiring_task1.id);
         done();
       }, { port:port
       });
