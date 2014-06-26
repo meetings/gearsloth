@@ -1,5 +1,9 @@
+package.json                 usr/lib/nodejs/gearsloth
+
 bin                          usr/lib/nodejs/gearsloth
 lib                          usr/lib/nodejs/gearsloth
-package.json                 usr/lib/nodejs/gearsloth
+
 node_modules/gearman-coffee  usr/lib/nodejs/gearsloth/node_modules
 node_modules/mysql           usr/lib/nodejs/gearsloth/node_modules
+
+examples/dual-mysql-and-gearman.json  etc/gearsloth

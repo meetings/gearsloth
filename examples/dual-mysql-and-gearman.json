@@ -1,0 +1,45 @@
+{
+  "README": [
+    "Example configuration for a setup with two separate",
+    "Mysql servers (using composite adapter) and two Gearman",
+    "job servers.",
+    "",
+    "Replace all <...> with correct values.",
+    "",
+    "This configuration file MUST be valid json data.",
+    "See http://json.org for details."
+  ],
+
+  "db": "composite",
+
+  "dbopt": [{
+    "db":    "mysql-multimaster",
+    "db_id": "id_1",
+    "dbopt": {
+      "host":     "<addr>",
+      "port":     "<port>",
+      "user":     "<user>",
+      "password": "<pass>",
+      "database": "gearsloth"
+    }
+  }, {
+    "db":    "mysql-multimaster",
+    "db_id": "id_2",
+    "dbopt": {
+      "host":     "<addr>",
+      "port":     "<port>",
+      "user":     "<user>",
+      "password": "<pass>",
+      "database": "gearsloth"
+    }
+  }],
+
+  "servers": [{
+    "host": "<addr>",
+    "port": "<port>"
+  },
+  {
+    "host": "<addr>",
+    "port": "<port>"
+  }]
+}
