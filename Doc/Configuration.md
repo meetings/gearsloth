@@ -7,11 +7,19 @@ configuration options:
 `./bin/gearslothd [options] [hostname[:port]]`
 
 * `-i, --injector`: Run the daemon as injector.
+* `-v, --verbose`: Configure logging
 * `-r, --runner`: Run the daemon as runner.
 * `-c, --controller`: Run the daemon as default controller.
 * `-e, --ejector`: Run the daemon as ejector.
-* `--controllername`: Specify the controller module by name. Can also be specified in the config file. If the input contains forward slashes, the module is looked up in relation to your current dir.
+* `--controllername`: Specify the controller module by name. Can also be specified in the config file (config.json). If the input contains forward slashes, the module is looked up in relation to your current dir. The logic for handling --controllername can be found in /lib/config/index.js.
 * `--db`: Specify the database module by name. Can also be specified in the config file. If the input contains forward slashes, the module is looked up in relation to your current dir.
+* `--verbose`: Specify logging level; You can use the --verbose or -v flag multiple times for the following effects:
+No flag (default): notice -> std.out | errors -> std.err
+One flag (-v): notice, info -> std.out | errors -> std.err
+Two flags (-vv): notice, info, debug -> std.out | errors -> std.err
+You can also configure this parameter with and integer (0 for one flag, 1 for two flags) in gearsloth.json.
+The logic for handling the --verbose flag can be found in lib/log.js.
+
 * `-f, --file=FILENAME`: Define the JSON configuration file. By default
   `gearsloth.json` in the currenct directory will be used. Options specified
   in this file are overwritten by any options defined by command line options.
@@ -46,7 +54,19 @@ are interpreted:
   specified, a default value is used. The default gearman server is
   `localhost:4730`.
 * `.db {String}`: Database module name.
-* `.controllername {String}:` Controller module name.
+* `.controllername {String}:` Controller module name. See above for a more detailed description.
+* `.verbose {Integer}`: Desired logging detail level. See above for a more detailed description.
+
+### Configuration file location
+
+By default, Gearsloth will look for the configuration file in your current directory. If the file is not found, Gearsloth will then look for it in the following locations (in order):
+
+* 1) your current directory
+* 2) .home/.gearsloth/gearsloth.json
+* 3) ./etc/gearsloth/gearsloth.json
+* 4) .”gearsloth installation dir”/gearsloth.json
+
+The logic for finding the configure file can be found in lib/config/defaults.js
 
 ### Example configuration
 
