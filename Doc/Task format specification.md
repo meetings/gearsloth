@@ -9,10 +9,15 @@ var task = {
        after: seconds after which this task is to be executed (optional),
   controller: name of the controller function that is to handle execution of the task (optional),
      payload: the payload that is to be passed to the function (task) (optional),
-  runner_retry_timeout: seconds after which the runner will retry executing the task in case 
-                        the runner was unable to pass the task on for execution (optional),
-    runner_retry_count: number of times the runner is to retry executing the task if 
-                        it fails to pass the task on for execution (optional)
+  runner_retry_timeout: the number of seconds after which one of the registered runners for this tasks func_name
+                        (the database adapter picks one for each retry) will pick up the task again
+                        in case the first runner was unable to pass the
+                        task on for execution (to a worker). After a runner picks up the task this field
+                        is updated instantly in the database. This field is optional,
+  runner_retry_count:   the number of times a runner is to retry handling the task if
+                        the previous runner was unable to pass the task on for execution (to a worker),
+                        each time the database adapter passes this task to a runner, this field
+                        is decreased by one (the database is then updated instantly). This field is optional.
 }
 ```
 
@@ -24,8 +29,8 @@ The only required field for task is `func_name`.
 * `at`: if defined this is any string which is understood by the JavaScript `Date` API. `at` specifies the date and time at which the task is to be executed.
 * `after`: if defined it supersedes the `at`. This is any string that is parseable into an integer as representative of *seconds* after which the task is to be executed.
 * `controller`: if defined this is any string that corresponds to a Gearman function that has been written to handle the execution of tasks. If omitted a default behavior is adopted at the `runner` level.
-* `runner_retry_timeout`: if defined this is any string that is parseable into an integer. Represents the time in seconds after which a runner is to retry submitting the task for execution if it failed to do so previously.
-* `runner_retry_count`: if defined this is any string that is parseable into an integer. Represents the number of times a runner is to try to submit the task for execution if it failed to do so previously.
+* `runner_retry_timeout`: if defined this is any string that is parseable into an integer. See above for a more detailed description.
+* `runner_retry_count`: if defined this is any string that is parseable into an integer. See above for a more detailed description.
 * `payload`: if defined this can be anything that can be sanely converted into a string. It may also be a JSON object in itself. `payload` will be passed on to the `func_name` function as given or to the `controller` if defined for more processing.
 
 #### Internal
