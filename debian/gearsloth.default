@@ -1,7 +1,7 @@
 # Set to 'yes' to allow Gearsloth to run at boot.
 #
-# Before enabling Gearsloth, make sure there is a
-# valid configuration # available (e.g. in
+# Before enabling Gearsloth, make sure there is
+# a valid configuration available (e.g. in
 # /etc/gearsloth/gearsloth.json).
 #
 GEARSLOTH_ENABLED=no
