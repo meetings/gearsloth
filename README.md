@@ -24,7 +24,7 @@ the system more *robust*. Multiple instances of injector/runner/controller/eject
 
 ### Injector
 
-The injector registers the function `submitJobDelayed` to Gearman job server(s). The task to be delayed should be sent to the injector in the format specified in [task format specification](Task format specification.md)
+The injector registers the function `submitJobDelayed` to Gearman job server(s). The task to be delayed should be sent to the injector in the format specified in [task format specification](#task-format-specification).
 
 If the task is succesfully inserted in to the persistent storage, injector will send gearman `WORK_COMPLETE` to the caller. This means that the task *will* be executed.
 
