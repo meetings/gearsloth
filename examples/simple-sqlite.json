@@ -1,0 +1,30 @@
+{
+  "README": [
+    "Example configuration for a simple setup with sqlite",
+    "database and single Gearman job server.",
+    "",
+    "All dbopt keys are optional and their defaults values",
+    "are marked below.",
+    "",
+    "For the job server configuration, replace all <...>",
+    "with correct values.",
+    "",
+    "This configuration file MUST be valid json data.",
+    "See http://json.org for details."
+  ],
+
+  "db": "sqlite",
+
+  "dbopt": {
+    "table_name":      "DelayedTasks",
+    "db_name":         "DelayedTasks.sqlite",
+    "pre_poll":        "0",
+    "poll_timeout":    "1000",
+    "default_timeout": "1000"
+  },
+
+  "servers": [{
+    "host": "<addr>",
+    "port": "<port>"
+  }]
+}
