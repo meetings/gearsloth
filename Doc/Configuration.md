@@ -14,10 +14,10 @@ configuration options:
 * `--controllername`: Specify the controller module by name. Can also be specified in the config file (config.json). If the input contains forward slashes, the module is looked up in relation to your current dir. The logic for handling --controllername can be found in /lib/config/index.js.
 * `--db`: Specify the database module by name. Can also be specified in the config file. If the input contains forward slashes, the module is looked up in relation to your current dir.
 * `--verbose`: Specify logging level; You can use the --verbose or -v flag multiple times for the following effects:
-No flag (default): notice -> std.out | errors -> std.err
-One flag (-v): notice, info -> std.out | errors -> std.err
-Two flags (-vv): notice, info, debug -> std.out | errors -> std.err
-You can also configure this parameter with and integer (0 for one flag, 1 for two flags) in gearsloth.json.
+  * No flag (default): notice -> std.out | errors -> std.err
+  * One flag (-v): notice, info -> std.out | errors -> std.err
+  * Two flags (-vv): notice, info, debug -> std.out | errors -> std.err  
+> You can also configure this parameter with and integer (0 for one flag, 1 for two flags) in gearsloth.json.
 The logic for handling the --verbose flag can be found in lib/log.js.
 
 * `-f, --file=FILENAME`: Define the JSON configuration file. By default
