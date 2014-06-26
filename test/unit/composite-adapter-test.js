@@ -2,9 +2,11 @@ var composite = require('../../lib/adapters/composite')
   , chai = require('chai')
   , sinon = require('sinon')
   , sinonChai = require('sinon-chai')
+  , _ = require('underscore')
   , expect = chai.expect;
 
 chai.use(sinonChai);
+chai.should();
 
 suite('composite-adapter', function() {
   var sandbox = sinon.sandbox.create()
@@ -97,12 +99,12 @@ suite('composite-adapter', function() {
       });
       test('seizes if failcounter exceeds number of dbs', function() {
         var savetask_callback = sandbox.spy();
-        dbconn.saveTask({}, savetask_callback, dbconn._databases.length)
+        dbconn.saveTask({}, savetask_callback, adapters.length)
         expect(savetask_callback).to.have.been.calledOnce;
         expect(savetask_callback.args[0][0]).to.be.an.instanceof(Error);
       });
       test('throws if no dbs are connected', function()  {
-        dbconn._databases.forEach(function(db) {
+        _.each(dbconn._databases, function(db) {
           db.connected = false;
         });
         expect(function() {
@@ -129,7 +131,7 @@ suite('composite-adapter', function() {
     test('registers callback to all db adapters', function() {
       var listentask_callback = sandbox.spy();
       dbconn.listenTask(listentask_callback);
-      dbconn._databases.forEach(function(db) {
+      _.each(dbconn._databases, function(db) {
         expect(db.listenTask).to.have.been.calledOnce;
       });
     });
@@ -219,6 +221,30 @@ suite('composite-adapter', function() {
       .to.be.an.Object;
     });
   });
+
+  suite('_pickDb()', function() {
+    var dbconn;
+    setup(function() {
+      composite.initialize(
+        config,
+        function(e,dbconn_local) { dbconn = dbconn_local },
+        config_helper);
+    });
+  
+    test('returns a database', function() {
+      var picked_db = dbconn._pickDb();
+      expect(picked_db).to.be.ok;
+      adapters.should.contain(picked_db);
+    });
+
+    test('round-robin works', function() {
+      for(var i = 0; i < 50; ++i) {
+        var picked_db = dbconn._pickDb();
+        expect(picked_db).to.be.ok;
+        adapters.should.contain(picked_db);
+      }
+    });
+  });
   // helper function
   function initSandbox() {
     config_helper.initializeDb = sandbox.stub();
@@ -231,7 +257,7 @@ suite('composite-adapter', function() {
       adapter.disableTask = sandbox.spy();
       adapter.connected = true;
       adapters[i] = adapter;
-      var aug_conf = {dbconn: adapter, dbopt:{db:'sqlite',db_id:i}};
+      var aug_conf = {dbconn: adapter, dbopt:{db:'sqlite',db_id: i}};
       config_helper.initializeDb.onCall(i).callsArgWith(1, null, aug_conf);
     }
   }
