@@ -9,7 +9,7 @@ stop  on shutdown
 respawn
 respawn limit 5 5
 
-setuid nobody
+setuid gearsloth
 setgid nogroup
 
 script
