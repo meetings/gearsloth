@@ -43,6 +43,9 @@ TODO: Write me!
 
 ### Controller
 
+TODO: Documentation for default controller!
+TODO: Documentation for developing controllers!
+
 Controllers encapsulate a specific task retry strategy which governs when and
 how a failing task is retried/failed. Controllers publish a gearman function
 which is called by the runner on task expiry time. Gearslothd daemon
@@ -108,8 +111,7 @@ The only required field for task is `func_name`.
 * `payload`: if defined this can be anything that can be sanely converted into a string. It may also be a JSON object in itself. `payload` will be passed on to the `func_name` function as given or to the `controller` if defined for more processing.
 
 ### Internal
-* `id`: Set by the adapter. It should be an object with one mandatory property: `db_id`, which is mainly used by the composite adapter. `db_id` should be a (preferably human-readable) string based on the database configuration. The rest of the properties can be freely set by the adapter to identify the task.
-* `first_run`: at the time of the first execution the current timestamp is stored into this field.
+* `id`: Set by the database to identify database/table/task. Form may be chosen freely.
 
 In addition the `task` JSON object may contain any number of fields (for example to be passed to the `controller`) These additional fields will not be taken into account in any way in the control flow other than in the custom `controller` if it is to do so.
 
@@ -117,9 +119,9 @@ In addition the `task` JSON object may contain any number of fields (for example
 
 After a job is done, a controller should send the task object to the ejector in order to remove it from the task database.
 
-## Adapters
+## Database dapters
 
-Currently there are 2 complete adpters: 'sqlite.js', which uses the sqlite3.js npm package, and 'mysql-multimaster.js'.
+Currently there are 2 complete adapters: 'sqlite.js', which uses the sqlite3.js npm package, and 'mysql-multimaster.js'.
 
 TODO: Documentation for mysql-multimaster!
 
@@ -173,7 +175,7 @@ The following guidelines should be followed for adapters:
 
     $ npm test
 
-## Running system tests in a virtualized environment
+## Running tests in virtualized environment
 
 Gearsloth has tests that simulate a production-like environment
 implemented with docker and vagrant. To run these tests issue the following commands:
