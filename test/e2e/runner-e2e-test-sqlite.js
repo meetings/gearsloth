@@ -42,21 +42,21 @@ suite('(e2e) runner', function() {
 
     var new_task = {
         controller: 'test',
-        func_name: 'log',
+        func_name: 'lyg',
         runner_retry_count: 2
     }
 
     var non_expiring_task = {
-        id : 2,
+        id : 1,
         controller: 'test',
-        func_name: 'log',
+        func_name: 'leg',
         runner_retry_count: 2
     }
 
     var expiring_task = {
-        id : 2,
+        id : 1,
         controller: 'test',
-        func_name: 'log',
+        func_name: 'lag',
         runner_retry_count: 1
     }
 
@@ -163,14 +163,18 @@ suite('(e2e) runner', function() {
     });
 
     test('should disable task when runner_retry_count reaches 0', function(done) {
+      var expected_id;
       worker = new gearman.Worker('test', function(payload, worker) {
         var json = JSON.parse(payload.toString());
-        json.at = new Date(json.at);
-        config.dbconn.disableTask.should.have.been.calledWith(json);
+        config.dbconn.disableTask.should.have.been.calledOnce;
+        var disabled_task = config.dbconn.disableTask.firstCall.args[0];
+        disabled_task.id.should.equal(expected_id);
         done();
       }, { port:port
       });
-      config.dbconn.saveTask(expiring_task, function(err, id){});
+      config.dbconn.saveTask(expiring_task, function(err, id){
+        expected_id = id;
+      });
     });
 
     test('should not disableTaskble task when runner_retry_count has time to live', function(done) {
@@ -178,7 +182,7 @@ suite('(e2e) runner', function() {
         var json = JSON.parse(payload.toString());
         json.at = new Date(json.at);
         json.first_run = new Date(json.first_run);
-        config.dbconn.disableTask.should.not.have.been.calledWith(json);
+        config.dbconn.disableTask.should.not.have.been.called;
         done();
       }, { port:port
       });
@@ -189,8 +193,7 @@ suite('(e2e) runner', function() {
       worker = new gearman.Worker('test', function(payload, worker) {
         var json = JSON.parse(payload.toString());
         json.at = new Date(json.at);
-        config.dbconn.updateTask.should.have.been.calledWith(json);
-        config.dbconn.completeTask(json, function(err, id){});
+        config.dbconn.updateTask.should.have.been.calledOnce;
         done();
       }, { port:port
       });
