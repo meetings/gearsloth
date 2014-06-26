@@ -1,35 +1,55 @@
 
-## Introduction
+# gearsloth
 
 Gearsloth is a system that enables delayed tasks and persistent storage schemes
-in Gearman queue server. It consists of a small javascript helper library and a
-daemon that functions as both a gearman worker listening to delayed tasks and a
-client submitting those tasks at a specified time. The gearslothd daemon
+in Gearman job server. The gearsloth stack consists of four components: injector,
+runner, controller and ejector. Gearsloth
 supports a database backend architecture which abstracts persisting delayed
-tasks to a database.
+tasks to a database. Gearsloth is written in Node.js.
 
-### Quick start
+![Simple gearsloth configuration](Doc/gearsloth-simple.png "Simple gearsloth configuration")
 
-1. Read about the basic [structure](Doc/Structure.md) of gearsloth
-2. [Configure](Doc/Configuration.md) your gearsloth or just start it in all modes with `./bin/gearslothd`
-3. Learn how to [submit delayed tasks](Doc/Injector API.md) to gearsloth
+This is the simplest gearsloth configuration. Gearsloth's components are marked with green.
 
+![Advanced gearsloth configuration](Doc/gearsloth-advanced.png "Advanced gearsloth configuration")
 
-### Running tests
+As seen above, one may add more Gearman job servers and databases to the configuration in order to make
+the system more *robust*. Multiple instances of injector/runner/controller/ejector may also be run.
+
+## Components briefly
+
+* **injector**: Receives a task and inserts it to a database.
+* **runner**: Fetches a delayed task from a database and passes it to controller.
+* **controller**: Passes the task to a worker and monitors the state of the task.
+It may for example retry the task if it fails.
+* **ejector**: After being called by a controller, removes the task from the database.
+
+## Installation
+
+    npm install gearsloth
+
+## Task format specification
+
+## Injector
+
+The injector registers the function `submitJobDelayed` to Gearman job server(s). The task to be delayed should be sent to the injector in the format specified in [task format specification](Task format specification.md)
+
+If the task is succesfully inserted in to the persistent storage, injector will send gearman `WORK_COMPLETE` to the caller. This means that the task *will* be executed.
+
+### Error handling
+
+If there is an error parsing the task, or if the injector fails to insert the task to the persistent storage, it will send `WORK_WARNING` with the appropriate error message followed by `WORK_FAIL` to the caller. This always means that the job *will not* be executed.
+
+### Events
+
+* `connect`: will be emitted when the injector is connected to at least one Gearman job server.
+* `disconnect`: will be emitted when the injector has lost connection to all Gearman job servers.
+
+## Running tests
 
     $ npm test
 
-### Running example worker/client
-
-    $ make log-delayed
-
-### Running sqlite adapter example
-
-    $ node ./examples/sqlite-adapter-example.js
-
-or use make targets `test` or `unit-test`.
-
-### Running tests in virtualized environment
+## Running tests in virtualized environment
 
     $ vagrant up
     $ vagrant ssh
@@ -37,7 +57,7 @@ or use make targets `test` or `unit-test`.
     sloth:~$ cd gearsloth
     sloth:~/gearsloth$ make test
 
-### Links
+## Links
  
  * [Documentation](Doc)
  * [Gearman project](http://gearman.org)
