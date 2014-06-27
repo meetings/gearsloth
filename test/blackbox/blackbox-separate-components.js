@@ -419,7 +419,7 @@ suite('blackbox: separate gearslothd processes', function() {
       worker.complete();
       expect(payload).to.equal(delayed_task_after.payload);
       var time_now = new Date();
-      var time_difference = time_now.getSeconds() - time_reference.getSeconds();
+      var time_difference = (time_now - time_reference) / 1000;
       if (time_difference <= 4) {
         done(new Error('Task was submitted too early. Time difference: ' + time_difference));
       } else {
@@ -432,7 +432,7 @@ suite('blackbox: separate gearslothd processes', function() {
       worker.complete();
       expect(payload).to.equal(delayed_task_after.payload);
       var time_now = new Date();
-      var time_difference = time_now.getSeconds() - time_reference.getSeconds();
+      var time_difference = (time_now - time_reference) / 1000;
       if (time_difference <= 4) {
         done(new Error('Task was submitted too early. Time difference: ' + time_difference));
       } else {
@@ -445,7 +445,7 @@ suite('blackbox: separate gearslothd processes', function() {
       worker.complete();
       expect(payload).to.equal(delayed_task_after.payload);
       var time_now = new Date();
-      var time_difference = time_now.getSeconds() - time_reference.getSeconds();
+      var time_difference = (time_now - time_reference) / 1000;
       if (time_difference <= 4) {
         done(new Error('Task was submitted too early. Time difference: ' + time_difference));
       } else {
@@ -493,7 +493,7 @@ suite('blackbox: separate gearslothd processes', function() {
       worker.complete();
       expect(payload).to.equal(delayed_task_at.payload);
       var time_now = new Date();
-      var time_difference = time_now.getSeconds() - time_reference.getSeconds();
+      var time_difference = (time_now - time_reference) / 1000;
       if (time_difference <= 4) {
         done(new Error('Task was submitted too early. Time difference: ' + time_difference));
       } else {
@@ -506,7 +506,7 @@ suite('blackbox: separate gearslothd processes', function() {
       worker.complete();
       expect(payload).to.equal(delayed_task_at.payload);
       var time_now = new Date();
-      var time_difference = time_now.getSeconds() - time_reference.getSeconds();
+      var time_difference = (time_now - time_reference) / 1000;
       if (time_difference <= 4) {
         done(new Error('Task was submitted too early. Time difference: ' + time_difference));
       } else {
@@ -519,7 +519,7 @@ suite('blackbox: separate gearslothd processes', function() {
       worker.complete();
       expect(payload).to.equal(delayed_task_at.payload);
       var time_now = new Date();
-      var time_difference = time_now.getSeconds() - time_reference.getSeconds();
+      var time_difference = (time_now - time_reference) / 1000;
       if (time_difference <= 4) {
         done(new Error('Task was submitted too early. Time difference: ' + time_difference));
       } else {
