@@ -4,8 +4,7 @@ var util = require('util');
 var chai = require('chai');
 var sinon = require('sinon');
 var sinonChai = require('sinon-chai');
-var client = require('../../lib/gearman/multiserver-client');
-var worker = require('../../lib/gearman/multiserver-worker');
+var multiserver = require('../../lib/gearman');
 var Retry = require('../../lib/controllers/retry').Retry;
 
 var assert = chai.assert;
@@ -22,8 +21,8 @@ suite('retry controller', function() {
 
   setup(function() {
     sandbox.useFakeTimers();
-    sandbox.stub(client, 'MultiserverClient', MultiserverStub);
-    sandbox.stub(worker, 'MultiserverWorker', MultiserverStub);
+    sandbox.stub(multiserver, 'MultiserverClient', MultiserverStub);
+    sandbox.stub(multiserver, 'MultiserverWorker', MultiserverStub);
   });
 
   teardown(function() {
@@ -34,13 +33,13 @@ suite('retry controller', function() {
     test('should create client and worker with correct arguments',
         function() {
       var retry = new Retry(default_conf);
-      client.MultiserverClient.should.have.been.calledWithNew;
-      worker.MultiserverWorker.should.have.been.calledWithNew;
-      client.MultiserverClient.should.have.been.calledOnce;
-      worker.MultiserverWorker.should.have.been.calledOnce;
-      client.MultiserverClient.should.have.been
+      multiserver.MultiserverClient.should.have.been.calledWithNew;
+      multiserver.MultiserverWorker.should.have.been.calledWithNew;
+      multiserver.MultiserverClient.should.have.been.calledOnce;
+      multiserver.MultiserverWorker.should.have.been.calledOnce;
+      multiserver.MultiserverClient.should.have.been
           .calledWith(default_conf.servers);
-      worker.MultiserverWorker.should.have.been
+      multiserver.MultiserverWorker.should.have.been
           .calledWith(default_conf.servers, 'retryController');
     });
     test(

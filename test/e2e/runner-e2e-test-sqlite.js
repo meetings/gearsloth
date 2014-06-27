@@ -114,7 +114,7 @@ suite('(e2e) runner', function() {
           running_runner.on('disconnect', function() {
             callback();
           });
-          running_runner.stop(0, function() {});
+          running_runner.disconnect();
         },
         function (callback) {
           spawn.killall([gearmand], function() {
