@@ -86,6 +86,7 @@ suite('blackbox: separate gearslothd processes', function() {
     });
 
     teardown(function(done) {
+      this.timeout(1000);
       async.series([
         function(callback) {
           worker.socket.on('close', callback);
@@ -113,8 +114,6 @@ suite('blackbox: separate gearslothd processes', function() {
         function(callback) {
           setTimeout(function() {
             fs.unlink('/tmp/delayed-tasks.sqlite', function(err) {
-            });
-            fs.unlink('/tmp/delayed-tasks.sqlite-journal', function(err) {
               callback();
             });
           }, 500);
@@ -208,6 +207,7 @@ suite('blackbox: separate gearslothd processes', function() {
     };
 
     setup(function(done) {
+      this.timeout(10000);
       async.series([
         function(callback) {
           gearmand1 = spawn.gearmand(port1, callback);
@@ -219,40 +219,64 @@ suite('blackbox: separate gearslothd processes', function() {
           gearmand3 = spawn.gearmand(port3, callback);
         },
         function(callback) {
-          injector_gsd1 = spawn.gearslothd(injector_gsd_conf, callback);
+          injector_gsd1 = spawn.gearslothd(injector_gsd_conf, function(){
+            callback();
+          });
         },
         function(callback) {
-          injector_gsd2 = spawn.gearslothd(injector_gsd_conf, callback);
+          injector_gsd2 = spawn.gearslothd(injector_gsd_conf, function(){
+            callback();
+          });
         },
         function(callback) {
-          injector_gsd3 = spawn.gearslothd(injector_gsd_conf, callback);
+          injector_gsd3 = spawn.gearslothd(injector_gsd_conf, function(){
+            callback();
+          });
         },
         function(callback) {
-          runner_gsd1 = spawn.gearslothd(runner_gsd_conf, callback);
+          runner_gsd1 = spawn.gearslothd(runner_gsd_conf, function(){
+            callback();
+          });
         },
         function(callback) {
-          runner_gsd2 = spawn.gearslothd(runner_gsd_conf, callback);
+          runner_gsd2 = spawn.gearslothd(runner_gsd_conf, function(){
+            callback();
+          });
         },
         function(callback) {
-          runner_gsd3 = spawn.gearslothd(runner_gsd_conf, callback);
+          runner_gsd3 = spawn.gearslothd(runner_gsd_conf, function(){
+            callback();
+          });
         },
         function(callback) {
-          controller_gsd1 = spawn.gearslothd(controller_gsd_conf, callback);
+          controller_gsd1 = spawn.gearslothd(controller_gsd_conf, function(){
+            callback();
+          });
         },
         function(callback) {
-          controller_gsd2 = spawn.gearslothd(controller_gsd_conf, callback);
+          controller_gsd2 = spawn.gearslothd(controller_gsd_conf, function(){
+            callback();
+          });
         },
         function(callback) {
-          controller_gsd3 = spawn.gearslothd(controller_gsd_conf, callback);
+          controller_gsd3 = spawn.gearslothd(controller_gsd_conf, function(){
+            callback();
+          });
         },
         function(callback) {
-          ejector_gsd1 = spawn.gearslothd(ejector_gsd_conf, callback);
+          ejector_gsd1 = spawn.gearslothd(ejector_gsd_conf, function(){
+            callback();
+          });
         },
         function(callback) {
-          ejector_gsd2 = spawn.gearslothd(ejector_gsd_conf, callback);
+          ejector_gsd2 = spawn.gearslothd(ejector_gsd_conf, function(){
+            callback();
+          });
         },
         function(callback) {
-          ejector_gsd3 = spawn.gearslothd(ejector_gsd_conf, callback);
+          ejector_gsd3 = spawn.gearslothd(ejector_gsd_conf, function(){
+            callback();
+          });
         }
         ], function() {
           done();
@@ -326,8 +350,6 @@ suite('blackbox: separate gearslothd processes', function() {
         function(callback) {
           setTimeout(function() {
             fs.unlink('/tmp/delayed-tasks.sqlite', function(err) {
-            });
-            fs.unlink('/tmp/delayed-tasks.sqlite-journal', function(err) {
               callback();
             });
           }, 500);
