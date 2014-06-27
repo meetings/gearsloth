@@ -21,7 +21,7 @@ suite('blackbox: separate gearslothd processes', function() {
 
     this.timeout(5000);
 
-    var port = 54730
+    var port = 54734
     var conf = {
       db: 'sqlite',
       dbopt: {
