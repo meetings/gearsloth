@@ -54,7 +54,7 @@ suite('blackbox: separate gearslothd processes', function() {
     };
 
     setup(function(done) {
-      this.timeout(10000);
+      this.timeout(30001);
       async.series([
         function(callback) {
           gearmand = spawn.gearmand(port, function(){
@@ -87,7 +87,7 @@ suite('blackbox: separate gearslothd processes', function() {
     });
 
     teardown(function(done) {
-      this.timeout(10000);
+      this.timeout(30002);
       async.series([
         function(callback) {
           worker.socket.on('close', callback);
@@ -208,7 +208,7 @@ suite('blackbox: separate gearslothd processes', function() {
     };
 
     setup(function(done) {
-      this.timeout(10000);
+      this.timeout(30003);
       async.series([
         function(callback) {
           gearmand1 = spawn.gearmand(port1, callback);
@@ -285,7 +285,7 @@ suite('blackbox: separate gearslothd processes', function() {
     });
 
     teardown(function(done) {
-      this.timeout(10000);
+      this.timeout(30004);
       async.series([
         function(callback) {
           worker1.on('disconnect', callback);
@@ -455,7 +455,7 @@ suite('blackbox: separate gearslothd processes', function() {
     };
 
     test('should execute a task on expiry with after field', function(done){
-      this.timeout(10000);
+      this.timeout(30005);
 
       async.series([
         function(callback) {
@@ -529,7 +529,7 @@ suite('blackbox: separate gearslothd processes', function() {
     };
 
     test('should execute a task on expiry with at field', function(done){
-        this.timeout(10000);
+        this.timeout(30006);
 
         async.series([
           function(callback) {
