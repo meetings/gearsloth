@@ -1,0 +1,13 @@
+#!/bin/sh -e
+
+USERNAME=gearsloth
+
+if [ "$1" != "configure" ]; then
+    exit 0
+fi
+
+if ! getent passwd $USERNAME >/dev/null; then
+    adduser --system --no-create-home $USERNAME
+fi
+
+exit 0

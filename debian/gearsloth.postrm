@@ -1,0 +1,11 @@
+#!/bin/sh -e
+
+case $1 in
+    purge)
+        rm -f /etc/gearsloth/gearsloth.json
+        rmdir --ignore-fail-on-non-empty /etc/gearsloth
+        deluser --quiet gearsloth >/dev/null 2>&1 || true
+    ;;
+esac
+
+exit 0
