@@ -178,9 +178,7 @@ suite('blackbox: on-time with sqlite :memory:', function() {
       done();
     }, {port:port});
     worker.on('connect', function(){
-      client.submitJob('submitJobDelayed', JSON.stringify(simple_task))
-        .on('complete', function(){
-        });
+      client.submitJob('submitJobDelayed', JSON.stringify(simple_task));
     });
   });
 
@@ -194,9 +192,7 @@ suite('blackbox: on-time with sqlite :memory:', function() {
       worker.complete();
     }, {port:port});
     worker.on('connect', function(){
-      client.submitJob('submitJobDelayed', JSON.stringify(after_2_task))
-        .on('complete', function(){
-        });
+      client.submitJob('submitJobDelayed', JSON.stringify(after_2_task));
     });
   });
 
@@ -209,22 +205,18 @@ suite('blackbox: on-time with sqlite :memory:', function() {
       done();
     }, {port:port});
     worker.on('connect', function(){
-      client.submitJob('submitJobDelayed', JSON.stringify(conflict_task))
-        .on('complete', function(){
-        });
+      client.submitJob('submitJobDelayed', JSON.stringify(conflict_task));
     });
   });
 
-  test('task is recieved on time, regardless of future "at" field', function(done){
+  test('task is recieved on time, regardless of future "at" field with delay', function(done){
     this.timeout(10000);
     client = new gearman.Client({port:port});
     var failing_worker = new gearman.Worker('test', function(payload, worker) {
       done("task arrived too early");
     }, {port:port});
     failing_worker.on('connect', function(){
-      client.submitJob('submitJobDelayed', JSON.stringify(too_early_task))
-        .on('complete', function(){
-        });
+      client.submitJob('submitJobDelayed', JSON.stringify(too_early_task));
     });
     setTimeout(function(){
       async.series([

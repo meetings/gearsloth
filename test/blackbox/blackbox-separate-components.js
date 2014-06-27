@@ -124,7 +124,7 @@ suite('blackbox: separate gearslothd processes', function() {
     });
 
     test('shuold execute a simple task immediately', function(done){
-      this.timeout(200);
+      this.timeout(500);
       client = new gearman.Client({port:port});
       worker = new gearman.Worker('test', function(payload, worker) {
         var payload = payload.toString();
@@ -195,14 +195,14 @@ suite('blackbox: separate gearslothd processes', function() {
     var delayed_task_after = {
       retry_count: 1,
       func_name: 'test',
-      payload: 'task delayed about 5 seconds',
+      payload: 'task delayed about 5 seconds with after',
       after: 6
     };
 
     var delayed_task_at = {
       retry_count: 1,
       func_name: 'test',
-      payload: 'task delayed about 5 seconds',
+      payload: 'task delayed about 5 seconds with at',
       // after: to be se in test to circumvent oddities
     };
 
@@ -416,7 +416,7 @@ suite('blackbox: separate gearslothd processes', function() {
 
     var test__after_func_1 = function(done, payload, worker) {
       var payload = payload.toString();
-      if (worker) worker.complete();
+      worker.complete();
       expect(payload).to.equal(delayed_task_after.payload);
       var time_now = new Date();
       if (time_now.getSeconds() - time_reference.getSeconds() <= 4) {
@@ -428,7 +428,7 @@ suite('blackbox: separate gearslothd processes', function() {
 
     var test__after_func_2 = function(done, payload, worker) {
       var payload = payload.toString();
-      if (worker) worker.complete();
+      worker.complete();
       expect(payload).to.equal(delayed_task_after.payload);
       var time_now = new Date();
       if (time_now.getSeconds() - time_reference.getSeconds() <= 4) {
@@ -440,7 +440,7 @@ suite('blackbox: separate gearslothd processes', function() {
 
     var test__after_func_3 = function(done, payload, worker) {
       var payload = payload.toString();
-      if (worker) worker.complete();
+      worker.complete();
       expect(payload).to.equal(delayed_task_after.payload);
       var time_now = new Date();
       if (time_now.getSeconds() - time_reference.getSeconds() <= 4) {
@@ -450,7 +450,7 @@ suite('blackbox: separate gearslothd processes', function() {
       }
     };
 
-    test('shuold execute a task on expiry with after field', function(done){
+    test('should execute a task on expiry with after field', function(done){
       this.timeout(10000);
 
       async.series([
@@ -487,7 +487,7 @@ suite('blackbox: separate gearslothd processes', function() {
 
     var test__at_func_1 = function(done, payload, worker) {
       var payload = payload.toString();
-      if (worker) worker.complete();
+      worker.complete();
       expect(payload).to.equal(delayed_task_at.payload);
       var time_now = new Date();
       if (time_now.getSeconds() - time_reference.getSeconds() <= 4) {
@@ -499,7 +499,7 @@ suite('blackbox: separate gearslothd processes', function() {
 
     var test__at_func_2 = function(done, payload, worker) {
       var payload = payload.toString();
-      if (worker) worker.complete();
+      worker.complete();
       expect(payload).to.equal(delayed_task_at.payload);
       var time_now = new Date();
       if (time_now.getSeconds() - time_reference.getSeconds() <= 4) {
@@ -511,7 +511,7 @@ suite('blackbox: separate gearslothd processes', function() {
 
     var test__at_func_3 = function(done, payload, worker) {
       var payload = payload.toString();
-      if (worker) worker.complete();
+      worker.complete();
       expect(payload).to.equal(delayed_task_at.payload);
       var time_now = new Date();
       if (time_now.getSeconds() - time_reference.getSeconds() <= 4) {
@@ -521,7 +521,7 @@ suite('blackbox: separate gearslothd processes', function() {
       }
     };
 
-    test('shuold execute a task on expiry with at field', function(done){
+    test('should execute a task on expiry with at field', function(done){
         this.timeout(10000);
 
         async.series([
@@ -550,11 +550,11 @@ suite('blackbox: separate gearslothd processes', function() {
             });
           },
           function(callback) {
+            time_reference = new Date();
             var expiry = new Date();
             expiry.setSeconds(expiry.getSeconds() + 5);
             delayed_task_at.at = expiry;
             client.submitJob('submitJobDelayed', JSON.stringify(delayed_task_at));
-            time_reference = new Date();
             callback();
           }
           ]);
