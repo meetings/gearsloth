@@ -40,9 +40,6 @@ suite('blackbox: on-time with sqlite :memory: "after" parameter ', function() {
     }]
   };
 
-  var time_in_future = new Date();
-  time_in_future.setSeconds(time_in_future.getSeconds() +1000 );
-
   var simple_task = {
     func_name:'test',
     payload:'blackbox-immediate'
@@ -55,8 +52,7 @@ suite('blackbox: on-time with sqlite :memory: "after" parameter ', function() {
   var conflict_task = {
     func_name:'test',
     payload:'blackbox-delay-with-conflict',
-    after: 2,
-    at: time_in_future.toISOString()
+    after: 2
   };
 
   var too_early_task = {
@@ -197,7 +193,10 @@ suite('blackbox: on-time with sqlite :memory: "after" parameter ', function() {
   });
 
   test('task is recieved on time, regardless of future "at" field', function(done){
-    this.timeout(500);
+    this.timeout(4000);
+    var time_in_future = new Date();
+    time_in_future.setSeconds(time_in_future.getSeconds() +10000 );
+    conflict_task.at = time_in_future.toISOString();
     client = new gearman.Client({port:port});
     worker = new gearman.Worker('test', function(payload, worker) {
       var payload = payload.toString();
