@@ -235,9 +235,7 @@ suite('retry controller', function() {
         retry_count: 3,
       };
       var retry = createRetryAndSendTask(default_conf, task);
-      sandbox.clock.tick(0.5 * task.retry_timeout * 1000);
       retry._client.failJob();
-      sandbox.clock.tick(0.5 * task.retry_timeout * 1000);
       retry._client.completeJob();
       retry._client.submitJob.should.have.been.calledTwice;
       retry._client.submitJob.should.always.have.been
@@ -255,14 +253,10 @@ suite('retry controller', function() {
         retry_count: 3,
       };
       var retry = createRetryAndSendTask(default_conf, task);
-      sandbox.clock.tick(0.5 * task.retry_timeout * 1000);
       retry._worker.createTask(task);
-      sandbox.clock.tick(0.5 * task.retry_timeout * 1000);
       retry._client.completeJob();
       retry._client.failJob();
-      sandbox.clock.tick(0.5 * task.retry_timeout * 1000);
       retry._client.completeJob();
-      sandbox.clock.tick(0.5 * task.retry_timeout * 1000);
       retry._client.submitJob.should.have.been.calledThrice;
       retry._client.submitJob.should.always.have.been
           .calledWith(task.func_name);
