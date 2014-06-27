@@ -15,7 +15,7 @@ var Retry = require('../../lib/controllers/retry').Retry;
 chai.should();
 chai.use(sinonChai);
 
-suite('blackbox: at on-time with sqlite :memory:', function() {
+suite('blackbox: at on-time with sqlite :memory: "at" parameter', function() {
 
   this.timeout(5000);
 

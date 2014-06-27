@@ -15,7 +15,7 @@ var Retry = require('../../lib/controllers/retry').Retry;
 chai.should();
 chai.use(sinonChai);
 
-suite('blackbox: on-time with sqlite :memory:', function() {
+suite('blackbox: on-time with sqlite :memory: "after" parameter ', function() {
 
   this.timeout(5000);
 
@@ -170,7 +170,7 @@ suite('blackbox: on-time with sqlite :memory:', function() {
   });
 
   test('task is recieved in bottom level worker almost immediately', function(done){
-    this.timeout(100);
+    this.timeout(1000);
     client = new gearman.Client({port:port});
     worker = new gearman.Worker('test', function(payload, worker) {
       var payload = payload.toString();
@@ -183,7 +183,7 @@ suite('blackbox: on-time with sqlite :memory:', function() {
   });
 
   test('task is recieved in bottom level worker after timeout expires', function(done){
-    this.timeout(2100);
+    this.timeout(5000);
     client = new gearman.Client({port:port});
     worker = new gearman.Worker('test', function(payload, worker) {
       var payload = payload.toString();
@@ -197,7 +197,7 @@ suite('blackbox: on-time with sqlite :memory:', function() {
   });
 
   test('task is recieved on time, regardless of future "at" field', function(done){
-    this.timeout(2100);
+    this.timeout(500);
     client = new gearman.Client({port:port});
     worker = new gearman.Worker('test', function(payload, worker) {
       var payload = payload.toString();

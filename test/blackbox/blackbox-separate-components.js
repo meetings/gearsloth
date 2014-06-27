@@ -54,6 +54,7 @@ suite('blackbox: separate gearslothd processes', function() {
     };
 
     setup(function(done) {
+      this.timeout(10000);
       async.series([
         function(callback) {
           gearmand = spawn.gearmand(port, function(){
@@ -86,7 +87,7 @@ suite('blackbox: separate gearslothd processes', function() {
     });
 
     teardown(function(done) {
-      this.timeout(1000);
+      this.timeout(10000);
       async.series([
         function(callback) {
           worker.socket.on('close', callback);
@@ -124,7 +125,7 @@ suite('blackbox: separate gearslothd processes', function() {
     });
 
     test('shuold execute a simple task immediately', function(done){
-      this.timeout(500);
+      this.timeout(1000);
       client = new gearman.Client({port:port});
       worker = new gearman.Worker('test', function(payload, worker) {
         var payload = payload.toString();
