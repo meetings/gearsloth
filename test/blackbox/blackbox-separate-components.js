@@ -124,8 +124,8 @@ suite('blackbox: separate gearslothd processes', function() {
         })
     });
 
-    test('shuold execute a simple task immediately', function(done){
-      this.timeout(1000);
+    test('shuold execute a simple task within next runner round', function(done){
+      this.timeout(2000);
       client = new gearman.Client({port:port});
       worker = new gearman.Worker('test', function(payload, worker) {
         var payload = payload.toString();
@@ -135,7 +135,7 @@ suite('blackbox: separate gearslothd processes', function() {
       worker.on('connect', function(){
         client.submitJob('submitJobDelayed', JSON.stringify(immediate_task));
       });
-      
+
     });
 
   });
@@ -381,8 +381,8 @@ suite('blackbox: separate gearslothd processes', function() {
       done();
     };
 
-    test('shuold execute a simple task immediately', function(done){
-      this.timeout(1000);
+    test('shuold execute a simple task within next runner round', function(done){
+      this.timeout(2000);
       async.series([
         function(callback) {
           client = new MultiserverClient(conf.servers);
@@ -407,7 +407,7 @@ suite('blackbox: separate gearslothd processes', function() {
           worker3.on('connect', function(){
             callback();
           });
-        }, 
+        },
         function(callback) {
           client.submitJob('submitJobDelayed', JSON.stringify(immediate_task));
           callback();
