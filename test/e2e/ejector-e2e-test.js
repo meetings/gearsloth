@@ -1,5 +1,5 @@
 var gearman = require('gearman-coffee')
-  , ejector = require('../../lib/daemon/ejector')
+  , Ejector = require('../../lib/daemon/ejector').Ejector
   , child_process = require('child_process')
   , chai = require('chai')
   , sinon = require('sinon')
@@ -26,6 +26,7 @@ suite('(e2e) ejector', function() {
         port: port
       }]
     };
+  var ejector_in_use;
 
   setup(function(done) {
     async.series([
@@ -39,8 +40,10 @@ suite('(e2e) ejector', function() {
           port: port
         });
         client.on('connect', function() {
-          ejector(conf);
-          callback();
+          ejector_in_use = new Ejector(conf)
+          .on('connect', function() {
+            callback();
+          });
         });
       }
       ], function(){
@@ -55,6 +58,12 @@ suite('(e2e) ejector', function() {
           callback();
         });
         client.disconnect();
+      },
+      function (callback) {
+        ejector_in_use.on('disconnect', function() {
+          callback();
+        });
+        ejector_in_use.disconnect(0, function(){});
       },
       function(callback) {
         spawn.killall([gearmand], function() {
