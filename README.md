@@ -2,7 +2,7 @@
 # gearsloth
 
 Gearsloth is a system that enables delayed tasks and persistent storage schemes
-in Gearman job server. The gearsloth stack consists of four components: injector,
+with Gearman job server. The gearsloth stack consists of four components: injector,
 runner, controller and ejector. Gearsloth
 supports a database backend architecture which abstracts persisting delayed
 tasks to a database. Gearsloth is written in Node.js.
@@ -22,6 +22,11 @@ the system more *robust*. Multiple instances of injector/runner/controller/eject
 
 ## Components
 
+All components emit the following events:
+
+* `connect`: will be emitted when the component is connected to at least one Gearman job server.
+* `disconnect`: will be emitted when the component has lost connection to all Gearman job servers.
+
 ### Injector
 
 The injector registers the function `submitJobDelayed` to Gearman job server(s). The task to be delayed should be sent to the injector in the format specified in [task format specification](#task-format-specification).
@@ -32,14 +37,11 @@ If the task is succesfully inserted in to the persistent storage, injector will 
 
 If there is an error parsing the task, or if the injector fails to insert the task to the persistent storage, it will send `WORK_WARNING` with the appropriate error message followed by `WORK_FAIL` to the caller. This always means that the job *will not* be executed.
 
-#### Events
-
-* `connect`: will be emitted when the injector is connected to at least one Gearman job server.
-* `disconnect`: will be emitted when the injector has lost connection to all Gearman job servers.
-
 ### Runner
 
-TODO: Write me!
+The runner is responsible for forwarding expiring tasks to controller. Runner registers itself as listener to a database adapter that hands out expiring tasks to the runner. Runner updates expiring tasks with a new due time for retry or removes the task from the database if the task has been retried sufficient number of times without being completed.
+
+Client can adjust the interval between retries with the task parameter `.runner_retry_timeout` and the total number of retries before task removal with `.runner_retry_count`. `.runner_retry_timeout` is a number given in seconds. Default timeout value of 1000 seconds is used if `.runner_retry_timeout` is undefined. If `.runner_retry_count` is undefined, the task is retried indefinitely.
 
 ### Controller
 
