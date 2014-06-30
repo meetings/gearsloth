@@ -23,11 +23,11 @@ chai.should();
  * The task must be executed.
  */
 
-suite.only('(docker) two gearmand servers', function() {
+suite('(docker) two gearmand servers', function() {
   var gearmand0_port = "54734";
   var gearmand1_host;
   var gearslothd_config = {
-    verbose: 1,
+    verbose: 0,
     db:'mysql-multimaster',
     servers: []
   };
@@ -45,8 +45,7 @@ suite.only('(docker) two gearmand servers', function() {
             });
           },
           function(callback) {
-            containers.gearmand(['gearmand', '-l', 'stderr', '--verbose', 'INFO'], false, function(config, container) {
-              config[0].debug = true;
+            containers.gearmand(null, false, function(config, container) {
               gearslothd_config.servers = gearslothd_config.servers.concat(config);
               gearmand0_container = container;
               callback();
@@ -62,7 +61,6 @@ suite.only('(docker) two gearmand servers', function() {
         }], callback);
       },
       function(callback) {
-        console.log(gearslothd_config);
         async.parallel([
           function(callback) {
             containers.gearslothd(
@@ -104,20 +102,19 @@ suite.only('(docker) two gearmand servers', function() {
     this.timeout(5000);
     var sent_payload = new Date().toISOString();
     var work_handler = function() {};
-    var client = new gearman.Client({host:gearmand1_host, debug:true});
+    var client = new gearman.Client({host:gearmand1_host});
 
     var worker = new gearman.Worker('test1', function(payload, worker) {
       expect(payload.toString()).to.equal(sent_payload);
       setTimeout(done, 100);
       worker.complete();
-    }, {port:gearmand0_port, debug:true})
+    }, {port:gearmand0_port})
     
     client.submitJob('submitJobDelayed', JSON.stringify({
       func_name:'test1',
       payload:sent_payload,
       runner_retry_timeout:1
     })).on('complete', function() {
-      console.log('COMPLETE');
       gearmand1_container.kill(function(err, data) {
         if(err) console.log(err);
         gearmand1_container.remove(function(err, data) {
@@ -133,8 +130,8 @@ suite.only('(docker) two gearmand servers', function() {
 
     new gearman.Worker('test0', function(payload, worker) {
       expect(payload.toString()).to.equal(sent_payload);
-      setTimeout(done, 100);
       worker.complete();
+      done();
     }, {port:gearmand0_port})
 
     new gearman.Client({port:gearmand0_port})
@@ -146,39 +143,11 @@ suite.only('(docker) two gearmand servers', function() {
     }))
     .on('complete', function() {
       gearmand0_container.kill(function(err, data) {
-      gearmand0_container.attach({stream: true, stdout: true, stderr: true}, function (err, stream) {
-        stream.pipe(process.stdout);
-      });
         if(err) console.log(err);
-        console.log('gearmand 0 killed');
-        gearmand0_container.start(function(err) {
+        gearmand0_container.restart(function(err) {
           if(err) console.log(err);
-          console.log('gearmand 0 booting..');
         });
       });
     });
   });
 });
-
-function connectUntilSuccess(host, port, done) {
-  console.log('Connecting to '+host+':'+port);
-  var socket = net.connect({
-    host: host,
-    port: port
-  }, function() {
-    socket.end();
-  })
-  .on('error', function(err) {
-    // catch error
-  })
-  .on('close', function(had_err) {
-    if (had_err) {
-      setTimeout(function () {
-        connectUntilSuccess(host, port, done);
-      }, 100);
-    }
-    else {
-      done();
-    }
-  });
-}
