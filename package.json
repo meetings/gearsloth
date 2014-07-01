@@ -21,7 +21,7 @@
   "license": "MIT",
   "homepage": "https://github.com/meetings/gearsloth",
   "dependencies": {
-    "gearman-coffee": "^2.0.1",
+    "gearman-coffee": "^2.0.2",
     "mysql": "^2.3.2",
     "sqlite3": "^2.2.3",
     "underscore": "*",
