@@ -98,7 +98,7 @@ suite('retry controller', function() {
       retry._client.submitJob.should.have.been.calledOnce;
       retry._client.submitJob.should.have.been.calledWith(task.func_name);
     });
-    test('should submit job with provided payload', function() {
+    test('should submit job with provided string payload', function() {
       var task = {
         id: 1,
         func_name: 'asdf',
@@ -108,6 +108,17 @@ suite('retry controller', function() {
       retry._client.submitJob.should.have.been.calledOnce;
       retry._client.submitJob.should.have.been
           .calledWith(task.func_name, task.payload);
+    });
+    test('should submit job with provided object payload', function() {
+      var task = {
+        id: 1,
+        func_name: 'asdf',
+        payload: { qwer : 'qwer' }
+      };
+      var retry = createRetryAndSendTask(default_conf, task);
+      retry._client.submitJob.should.have.been.calledOnce;
+      retry._client.submitJob.should.have.been
+          .calledWith(task.func_name, JSON.stringify( task.payload ) );
     });
     test('should submit job with provided binary func_name', function() {
       var task = {
@@ -153,30 +164,6 @@ suite('retry controller', function() {
       assert.equal(retry._client.submitJob.args[0][1].toString('base64'),
           task.payload_base64);
     });
-    test('should retry after uncompleted call', function() {
-      var task = {
-        id: 1,
-        func_name: 'zxcv',
-        payload: 'qwer'
-      };
-      var retry = createRetryAndSendTask(default_conf, task);
-      sandbox.clock.tick(1.5 * retry.default_retry_timeout * 1000);
-      retry._client.submitJob.should.have.been.calledTwice;
-      retry._client.submitJob.should.always.have.been
-          .calledWith(task.func_name, task.payload);
-    });
-    test('should repeatedly retry after uncompleted call', function() {
-      var task = {
-        id: 1,
-        func_name: 'zxcv',
-        payload: 'qwer'
-      };
-      var retry = createRetryAndSendTask(default_conf, task);
-      sandbox.clock.tick(2.5 * retry.default_retry_timeout * 1000);
-      retry._client.submitJob.should.have.been.calledThrice;
-      retry._client.submitJob.should.always.have.been
-          .calledWith(task.func_name, task.payload);
-    });
     test('should not retry after completed call', function() {
       var task = {
         id: 1,
@@ -184,26 +171,34 @@ suite('retry controller', function() {
         payload: 'qwer'
       };
       var retry = createRetryAndSendTask(default_conf, task);
-      sandbox.clock.tick(0.5 * retry.default_retry_timeout * 1000);
       retry._client.completeJob();
-      sandbox.clock.tick(3.0 * retry.default_retry_timeout * 1000);
       retry._client.submitJob.should.have.been.calledOnce;
       retry._client.submitJob.should.have.been
           .calledWith(task.func_name, task.payload);
     });
-    test('should not retry after failed call', function() {
+    test('should retry after failed call if retry_count > 0', function() {
       var task = {
         id: 1,
         func_name: 'zxcv',
-        payload: 'qwer'
+        payload: 'qwer',
+        retry_count : 1
       };
       var retry = createRetryAndSendTask(default_conf, task);
-      sandbox.clock.tick(0.5 * retry.default_retry_timeout * 1000);
       retry._client.failJob();
-      sandbox.clock.tick(3.0 * retry.default_retry_timeout * 1000);
-      retry._client.submitJob.should.have.been.calledOnce;
-      retry._client.submitJob.should.have.been
-        .calledWith(task.func_name, task.payload);
+      retry._client.submitJob.should.have.been.calledTwice;
+    });
+   test('should retry after failed call given number of times', function() {
+      var task = {
+        id: 1,
+        func_name: 'qwer',
+        retry_count: 2
+      };
+      var retry = createRetryAndSendTask(default_conf, task);
+      retry._client.failJob();
+      retry._client.failJob();
+      retry._client.submitJob.should.have.been.calledThrice;
+      retry._client.failJob();
+      retry._client.submitJob.should.have.been.calledThrice;
     });
     test('should submit delayedJobDone background job with task id ' +
         'after completed call',
@@ -214,16 +209,14 @@ suite('retry controller', function() {
         payload: 'qwer'
       };
       var retry = createRetryAndSendTask(default_conf, task);
-      sandbox.clock.tick(0.5 * retry.default_retry_timeout * 1000);
       retry._client.completeJob();
-      sandbox.clock.tick(1.0 * retry.default_retry_timeout * 1000);
       retry._client.submitJobBg.should.have.been.calledOnce;
       retry._client.submitJobBg.should.have.been
           .calledWith('delayedJobDone');
       assert.deepEqual(JSON.parse(retry._client.submitJobBg.args[0][1]).id,
           task.id);
     });
-    test('should submit delayedJobDone background job with task id ' +
+    test('should not submit delayedJobDone background job with task id ' +
         'after failed call',
         function() {
       var task = {
@@ -232,102 +225,19 @@ suite('retry controller', function() {
         payload: 'qwer'
       };
       var retry = createRetryAndSendTask(default_conf, task);
-      sandbox.clock.tick(0.5 * retry.default_retry_timeout * 1000);
       retry._client.failJob();
-      sandbox.clock.tick(3.0 * retry.default_retry_timeout * 1000);
-      retry._client.submitJobBg.should.have.been.calledOnce;
-      retry._client.submitJobBg.should.have.been.calledWith('delayedJobDone');
-      assert.deepEqual(JSON.parse(retry._client.submitJobBg.args[0][1]).id,
-          task.id);
-    });
-    test('should retry and submit delayedJobDone background job with task id ' +
-        'after delayed completed call',
-        function() {
-      var task = {
-        id: { db_id: 'asdf', task_id: 1 },
-        func_name: 'zxcv',
-        payload: 'qwer'
-      };
-      var retry = createRetryAndSendTask(default_conf, task);
-      sandbox.clock.tick(1.5 * retry.default_retry_timeout * 1000);
-      retry._client.completeJob();
-      sandbox.clock.tick(3.0 * retry.default_retry_timeout * 1000);
-      retry._client.submitJob.should.have.been.calledTwice;
-      retry._client.submitJob.should.always.have.been
-          .calledWith(task.func_name, task.payload);
-      retry._client.submitJobBg.should.have.been.calledOnce;
-      retry._client.submitJobBg.should.have.been.calledWith('delayedJobDone');
-      assert.deepEqual(JSON.parse(retry._client.submitJobBg.args[0][1]).id,
-          task.id);
-    });
-    test('should retry and submit delayedJobDone background job with task id ' +
-        'after delayed failed call',
-        function() {
-      var task = {
-        id: { db_id: 'asdf', task_id: 1 },
-        func_name: 'zxcv',
-        payload: 'qwer'
-      };
-      var retry = createRetryAndSendTask(default_conf, task);
-      sandbox.clock.tick(1.5 * retry.default_retry_timeout * 1000);
-      retry._client.failJob();
-      sandbox.clock.tick(3.0 * retry.default_retry_timeout * 1000);
-      retry._client.submitJob.should.have.been.calledTwice;
-      retry._client.submitJob.should.always.have.been
-          .calledWith(task.func_name, task.payload);
-      retry._client.submitJobBg.should.have.been.calledOnce;
-      retry._client.submitJobBg.should.have.been.calledWith('delayedJobDone');
-      assert.deepEqual(JSON.parse(retry._client.submitJobBg.args[0][1]).id,
-          task.id);
-    });
-    test('should retry given number of times', function() {
-      var task = {
-        id: 1,
-        func_name: 'qwer',
-        retry_count: 3
-      };
-      var retry = createRetryAndSendTask(default_conf, task);
-      sandbox.clock.tick(5.0 * retry.default_retry_timeout * 1000);
-      retry._client.submitJob.should.have.been.calledThrice;
-      retry._client.submitJob.should.always.have.been
-          .calledWith(task.func_name);
-      retry._client.submitJobBg.should.have.been.calledOnce;
-      retry._client.submitJobBg.should.have.been
-          .calledWith('delayedJobDone');
-      assert.deepEqual(
-          JSON.parse(retry._client.submitJobBg.args[0][1]).id, task.id);
-    });
-    test('should retry given number of times with given timeout', function() {
-      var task = {
-        id: 1,
-        func_name: 'qwer',
-        retry_count: 3,
-        retry_timeout: 2
-      };
-      var retry = createRetryAndSendTask(default_conf, task);
-      sandbox.clock.tick(5.0 * task.retry_timeout * 1000);
-      retry._client.submitJob.should.have.been.calledThrice;
-      retry._client.submitJob.should.always.have.been
-          .calledWith(task.func_name);
-      retry._client.submitJobBg.should.have.been.calledOnce;
-      retry._client.submitJobBg.should.have.been
-          .calledWith('delayedJobDone');
-      assert.deepEqual(
-          JSON.parse(retry._client.submitJobBg.args[0][1]).id, task.id);
+      retry._client.submitJobBg.should.not.have.been.calledOnce;
     });
     test('should call ejector only once', function() {
       var task = {
         id: 1,
         func_name: 'qwer',
         retry_count: 3,
-        retry_timeout: 2
       };
       var retry = createRetryAndSendTask(default_conf, task);
-      sandbox.clock.tick(5.0 * task.retry_timeout * 1000);
+      retry._client.failJob();
       retry._client.completeJob();
-      retry._client.failJob();
-      retry._client.failJob();
-      retry._client.submitJob.should.have.been.calledThrice;
+      retry._client.submitJob.should.have.been.calledTwice;
       retry._client.submitJob.should.always.have.been
           .calledWith(task.func_name);
       retry._client.submitJobBg.should.have.been.calledOnce;
@@ -341,15 +251,12 @@ suite('retry controller', function() {
         id: 1,
         func_name: 'qwer',
         retry_count: 3,
-        retry_timeout: 2
       };
       var retry = createRetryAndSendTask(default_conf, task);
-      sandbox.clock.tick(0.5 * task.retry_timeout * 1000);
       retry._worker.createTask(task);
-      sandbox.clock.tick(0.7 * task.retry_timeout * 1000);
       retry._client.completeJob();
       retry._client.failJob();
-      sandbox.clock.tick(5.0 * task.retry_timeout * 1000);
+      retry._client.completeJob();
       retry._client.submitJob.should.have.been.calledThrice;
       retry._client.submitJob.should.always.have.been
           .calledWith(task.func_name);
