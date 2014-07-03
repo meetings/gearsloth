@@ -1,6 +1,8 @@
 
 # Gearsloth
 
+[deb]: https://wiki.debian.org/Packaging
+
 Gearsloth is a system that enables delayed tasks and persistent storage schemes with Gearman job server. The Gearsloth stack consists of four components: *injector*, *runner*, *controller* and *ejector*. Gearsloth supports a database backend architecture which abstracts persisting delayed tasks to a database. Gearsloth is written in Node.js.
 
 ![Example of Gearsloth setup](examples/architecture-graph.png "Example of Gearsloth setup")
@@ -9,7 +11,21 @@ Gearsloth is setup between Gearman job server and database backend. Any Gearslot
 
 ## Installation
 
+### npm
+
     npm install gearsloth
+
+### deb
+
+There is a rudimentry support for putting Gearsloth in a Debian package. Instructions to build a Debian package are beyond the scope of this documentation and taking a look at [Debian wiki][deb] is recommended. Following is only an approximation of the process:
+
+1. Install all the software and required dependencies for the build host.
+
+2. Create the package.
+
+        $ dpkg-buildpackage -b -uc
+
+3. Distribute and install the package by means suitable to your infrastructure.
 
 ## Components
 
