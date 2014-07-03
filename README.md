@@ -6,6 +6,23 @@
 [dock]: http://www.docker.com
 [vagr]: http://www.vagrantup.com
 
+
+## Contents
+
+ * [Overview](#overview)
+ * [Installation](#installation)
+ * [Components](#components)
+ * [Configuration](#configuration)
+ * [Task format specification](#task-format-specification)
+ * [Database adapters](#database-adapters)
+ * [Database adapter API](#database-adapter-api)
+ * [Running tests](#running-tests)
+ * [Running tests in virtualized environment](#running-tests-in-virtualized-environment)
+ * [License](#license)
+
+
+## Overview
+
 Gearsloth is a system that enables delayed tasks and persistent storage schemes with [Gearman][gear] job server. The Gearsloth stack consists of four components: *injector*, *runner*, *controller* and *ejector*. Gearsloth supports a database backend architecture which abstracts persisting delayed tasks to a database. Gearsloth is written in Node.js.
 
 ![Example of Gearsloth setup](examples/architecture-graph.png "Example of Gearsloth setup")
@@ -278,3 +295,8 @@ Gearsloth has tests that simulate a production-like environment implemented with
 
     sloth:~$ cd gearsloth
     sloth:~/gearsloth$ make docker-test
+
+
+## License
+
+See the file `LICENSE` for details.
