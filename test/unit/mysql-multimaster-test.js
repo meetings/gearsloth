@@ -1,5 +1,5 @@
 var mysql = require('mysql')
-  , MySQLMultimaster = require('../../lib/adapters/mysql-multimaster')
+  , MySQLMultimaster = require('../../lib/adapters/mysql')
   , chai = require('chai')
   , expect = chai.expect
   , sinon = require('sinon')
@@ -95,7 +95,7 @@ suite('MySQL Multimaster adapter', function() {
 
       mysql_pool.getConnection.withArgs('SLAVE').yields(error);
 
-      var multimaster = MySQLMultimaster.initialize(init_config, function(err, adapter) {
+      var mysql = MySQLMultimaster.initialize(init_config, function(err, adapter) {
         expect(err).to.equal(error);
         expect(adapter).to.be.undefined;
         mysql_pool.getConnection.should.have.been.calledTwice;

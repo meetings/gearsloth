@@ -13,7 +13,7 @@
   "db": "composite",
 
   "dbopt": [{
-    "db":    "mysql-multimaster",
+    "db":    "mysql",
     "db_id": "id_1",
     "dbopt": {
       "host":     "<addr>",
@@ -23,7 +23,7 @@
       "database": "gearsloth"
     }
   }, {
-    "db":    "mysql-multimaster",
+    "db":    "mysql",
     "db_id": "id_2",
     "dbopt": {
       "host":     "<addr>",
