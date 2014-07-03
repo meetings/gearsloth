@@ -1,0 +1,47 @@
+// Example of Gearsloth setup
+// Usage: dot -T png -o output.png architecture-graph.dot
+
+digraph Simple {
+    nodesep=0.5;
+    node [shape=box];
+
+    subgraph {
+        rank="min";
+
+        db [label="database backend"]
+    }
+
+    subgraph {
+        job [label="Gearman job server"]
+    }
+
+    subgraph {
+        rank="max";
+
+        cli [label="a client"]
+        wrk [label="a worker"]
+    }
+
+    subgraph cluster_gearsloth {
+        label="Gearsloth";
+        graph [style=dotted];
+        node [color=forestgreen];
+
+        E [label="ejector"]
+        C [label="controller"]
+        R [label="runner"]
+        I [label="injector"]
+    }
+
+    cli -> job;
+    wrk -> job;
+
+    I -> job;
+    R -> job;
+    E -> job;
+    C -> job;
+
+    I -> db;
+    R -> db;
+    E -> db;
+}

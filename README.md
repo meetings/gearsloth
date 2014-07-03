@@ -1,20 +1,11 @@
 
-# gearsloth
+# Gearsloth
 
-Gearsloth is a system that enables delayed tasks and persistent storage schemes
-with Gearman job server. The gearsloth stack consists of four components: injector,
-runner, controller and ejector. Gearsloth
-supports a database backend architecture which abstracts persisting delayed
-tasks to a database. Gearsloth is written in Node.js.
+Gearsloth is a system that enables delayed tasks and persistent storage schemes with Gearman job server. The Gearsloth stack consists of four components: *injector*, *runner*, *controller* and *ejector*. Gearsloth supports a database backend architecture which abstracts persisting delayed tasks to a database. Gearsloth is written in Node.js.
 
-![Simple gearsloth configuration](Doc/gearsloth-simple.png "Simple gearsloth configuration")
+![Example of Gearsloth setup](examples/architecture-graph.png "Example of Gearsloth setup")
 
-This is the simplest gearsloth configuration. Gearsloth's components are marked with green.
-
-![Advanced gearsloth configuration](Doc/gearsloth-advanced.png "Advanced gearsloth configuration")
-
-As seen above, one may add more Gearman job servers and databases to the configuration in order to make
-the system more *robust*. Multiple instances of injector/runner/controller/ejector may also be run.
+Gearsloth is setup between Gearman job server and database backend. Any Gearsloth component may have multiple instances running and may be connected to multiple job servers and databases. For production environments, where robustness and resiliency is required, having at least two of each component is highly recommended.
 
 ## Installation
 
@@ -95,7 +86,7 @@ configuration options:
 * `--verbose`: Specify logging level; You can use the --verbose or -v flag multiple times for the following effects:
   * No flag (default): notice -> std.out | errors -> std.err
   * One flag (-v): notice, info -> std.out | errors -> std.err
-  * Two flags (-vv): notice, info, debug -> std.out | errors -> std.err  
+  * Two flags (-vv): notice, info, debug -> std.out | errors -> std.err
 > You can also configure this parameter with and integer (0 for one flag, 1 for two flags) in gearsloth.json.
 The logic for handling the --verbose flag can be found in lib/log.js.
 
@@ -272,8 +263,8 @@ implemented with docker and vagrant. To run these tests issue the following comm
 
     sloth:~$ cd gearsloth
     sloth:~/gearsloth$ make docker-test
-    
+
 ## Links
- 
+
  * [Gearman project](http://gearman.org)
  * [Original project description](Doc/legacy-description.md)
