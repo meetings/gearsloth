@@ -103,7 +103,9 @@ In a nutshell, a controller does the following:
 
 ### Ejector
 
-TODO: Write me!
+Ejectors are responsible for removing a task from the database. They register a function named `delayedJobDone` to Gearman job servers. The function must be called with a string parseable to a task JSON object and contain a valid identifier (see [task format specification](#task-format-specification)). Ejectors, upon recieving a task, will call the database adapter function `completeTask` which then removes the task from the database IF it contained a valid identifier.
+
+Currently if the system is setup to use the `sqlite` adapter the ejector(s) (in fact the whole Gearsloth stack) need to be running in the same filesystem as the database is saved to a file and is not accessible directly through a network. This does not apply to a properly configured `mysql` adapter since it is by default network accessed.
 
 
 ## Configuration
