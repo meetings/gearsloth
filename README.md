@@ -107,6 +107,8 @@ Ejectors are responsible for removing a task from the database. They register a 
 
 Currently if the system is setup to use the `sqlite` adapter the ejector(s) (in fact the whole Gearsloth stack) need to be running in the same filesystem as the database is saved to a file and is not accessible directly through a network. This does not apply to a properly configured `mysql` adapter since it is by default network accessed.
 
+The Gearsloth system will likely fail if it is setup to use separate databases which are not accessible from all components: it is possibile that a task extracted from database A will have the same identifier as a task extraced from database B and that the `ejector` that recieves the task for removal will be connected to database B and thus removes the wrong task. It is highly recommended that the system is setup to use mysql-databases if more than one database is required.
+
 
 ## Configuration
 
