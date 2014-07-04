@@ -193,7 +193,6 @@ are interpreted:
   servers may contain fields `.host` and `.port`. If only one the fields is
   specified, a default value is used. The default gearman server is
   `localhost:4730`.
-* `.db {String}`: Database module name.
 * `.controllername {String}:` Controller module name. See above for a more detailed description.
 * `.verbose {Integer}`: Desired logging detail level. See above for a more detailed description.
 
