@@ -1,4 +1,3 @@
-
 # Gearsloth
 
 [gear]:  http://gearman.org
@@ -23,8 +22,9 @@
  * [Task format specification](#task-format-specification)
  * [Database adapters](#database-adapters)
  * [Database adapter API](#database-adapter-api)
- * [Running tests](#running-tests)
- * [Running tests in virtualized environment](#running-tests-in-virtualized-environment)
+ * [Development](#development)
+   - [Running tests in virtualized environment](#running-tests-in-virtualized-environment)
+   - [Code conventions](#code-conventions)
  * [License](#license)
 
 
@@ -281,7 +281,6 @@ In addition the `task` JSON object may contain any number of fields (for example
 
 After a job is done, a controller should send the task object to the ejector in order to remove it from the task database.
 
-
 ## Database adapters
 
 Currently, there are two database backend adapters.
@@ -358,13 +357,17 @@ The following guidelines should be followed for adapters:
 * External functions should be fail-fast, so minimize connection timeouts and queueing by default. Retrying will be handled in the component that uses the adapter.
 * Do not throw exceptions, instead propagate errors through callbacks.
 
+## Development
 
-## Running tests
+We use `make`. To see all available make targets, type
+
+    $ make help
+
+### Running tests
 
     $ npm test
 
-
-## Running tests in virtualized environment
+### Running tests in virtualized environment
 
 Gearsloth has tests that simulate a production-like environment implemented with [Docker][dock] and [Vagrant][vagr]. To run these tests issue the following commands:
 
@@ -374,7 +377,6 @@ Gearsloth has tests that simulate a production-like environment implemented with
 
     sloth:~$ cd gearsloth
     sloth:~/gearsloth$ make docker-test
-
 
 ## License
 
