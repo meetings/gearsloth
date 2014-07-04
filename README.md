@@ -55,11 +55,15 @@ All components emit the following events:
 * `connect`: will be emitted when the component is connected to at least one Gearman job server.
 * `disconnect`: will be emitted when the component has lost connection to all Gearman job servers.
 
+They are written in NodeJS but they use the gearman-coffee npm-package for their Gearman worker and client APIs.
+
 ### Injector
 
 The injector registers the function `submitJobDelayed` to Gearman job servers. The task to be delayed should be sent to the injector in the format specified in [task format specification](#task-format-specification).
 
 If the task is succesfully inserted in to the persistent storage, injector will send gearman `WORK_COMPLETE` to the caller. This means that the task *will* be executed.
+
+Injectors communicate to the Gearman job server via the normal worker API. They employ connecting to several job servers by creating as many workers as there are servers that function as the communicators to and from the job servers.
 
 #### Error handling
 
@@ -71,9 +75,10 @@ The runner is responsible for forwarding expiring tasks to controller. Runner re
 
 Client can adjust the interval between retries with the task parameter `.runner_retry_timeout` and the total number of retries before task disabling with `.runner_retry_count`. `.runner_retry_timeout` is a number given in seconds. Default timeout value of 1000 seconds is used if `.runner_retry_timeout` is undefined. If `.runner_retry_count` is undefined, the task is retried indefinitely.
 
+Runners communicate to the Gearman job server via the client API. As with injectors they create as many clients as there are job servers to communicate to multiple servers.
+
 ### Controller
 
-TODO: Documentation for default controller!
 TODO: Documentation for developing controllers!
 
 Controllers encapsulate a specific task retry strategy which governs when and
@@ -101,14 +106,21 @@ In a nutshell, a controller does the following:
     (gearman function `delayedJobDone`). The field `.id` that identifies a task
     must be passed to the ejector unchanged.
 
+#### Default controller
+
+TODO: description
+
+As with injectors and runners the controllers use Gearman worker API to recieve tasks for execution. When submitting a task for execution to the final worker the controllers act as clients and use the Geaman client API. Finally, when a task is done and must be removed from the database the controllers act again as clients and submit a request for work to the ejectors as `delayedJobDone`. All communication to and from the Gearman job servers is accomplished by instantiating multiple clients and workers, one to each server, from the gearman-coffee package.
+
 ### Ejector
 
 Ejectors are responsible for removing a task from the database. They register a function named `delayedJobDone` to Gearman job servers. The function must be called with a string parseable to a task JSON object and contain a valid identifier (see [task format specification](#task-format-specification)). Ejectors, upon recieving a task, will call the database adapter function `completeTask` which then removes the task from the database IF it contained a valid identifier.
 
-Currently if the system is setup to use the `sqlite` adapter the ejector(s) (in fact the whole Gearsloth stack) need to be running in the same filesystem as the database is saved to a file and is not accessible directly through a network. This does not apply to a properly configured `mysql` adapter since it is by default network accessed.
+Currently if the system is setup to use the `sqlite` adapter the ejector(s) (in fact the whole Gearsloth stack) need to be running on the same filesystem as the database is saved to a file and is not accessible directly through a network. This does not apply to a properly configured `mysql` adapter since it is by default network accessed.
 
 The Gearsloth system will likely fail if it is setup to use separate databases which are not accessible from all components: it is possibile that a task extracted from database A will have the same identifier as a task extraced from database B and that the `ejector` that recieves the task for removal will be connected to database B and thus removes the wrong task. It is highly recommended that the system is setup to use mysql-databases if more than one database is required.
 
+As with the other components the ejectors use multiple instances of workers from the gearman-coffee package, again one per job server, for communication to multiple job servers.
 
 ## Configuration
 
