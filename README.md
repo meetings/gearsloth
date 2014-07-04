@@ -36,15 +36,6 @@ Gearsloth is a system that enables delayed tasks and persistent storage schemes 
 
 Gearsloth is setup between Gearman job server and database backend. Any Gearsloth component may have multiple instances running and may be connected to multiple job servers and databases. For production environments, where robustness and resiliency is required, having at least two of each component is highly recommended.
 
-### Configuration examples
-
-Different setups
-
-1.  Dev setup, all on the same server
-2.  Parallel sqlite setups (not possible)
-3.  Separate components connected to a single mysql
-4.  Ubersetup, everything multiplied, including dbs
-
 ## Installation
 
 ### npm
