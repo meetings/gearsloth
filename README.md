@@ -243,20 +243,23 @@ Task is to be a JavaScript JSON object with the following format:
 
 ```
 var task = {
-   func_name: name of the function (Gearman task) to be executed,
-          at: time of execution (optional),
-       after: seconds after which this task is to be executed (optional),
-  controller: name of the controller function that is to handle execution of the task (optional),
-     payload: the payload that is to be passed to the function (task) (optional),
-  runner_retry_timeout: the number of seconds after which one of the registered runners for this tasks func_name
-                        (the database adapter picks one for each retry) will pick up the task again
-                        in case the first runner was unable to pass the
-                        task on for execution (to a worker). After a runner picks up the task this field
-                        is updated instantly in the database. This field is optional,
-  runner_retry_count:   the number of times a runner is to retry handling the task if
-                        the previous runner was unable to pass the task on for execution (to a worker),
-                        each time the database adapter passes this task to a runner, this field
-                        is decreased by one (the database is then updated instantly). This field is optional.
+           func_name: name of the gearman function to be executed,
+    func_name_base64: binary name of the target gearman function in base64 encoding (optional, overrides func_name),
+                  at: time of execution (optional),
+               after: seconds after which this task is to be executed (optional),
+          controller: name of the controller function that is to handle execution of the task (optional),
+             payload: payload that is passed to the target function (optional),
+      payload_base64: binary payload in base64 encoding that is passed to the target fucntion (optional, overrides payload),
+runner_retry_timeout: the number of seconds after which one of the registered runners for this tasks func_name
+                      (the database adapter picks one for each retry) will pick up the task again
+                      in case the first runner was unable to pass the
+                      task on for execution (to a worker). After a runner picks up the task this field
+                      is updated instantly in the database. This field is optional,
+  runner_retry_count: the number of times a runner is to retry handling the task if
+                      the previous runner was unable to pass the task on for execution (to a worker),
+                      each time the database adapter passes this task to a runner, this field
+                      is decreased by one (the database is then updated instantly). This field is optional.
+         retry_count: number of times the task is retried in default controller (optional, only used in default controller)
 }
 ```
 
