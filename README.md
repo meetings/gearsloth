@@ -1,10 +1,13 @@
 
 # Gearsloth
 
-[gear]: http://gearman.org
-[deb]:  https://wiki.debian.org/Packaging
-[dock]: http://www.docker.com
-[vagr]: http://www.vagrantup.com
+[gear]:  http://gearman.org
+[deb]:   https://wiki.debian.org/Packaging
+[mygit]: https://github.com/felixge/node-mysql#connection-options
+[mynpm]: https://www.npmjs.org/package/mysql
+[sqnpm]: https://www.npmjs.org/package/sqlite3
+[dock]:  http://www.docker.com
+[vagr]:  http://www.vagrantup.com
 
 
 ## Contents
@@ -277,15 +280,13 @@ After a job is done, a controller should send the task object to the ejector in 
 
 ## Database adapters
 
-Currently there are 2 complete adapters: 'sqlite.js', which uses the sqlite3.js npm package, and 'mysql-multimaster.js'.
+Currently, there are two database backend adapters.
 
-TODO: Documentation for mysql-multimaster!
+Well, ok, there is a third adapter named `composite`, but it is likely to be deprecated soon, so it is not documented at all.
 
-TODO: Documentation for composite adapter!
+### SQLite
 
-### Sqlite3
-
-This adapter requires the sqlite3.js npm package which can be installed by issuing the command:
+This adapter requires the [sqlite3][sqnpm] package, which can be installed with *npm*:
 ```
 npm install sqlite3
 ```
@@ -294,13 +295,13 @@ npm install sqlite3
 
 The sqlite-adapter configuration takes in a JSON object that describes the following properties of the database:
 
-* `config.dbopt.table_name`: The name of the table into which the tasks are to be saved. If unset a default value of *"DelayedTasks"* is used.
-* `config.dbopt.db_name`: The filename which is used for the database. An 'in-memory' database can be used by providing the `':memory:'` string as the db_name. The 'in-memory' database will be lost once the execution of the process ends, and it will not be accessible to other instances of adapters. An aboslute path to the datbase should be used. If unset a default value of *"DelayedTasks.sqlite"* is used.
-* `config.dbopt.poll_timeout`: A time value in milliseconds which the adaters database polling function is to timeout before the next query. If unset a default value of *1000* milliseconds is used.
-* `config.dbopt.pre_poll`: A time value in secods that is subtracted from the exipry time of the task to accomplish retrieving tasks before they expire. If unset a default value of *0* seconds is used.
-* `config.dbopt.default_timeout`: A time value in seconds that the execution of the task is to be timed out right after selection for execution. If unset the adapter will default to *1000* seconds.
+* `dbopt.table_name`: The name of the table into which the tasks are to be saved. If unset a default value of *DelayedTasks* is used.
+* `dbopt.db_name`: The filename which is used for the database. An in-memory database can be used by providing the `:memory:` string as the db\_name. The in-memory database will be lost once the execution of the process ends, and it will not be accessible to other instances of adapters. An absolute path to the database should be used. If unset, a default value of *DelayedTasks.sqlite* is used.
+* `dbopt.poll_timeout`: A time value in milliseconds which the adaters database polling function is to timeout before the next query. If unset a default value of *1000* milliseconds is used.
+* `dbopt.pre_poll`: A time value in seconds that is subtracted from the expiry time of the task to accomplish retrieving tasks before they expire. If unset, a default value of *0* seconds is used.
+* `dbopt.default_timeout`: A time value in seconds that the execution of the task is to be timed out right after selection for execution. If unset, the adapter will default to *1000* seconds.
 
-The initialization may also be called without any configuration to adopt all default cofigurations, for example:
+The initialization may also be called without any configuration to adopt all default configurations, for example:
 ```
 var adapter = require('../../lib/adapters/sqlite');
 adapter.initialize(null, someScriptToExecute);
@@ -308,8 +309,32 @@ adapter.initialize(null, someScriptToExecute);
 
 #### Notes
 
-None of the functions implemented in the adapter provide rollback, so it is important that they are used correctly. At the moment the database calls are NOT sanitized, all effort will be made to make this happen.
+None of the functions implemented in the adapter provide rollback, so it is important that they are used correctly. At the moment the database calls are **not sanitized**, all effort will be made to make this happen.
 
+### Mysql
+
+This adapter requires the [mysql][mynpm] package, which can be installed with *npm*:
+```
+npm install mysql
+```
+
+#### Caveat
+
+Mysql adapter is designed to support Mysql multi-master replication configurations, so that the adapter checks, that the given task is succesfully saved on each separate database server in the cluster. As of writing, this feature is **not ready** and should not be relied on.
+
+#### Configuration
+
+In a simple single server configuration, Mysql adapter is activated when configuration option `db` is set to `mysql`. Object `dbopt`, with which the connection is configured, is passed to *mysql* library and its options are best documented on [library's Github page][mygit].
+
+#### Example
+
+    {
+      "db": "mysql",
+      "dbopt": {
+        "host":     "127.0.0.1",
+        "port":     "3306"
+      }
+    }
 
 ## Database adapter API
 
