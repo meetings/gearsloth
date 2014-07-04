@@ -49,7 +49,7 @@ Different setups
 
 ### npm
 
-    npm install gearsloth -g
+    # npm install gearsloth -g
 
 ### deb
 
@@ -59,7 +59,7 @@ There is a rudimentry support for putting Gearsloth in a Debian package. Instruc
 
 2. Create the package.
 
-        $ dpkg-buildpackage -b -uc
+    $ dpkg-buildpackage -b -uc
 
 3. Distribute and install the package by means suitable to your infrastructure.
 
@@ -145,11 +145,11 @@ An example custom controller that simply forwards the given task can be found at
 https://github.com/meetings/gearsloth-passthrough-controller. You can install it simply
 with npm:
 
-    npm install gearsloth-passthrough-controller -g
+    # npm install gearsloth-passthrough-controller -g
 
 To launch a globally installed gearsloth and passthrough controller connecting to a local gearman server, type:
 
-    gearslothd --controllername=gearsloth-passthrough-controller localhost
+    $ gearslothd --controllername=gearsloth-passthrough-controller localhost
 
 ### Ejector
 
@@ -165,7 +165,7 @@ As with the other components the ejectors use multiple instances of workers from
 
 By default gearslothd expects to find a JSON configuration file from [specified locations](#configuration-file-location). Following command line options are accepted **and they override any configuration file options**:
 
-    ./bin/gearslothd [options] hostname[:port]
+    $ ./bin/gearslothd [options] hostname[:port]
 
 * `-i, --injector`: Run the daemon as injector.
 * `-r, --runner`: Run the daemon as runner.
@@ -228,7 +228,7 @@ See *lib/config/defaults.js* for details.
 
 #### Command line
 
-    ./bin/gearslothd -ire --dbopt='{"db_name": "in-memory"}'
+    $ ./bin/gearslothd -ire --dbopt='{"db_name": "in-memory"}'
 
 Runs a daemon in *injector*, *runner* and *ejector* modes using an in-memory SQLite database and connecting to a single Gearman job server running on `127.0.0.1:4730`.
 
@@ -291,7 +291,7 @@ Well, ok, there is a third adapter named `composite`, but it is likely to be dep
 
 This adapter requires the [sqlite3][sqnpm] package, which can be installed with *npm*:
 ```
-npm install sqlite3
+$ npm install sqlite3
 ```
 
 #### Configuration
@@ -318,7 +318,7 @@ None of the functions implemented in the adapter provide rollback, so it is impo
 
 This adapter requires the [mysql][mynpm] package, which can be installed with *npm*:
 ```
-npm install mysql
+$ npm install mysql
 ```
 
 #### Caveat
