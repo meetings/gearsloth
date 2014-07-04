@@ -250,6 +250,8 @@ After a job is done, a controller should send the task object to the ejector in 
 
 Currently, there are two database backend adapters.
 
+Well, ok, there is a third adapter named `composite`, but it is likely to be deprecated soon, so it is not documented at all.
+
 ### SQLite
 
 This adapter requires the [sqlite3][sqnpm] package, which can be installed with *npm*:
