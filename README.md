@@ -67,9 +67,9 @@ If there is an error parsing the task, or if the injector fails to insert the ta
 
 ### Runner
 
-The runner is responsible for forwarding expiring tasks to controller. Runner registers itself as listener to a database adapter that hands out expiring tasks to the runner. Runner updates expiring tasks with a new due time for retry or removes the task from the database if the task has been retried sufficient number of times without being completed.
+The runner is responsible for forwarding expiring tasks to controller. Runner registers itself as listener to a database adapter that hands out expiring tasks to the runner. Runner updates expiring tasks with a new due time for retry (from the `runner_retry_timeout`) or disables the task from the database if submission of the task has either failed or the task has not for other reasons been removed from the database. A task is disabled if the `.runner_retry_count` reaches zero from a positive integer.
 
-Client can adjust the interval between retries with the task parameter `.runner_retry_timeout` and the total number of retries before task removal with `.runner_retry_count`. `.runner_retry_timeout` is a number given in seconds. Default timeout value of 1000 seconds is used if `.runner_retry_timeout` is undefined. If `.runner_retry_count` is undefined, the task is retried indefinitely.
+Client can adjust the interval between retries with the task parameter `.runner_retry_timeout` and the total number of retries before task disabling with `.runner_retry_count`. `.runner_retry_timeout` is a number given in seconds. Default timeout value of 1000 seconds is used if `.runner_retry_timeout` is undefined. If `.runner_retry_count` is undefined, the task is retried indefinitely.
 
 ### Controller
 
