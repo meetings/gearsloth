@@ -18,7 +18,7 @@ suite('Docker load test', function() {
   suite('Docker test: load test with two components', function(){
     var gearman_ip;
     var gearslothd_config = {
-      db:'mysql-multimaster'
+      db:'mysql'
     };
 
     var worker1;
@@ -296,7 +296,7 @@ suite('Docker load test', function() {
   suite('Docker test: load test with two components', function(){
     var gearman_ip;
     var gearslothd_config = {
-      db:'mysql-multimaster'
+      db:'mysql'
     };
 
     var worker1;
@@ -532,7 +532,7 @@ suite('Docker load test', function() {
   suite('Docker test: load test with four components', function(){
     var gearman_ip;
     var gearslothd_config = {
-      db:'mysql-multimaster'
+      db:'mysql'
     };
 
     var worker1;

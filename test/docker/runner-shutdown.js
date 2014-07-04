@@ -14,7 +14,7 @@ chai.should();
 suite('Docker test: killing runners', function(){
   var gearman_ip;
   var gearslothd_config = {
-    db:'mysql-multimaster'
+    db:'mysql'
   };
 
   var runner_container;

@@ -28,7 +28,7 @@ suite('(docker) two gearmand servers', function() {
   var gearmand1_host;
   var gearslothd_config = {
     verbose: 0,
-    db:'mysql-multimaster',
+    db:'mysql',
     servers: []
   };
   var gearmand1_container;
@@ -124,7 +124,7 @@ suite('(docker) two gearmand servers', function() {
     });
   });
   test('both go down, one comes up, task is still executed', function(done) {
-    this.timeout(10000);
+    this.timeout(20000);
     var sent_payload = new Date().toISOString();
     var work_handler = function() {};
 

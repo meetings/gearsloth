@@ -15,7 +15,7 @@ suite('docker-example', function() {
   var gearmand_ip;
   var gearslothd_config = {
     verbose: 0,
-    db:'mysql-multimaster'
+    db:'mysql'
   };
   setup(function(done) {
     this.timeout(10000);

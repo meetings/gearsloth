@@ -14,7 +14,7 @@ chai.should();
 suite('Docker test: killing ejectors', function(){
   var gearman_ip;
   var gearslothd_config = {
-    db:'mysql-multimaster'
+    db:'mysql'
   };
 
   var ejector_container;

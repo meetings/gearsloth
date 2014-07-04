@@ -27,7 +27,7 @@ suite('(docker) on apocalypse', function() {
   var gearslothd_config;
   var gearslothd_config = {
     verbose: 0,
-    db:'mysql-multimaster',
+    db:'mysql',
   };
   var gearmand1_container;
   var gearmand0_container;
