@@ -3,6 +3,7 @@
 
 [gear]:  http://gearman.org
 [deb]:   https://wiki.debian.org/Packaging
+[mygit]: https://github.com/felixge/node-mysql#connection-options
 [mynpm]: https://www.npmjs.org/package/mysql
 [sqnpm]: https://www.npmjs.org/package/sqlite3
 [dock]:  http://www.docker.com
@@ -283,7 +284,23 @@ This adapter requires the [mysql][mynpm] package, which can be installed with *n
 npm install mysql
 ```
 
+#### Caveat
 
+Mysql adapter is designed to support Mysql multi-master replication configurations, so that the adapter checks, that the given task is succesfully saved on each separate database server in the cluster. As of writing, this feature is **not ready** and should not be relied on.
+
+#### Configuration
+
+In a simple single server configuration, Mysql adapter is activated when configuration option `db` is set to `mysql`. Object `dbopt`, with which the connection is configured, is passed to *mysql* library and its options are best documented on [library's Github page][mygit].
+
+#### Example
+
+    {
+      "db": "mysql",
+      "dbopt": {
+        "host":     "127.0.0.1",
+        "port":     "3306"
+      }
+    }
 
 ## Database adapter API
 
