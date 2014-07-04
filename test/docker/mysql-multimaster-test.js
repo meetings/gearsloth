@@ -1,5 +1,5 @@
 var containers = require('./containers'),
-    mysql_adapter = require('../../lib/adapters/mysql-multimaster'),
+    mysql_adapter = require('../../lib/adapters/mysql'),
     mysql = require('mysql'),
     chai = require('chai'),
     expect = chai.expect,
