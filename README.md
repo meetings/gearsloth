@@ -249,6 +249,8 @@ Currently there are 2 complete adapters: 'sqlite.js', which uses the sqlite3.js 
 
 TODO: Documentation for mysql-multimaster!
 
+TODO: Documentation for composite adapter!
+
 ### Sqlite3
 
 This adapter requires the sqlite3.js npm package which can be installed by issuing the command:
