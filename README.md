@@ -29,12 +29,20 @@ Gearsloth is a system that enables delayed tasks and persistent storage schemes 
 
 Gearsloth is setup between Gearman job server and database backend. Any Gearsloth component may have multiple instances running and may be connected to multiple job servers and databases. For production environments, where robustness and resiliency is required, having at least two of each component is highly recommended.
 
+### Configuration examples
+
+Different setups
+
+1.  Dev setup, all on the same server
+2.  Parallel sqlite setups (not possible)
+3.  Separate components connected to a single mysql
+4.  Ubersetup, everything multiplied, including dbs
 
 ## Installation
 
 ### npm
 
-    npm install gearsloth
+    npm install gearsloth -g
 
 ### deb
 
@@ -79,20 +87,23 @@ Runners communicate to the Gearman job server via the client API. As with inject
 
 ### Controller
 
-TODO: Documentation for developing controllers!
-
-Controllers encapsulate a specific task retry strategy which governs when and
-how a failing task is retried/failed. Controllers publish a gearman function
+Controller receives expiring tasks from runner and forwards them to the destination
+worker. Controller monitors the task's execution and ejects the task from the system
+through the ejector component. Controller is free to choose how to retry an unresponsive
+or failing task. Controller publishes a gearman function
 which is called by the runner on task expiry time. Gearslothd daemon
 implements a default controller but users can implement custom controllers with
 custom retry strategies and choose the controller they want to use on runtime
-by specifying the controller gearman function name and a controller-specific
-configuration object when submitting a delayed task.
+by specifying the controller gearman function name. Runner sends the task
+to a gearman function specified by task field `.controller`. If the field
+doesn't exist, a preconfigured controller is used. By default `retryController`
+gearman function is used.
 
 Custom controllers must expose a gearman function that accepts a task object
 that contains the name of the function that controller is expected to call
-and a payload. The task object also contains an id that needs to be passed
-on to the ejector component when the task has completed.
+and a payload. The task object also contains an id that needs to be passed on
+unchanged to the ejector component when the task has completed. Controller can also use
+any user-specified extra fields on the task object.
 
 In a nutshell, a controller does the following:
 
@@ -108,9 +119,30 @@ In a nutshell, a controller does the following:
 
 #### Default controller
 
-TODO: description
+Gearsloth ships with a default 'retry controller' that retries the task
+if it receives a `WORK_FAIL` message from the gearman server. The exact
+number of times the task is retried can be specified with task field `.retry_count`.
+The controller ejects the task if `WORK_COMPLETE` is received. If
+`WORK_COMPLETE` never arrives even after specified number of retries, the
+task is simply ignored and left to the runner which retries the task
+after some time.
 
-As with injectors and runners the controllers use Gearman worker API to recieve tasks for execution. When submitting a task for execution to the final worker the controllers act as clients and use the Geaman client API. Finally, when a task is done and must be removed from the database the controllers act again as clients and submit a request for work to the ejectors as `delayedJobDone`. All communication to and from the Gearman job servers is accomplished by instantiating multiple clients and workers, one to each server, from the gearman-coffee package.
+#### Custom controllers
+
+Custom controllers can be launched by providing a configuration option `controller_name`
+that defines the controller module name or path. The option can be given in a
+configuration file or as a command line parameter.
+
+To implement a custom controller you need to adhere to the specification described above.
+An example custom controller that simply forwards the given task can be found at
+https://github.com/meetings/gearsloth-passthrough-controller. You can install it simply
+with npm:
+
+    npm install gearsloth-passthrough-controller -g
+
+To launch a globally installed gearsloth and passthrough controller connecting to a local gearman server, type:
+
+    gearslothd --controllername=gearsloth-passthrough-controller localhost
 
 ### Ejector
 
@@ -126,7 +158,7 @@ As with the other components the ejectors use multiple instances of workers from
 
 By default gearslothd expects to find a JSON configuration file from [specified locations](#configuration-file-location). Following command line options are accepted **and they override any configuration file options**:
 
-    ./bin/gearslothd [options] [hostname[:port]]
+    ./bin/gearslothd [options] hostname[:port]
 
 * `-i, --injector`: Run the daemon as injector.
 * `-r, --runner`: Run the daemon as runner.
