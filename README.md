@@ -1,24 +1,52 @@
 
-# gearsloth
+# Gearsloth
 
-Gearsloth is a system that enables delayed tasks and persistent storage schemes
-with Gearman job server. The gearsloth stack consists of four components: injector,
-runner, controller and ejector. Gearsloth
-supports a database backend architecture which abstracts persisting delayed
-tasks to a database. Gearsloth is written in Node.js.
+[gear]: http://gearman.org
+[deb]:  https://wiki.debian.org/Packaging
+[dock]: http://www.docker.com
+[vagr]: http://www.vagrantup.com
 
-![Simple gearsloth configuration](Doc/gearsloth-simple.png "Simple gearsloth configuration")
 
-This is the simplest gearsloth configuration. Gearsloth's components are marked with green.
+## Contents
 
-![Advanced gearsloth configuration](Doc/gearsloth-advanced.png "Advanced gearsloth configuration")
+ * [Overview](#overview)
+ * [Installation](#installation)
+ * [Components](#components)
+ * [Configuration](#configuration)
+ * [Task format specification](#task-format-specification)
+ * [Database adapters](#database-adapters)
+ * [Database adapter API](#database-adapter-api)
+ * [Running tests](#running-tests)
+ * [Running tests in virtualized environment](#running-tests-in-virtualized-environment)
+ * [License](#license)
 
-As seen above, one may add more Gearman job servers and databases to the configuration in order to make
-the system more *robust*. Multiple instances of injector/runner/controller/ejector may also be run.
+
+## Overview
+
+Gearsloth is a system that enables delayed tasks and persistent storage schemes with [Gearman][gear] job server. The Gearsloth stack consists of four components: *injector*, *runner*, *controller* and *ejector*. Gearsloth supports a database backend architecture which abstracts persisting delayed tasks to a database. Gearsloth is written in Node.js.
+
+![Example of Gearsloth setup](examples/architecture-graph.png "Example of Gearsloth setup")
+
+Gearsloth is setup between Gearman job server and database backend. Any Gearsloth component may have multiple instances running and may be connected to multiple job servers and databases. For production environments, where robustness and resiliency is required, having at least two of each component is highly recommended.
+
 
 ## Installation
 
+### npm
+
     npm install gearsloth
+
+### deb
+
+There is a rudimentry support for putting Gearsloth in a Debian package. Instructions to build a Debian package are beyond the scope of this documentation and taking a look at [Debian wiki][deb] is recommended. Following is only an approximation of the process:
+
+1. Install all the software and required dependencies for the build host.
+
+2. Create the package.
+
+        $ dpkg-buildpackage -b -uc
+
+3. Distribute and install the package by means suitable to your infrastructure.
 
 ## Components
 
@@ -29,7 +57,7 @@ All components emit the following events:
 
 ### Injector
 
-The injector registers the function `submitJobDelayed` to Gearman job server(s). The task to be delayed should be sent to the injector in the format specified in [task format specification](#task-format-specification).
+The injector registers the function `submitJobDelayed` to Gearman job servers. The task to be delayed should be sent to the injector in the format specified in [task format specification](#task-format-specification).
 
 If the task is succesfully inserted in to the persistent storage, injector will send gearman `WORK_COMPLETE` to the caller. This means that the task *will* be executed.
 
@@ -77,44 +105,31 @@ In a nutshell, a controller does the following:
 
 TODO: Write me!
 
+
 ## Configuration
 
-Gearslothd daemon by default reads a JSON configuration file gearsloth.json from
-the current directory. The daemon also accepts the following command line
-configuration options:
+By default gearslothd expects to find a JSON configuration file from [specified locations](#configuration-file-location). Following command line options are accepted **and they override any configuration file options**:
 
-`./bin/gearslothd [options] [hostname[:port]]`
+    ./bin/gearslothd [options] [hostname[:port]]
 
 * `-i, --injector`: Run the daemon as injector.
-* `-v, --verbose`: Configure logging
 * `-r, --runner`: Run the daemon as runner.
 * `-c, --controller`: Run the daemon as default controller.
 * `-e, --ejector`: Run the daemon as ejector.
-* `--controllername`: Specify the controller module by name. Can also be specified in the config file (config.json). If the input contains forward slashes, the module is looked up in relation to your current dir. The logic for handling --controllername can be found in /lib/config/index.js.
+* `--controllername`: Specify the controller module by name. This can also be specified in the configuration file. If the input contains forward slashes, the module is looked up in relation to your current directory. The logic for handling this option can be found in *lib/config/index.js*.
 * `--db`: Specify the database module by name. Can also be specified in the config file. If the input contains forward slashes, the module is looked up in relation to your current dir.
 * `--verbose`: Specify logging level; You can use the --verbose or -v flag multiple times for the following effects:
-  * No flag (default): notice -> std.out | errors -> std.err
-  * One flag (-v): notice, info -> std.out | errors -> std.err
-  * Two flags (-vv): notice, info, debug -> std.out | errors -> std.err  
-> You can also configure this parameter with and integer (0 for one flag, 1 for two flags) in gearsloth.json.
-The logic for handling the --verbose flag can be found in lib/log.js.
+  * None (default): notice -> std.out | errors -> std.err
+  * Once (`-v`): notice, info -> std.out | errors -> std.err
+  * Twice (`-vv`): notice, info, debug -> std.out | errors -> std.err
+| You can also configure this parameter with and integer (0 for one flag, 1 for two flags) in configuration file. The logic for handling the flag can be found in *lib/log.js*.
+* `-f, --file=FILENAME`: Define the path to configuration file. See [this](#configuration-file-location) for details.
+* `--conf=JSON`: Provide a JSON formatted configuration object on the command line. Please, do take care of escaping the JSON data properly.
+* `--db=NAME`: Database adapter to be used by the daemon. Default is to use `sqlite` adapter.
+* `--dbopt=JSON`: Provide a JSON formatted freeform configuration object for the database adapter.
+* `--servers=JSON`: Provide a JSON formatted Gearman job server list.
 
-* `-f, --file=FILENAME`: Define the JSON configuration file. By default
-  `gearsloth.json` in the currenct directory will be used. Options specified
-  in this file are overwritten by any options defined by command line options.
-* `    --conf=JSON`: Provide a JSON formatted configuration object on the
-  command line. Any options defined by this object are overwritten by other
-  command line options.
-* `    --db=NAME`: Database adapter to be used by the daemon. By default `sqlite`
-  is used.
-* `    --dbopt=JSON`: Provide a JSON formatted freefirn configuration object for
-  the database adapter.
-* `    --servers=JSON`: Provide a JSON formatted gearman server list array.
-  The server list will be overwritten by a hostname given as a positional
-  command line parameter.
-
-The daemon runs in all modes if no modes are specified. Any mode set in the
-command line arguments overrides all mode settings in the configuration file.
+By default the daemon runs in all modes.
 
 ### Configuration object formats
 
@@ -138,14 +153,14 @@ are interpreted:
 
 ### Configuration file location
 
-By default, Gearsloth will look for the configuration file in your current directory. If the file is not found, Gearsloth will then look for it in the following locations (in order):
+Gearsloth daemon will look for a configuration file named `gearsloth.json` in the following locations in the following order:
 
-* 1) your current directory
-* 2) .home/.gearsloth/gearsloth.json
-* 3) ./etc/gearsloth/gearsloth.json
-* 4) .”gearsloth installation dir”/gearsloth.json
+1. Current working directory
+2. `$HOME/.gearsloth`
+3. `/etc/gearsloth`
+4. Gearsloth project directory
 
-The logic for finding the configure file can be found in lib/config/defaults.js
+See *lib/config/defaults.js* for details.
 
 ### Example configuration
 
@@ -153,14 +168,19 @@ The logic for finding the configure file can be found in lib/config/defaults.js
 
     {
       "db": "sqlite",
-      "servers": [{ "host": "meetin.gs" }]
+      "servers": [{ "host": "127.0.0.1" }]
     }
 
-    > ./bin/gearsloth -ire --dbopt='{"db_name": "in-memory"}'
+#### Command line
 
-Runs a daemon in injector, runner and ejector modes using an in-memory
-sqlite database and connecting to a single gearman server running on
-`meetin.gs:4730`.
+    ./bin/gearslothd -ire --dbopt='{"db_name": "in-memory"}'
+
+Runs a daemon in *injector*, *runner* and *ejector* modes using an in-memory SQLite database and connecting to a single Gearman job server running on `127.0.0.1:4730`.
+
+### More example configurations
+
+See `examples` directory for additional example configurations.
+
 
 ## Task format specification
 
@@ -206,6 +226,7 @@ In addition the `task` JSON object may contain any number of fields (for example
 
 After a job is done, a controller should send the task object to the ejector in order to remove it from the task database.
 
+
 ## Database adapters
 
 Currently there are 2 complete adapters: 'sqlite.js', which uses the sqlite3.js npm package, and 'mysql-multimaster.js'.
@@ -239,6 +260,7 @@ adapter.initialize(null, someScriptToExecute);
 
 None of the functions implemented in the adapter provide rollback, so it is important that they are used correctly. At the moment the database calls are NOT sanitized, all effort will be made to make this happen.
 
+
 ## Database adapter API
 
 The database adapters implement the interface that should be used from within *injectors*, *runners* and *ejectors*. Each adapter implements the following functions in accordance with their specified database type:
@@ -262,18 +284,19 @@ The following guidelines should be followed for adapters:
 
     $ npm test
 
+
 ## Running tests in virtualized environment
 
-Gearsloth has tests that simulate a production-like environment
-implemented with docker and vagrant. To run these tests issue the following commands:
+Gearsloth has tests that simulate a production-like environment implemented with [Docker][dock] and [Vagrant][vagr]. To run these tests issue the following commands:
 
     $ vagrant up
+      (will take a while...)
     $ vagrant ssh
 
     sloth:~$ cd gearsloth
     sloth:~/gearsloth$ make docker-test
-    
-## Links
- 
- * [Gearman project](http://gearman.org)
- * [Original project description](Doc/legacy-description.md)
+
+
+## License
+
+See the file `LICENSE` for details.
