@@ -3,6 +3,7 @@ MOCHA_PARAMS ?= --recursive --ui tdd --reporter $(REPORTER)
 MOCHA := ./node_modules/.bin/mocha
 MOCHA_ALT := ./node_modules/.bin/_mocha
 ISTANBUL := ./node_modules/.bin/istanbul
+COVERAGE_TESTS ?= test
 
 # run local gearman server and gearsloth worker
 define start-local
@@ -90,7 +91,8 @@ endif
 
 .PHONY: coverage
 coverage: node_modules $(DOCKER_MARKERS)
-	-@$(ISTANBUL) cover --report cobertura $(MOCHA_ALT) -- $(MOCHA_PARAMS) test
+	-@$(ISTANBUL) cover --report cobertura $(MOCHA_ALT) -- $(MOCHA_PARAMS) \
+		$(COVERAGE_TESTS)
 
 .PHONY: html-coverage
 html-coverage: coverage
