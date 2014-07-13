@@ -15,11 +15,11 @@ suite('(e2e) ejector', function() {
   this.timeout(5000);
 
   var port = 54730;
-  var gearmand
-    , adapter = {}
-    , client
-    , e
-    , conf = {
+  var gearmand;
+  var adapter = { getDomains : function( cb ) { cb( null, [ 'test', 'test2' ] ) } };
+  var client;
+  var e;
+  var conf = {
       dbconn: adapter,
       servers: [{
         host: 'localhost',
@@ -41,12 +41,12 @@ suite('(e2e) ejector', function() {
         });
         client.on('connect', function() {
           ejector_in_use = new Ejector(conf)
-          .on('connect', function() {
+          .on('connect', function() {
             callback();
           });
         });
       }
-      ], function(){
+      ], function( error, results ){
         done();
       });
   });
@@ -79,7 +79,18 @@ suite('(e2e) ejector', function() {
     adapter.completeTask = sinon.stub().callsArgWith(1, null, 1);
 
     var ejectorArgument = { id: "666" };
-    client.submitJob('delayedJobDone', JSON.stringify(ejectorArgument))
+    client.submitJob('gearsloth_eject-test', JSON.stringify(ejectorArgument))
+      .on('complete', function() {
+        adapter.completeTask.should.have.been.calledWith(ejectorArgument);
+        done();
+      });
+  });
+
+  test('should delete task from database and send complete message to client on all domains', function(done) {
+    adapter.completeTask = sinon.stub().callsArgWith(1, null, 1);
+
+    var ejectorArgument = { id: "666" };
+    client.submitJob('gearsloth_eject-test2', JSON.stringify(ejectorArgument))
       .on('complete', function() {
         adapter.completeTask.should.have.been.calledWith(ejectorArgument);
         done();
@@ -90,7 +101,7 @@ suite('(e2e) ejector', function() {
     adapter.completeTask = sinon.stub().callsArgWith(1, "error");
 
     var ejectorArgument = { id: "666" };
-    client.submitJob('delayedJobDone', JSON.stringify(ejectorArgument))
+    client.submitJob('gearsloth_eject-test', JSON.stringify(ejectorArgument))
       .on('fail', function() {
         adapter.completeTask.should.have.been.calledWith(ejectorArgument);
         done();

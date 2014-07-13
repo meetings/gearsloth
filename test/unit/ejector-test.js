@@ -7,6 +7,7 @@ require('../../lib/log').setOutput();
 var EventEmitter = require('events').EventEmitter;
 
 var adapter = {
+  getDomains: function( callback ) { callback( [ 'test', 'test2' ] ) },
   completeTask: function() {}
 };
 var worker = {
@@ -39,11 +40,6 @@ suite('Ejector', function() {
     sandbox.restore();
   });
 
-  suite('constructor', function() {
-    test('can create Ejector', function() {
-      var e = new Ejector(function(a) {return null;}, null);
-    });
-  });
   suite('initialize()', function() {
     test('exists', function() {
       expect(require("../../lib/daemon/ejector"))

@@ -33,7 +33,7 @@ suite('(e2e) runner', function() {
         };
     var port;
     var runner_in_use;
-    
+
     var new_task1 = {
         controller: 'test',
         func_name: 'log',
@@ -44,14 +44,14 @@ suite('(e2e) runner', function() {
         id : 2,
         controller: 'test',
         func_name: 'log',
-        runner_retry_count: 2
+        runner_retry_count: 1
     }
 
     var expiring_task1 = {
         id : 2,
         controller: 'test',
         func_name: 'log',
-        runner_retry_count: 1
+        runner_retry_count: 0
     }
 
     var sample_task1 = {
@@ -98,57 +98,51 @@ suite('(e2e) runner', function() {
         });
     });
 
-    test('should fetch a task from db and pass it on', function(done) {
+    test('should run task with no retry count set', function(done) {
       worker = new gearman.Worker('test', function(payload, worker) {
         var json = JSON.parse(payload.toString());
         expect(json).to.have.property('id', sample_task1.id);
         expect(json).to.have.property('func_name', sample_task1.func_name);
+        adapter.updateListenedTask.should.not.have.been.called;
+        adapter.disableListenedTask.should.not.have.been.called;
         done();
       }, { port:port
       });
-      adapter.listenTask = sinon.stub().yields(null, sample_task1);
-      adapter.updateTask = sinon.stub().yields(null, 1);
+      adapter.listenTask = sinon.stub().yields(null, sample_task1, 'test', {} );
+      adapter.updateListenedTask = sinon.spy( function( task, db_state, callback ) { callback( null, task ); } );
+      adapter.disableListenedTask = sinon.spy( function( task, db_state, callback ) { callback( null, task ); } );
       runner_in_use = runner(conf);
     });
 
-    test('should disable task when runner_retry_count reaches 0', function(done) {
+    test('should run and disable task when runner_retry_count is 0', function(done) {
       worker = new gearman.Worker('test', function(payload, worker) {
         var json = JSON.parse(payload.toString());
-        adapter.disableTask.should.have.been.calledOnce;
-        var disabled_task = adapter.disableTask.firstCall.args[0];
+        expect(json).to.have.property('id', expiring_task1.id);
+        adapter.updateListenedTask.should.not.have.been.called;
+        adapter.disableListenedTask.should.have.been.calledOnce;
+        var disabled_task = adapter.disableListenedTask.firstCall.args[0];
         disabled_task.id.should.equal(expiring_task1.id);
         done();
       }, { port:port
       });
-      adapter.listenTask = sinon.stub().yields(null, expiring_task1);
-      adapter.updateTask = sinon.stub().yields(null, 1);
-      adapter.disableTask = sinon.stub().yields(null, 1);
+      adapter.listenTask = sinon.stub().yields(null, expiring_task1, 'test', {} );
+      adapter.updateListenedTask = sinon.spy( function( task, db_state, callback ) { callback( null, task ); } );
+      adapter.disableListenedTask = sinon.spy( function( task, db_state, callback ) { callback( null, task ); } );
       runner_in_use = runner(conf);
     });
 
-    test('should not disable task when runner_retry_count has time to live', function(done) {
+    test('should run and not disable task when runner_retry_count has time to live', function(done) {
       worker = new gearman.Worker('test', function(payload, worker) {
         var json = JSON.parse(payload.toString());
-        adapter.disableTask.should.not.have.been.calledWith(json);
+        expect(json).to.have.property('id', non_expiring_task1.id);
+        adapter.updateListenedTask.should.have.been.calledOnce;
+        adapter.disableListenedTask.should.not.have.been.called;
         done();
       }, { port:port
       });
-
-      adapter.listenTask = sinon.stub().yields(null, non_expiring_task1);
-      adapter.updateTask = sinon.stub().yields(null, 1);
-      adapter.disableTask = sinon.stub().yields(null, 1);
-      runner_in_use = runner(conf);
-    });
-
-    test('should call updateTask when a task is recieved', function(done) {
-      worker = new gearman.Worker('test', function(payload, worker) {
-        var json = JSON.parse(payload.toString());
-        adapter.updateTask.should.have.been.calledWith(json);
-        done();
-      }, { port:port
-      });
-      adapter.listenTask = sinon.stub().yields(null, sample_task1);
-      adapter.updateTask = sinon.stub().yields(null, 1);
+      adapter.listenTask = sinon.stub().yields(null, non_expiring_task1, 'test', {} );
+      adapter.updateListenedTask = sinon.spy( function( task, db_state, callback ) { callback( null, task ); } );
+      adapter.disableListenedTask = sinon.spy( function( task, db_state, callback ) { callback( null, task ); } );
       runner_in_use = runner(conf);
     });
   });

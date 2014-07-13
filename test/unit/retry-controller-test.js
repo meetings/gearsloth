@@ -200,11 +200,12 @@ suite('retry controller', function() {
       retry._client.failJob();
       retry._client.submitJob.should.have.been.calledThrice;
     });
-    test('should submit delayedJobDone background job with task id ' +
+    test('should submit gearsloth_eject-test background job with task id ' +
         'after completed call',
         function() {
       var task = {
         id: { db_id: 'asdf', task_id: 1 },
+        eject_function: 'gearsloth_eject-test',
         func_name: 'zxcv',
         payload: 'qwer'
       };
@@ -212,15 +213,16 @@ suite('retry controller', function() {
       retry._client.completeJob();
       retry._client.submitJobBg.should.have.been.calledOnce;
       retry._client.submitJobBg.should.have.been
-          .calledWith('delayedJobDone');
+          .calledWith('gearsloth_eject-test');
       assert.deepEqual(JSON.parse(retry._client.submitJobBg.args[0][1]).id,
           task.id);
     });
-    test('should not submit delayedJobDone background job with task id ' +
+    test('should not submit gearsloth_eject-test background job with task id ' +
         'after failed call',
         function() {
       var task = {
         id: { db_id: 'asdf', task_id: 1 },
+        eject_function: 'gearsloth_eject-test',
         func_name: 'zxcv',
         payload: 'qwer'
       };
@@ -231,6 +233,7 @@ suite('retry controller', function() {
     test('should call ejector only once', function() {
       var task = {
         id: 1,
+        eject_function: 'gearsloth_eject-test',
         func_name: 'qwer',
         retry_count: 3,
       };
@@ -242,13 +245,14 @@ suite('retry controller', function() {
           .calledWith(task.func_name);
       retry._client.submitJobBg.should.have.been.calledOnce;
       retry._client.submitJobBg.should.have.been
-          .calledWith('delayedJobDone');
+          .calledWith('gearsloth_eject-test');
       assert.deepEqual(
           JSON.parse(retry._client.submitJobBg.args[0][1]).id, task.id);
     });
     test('should handle two tasks independently', function() {
       var task = {
         id: 1,
+        eject_function: 'gearsloth_eject-test',
         func_name: 'qwer',
         retry_count: 3,
       };
@@ -262,7 +266,7 @@ suite('retry controller', function() {
           .calledWith(task.func_name);
       retry._client.submitJobBg.should.have.been.calledTwice;
       retry._client.submitJobBg.should.always.have.been
-          .calledWith('delayedJobDone');
+          .calledWith('gearsloth_eject-test');
       assert.deepEqual(
           JSON.parse(retry._client.submitJobBg.args[0][1]).id, task.id);
       assert.deepEqual(
@@ -282,7 +286,8 @@ function createRetryAndSendTask(conf, task) {
 }
 
 var default_conf = {
-  servers: [{ host: 'localhost', port: 4730 }]
+  servers: [{ host: 'localhost', port: 4730 }],
+  adapter: { getDomains: function( callback ) { callback( [ 'test' ] ) } },
 };
 
 function MultiserverStub(servers, func_name, handler) {
