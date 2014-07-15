@@ -26,12 +26,11 @@ help:
 	@echo '  clean-docker        - Remove docker marker files (docker directory)'
 	@echo ''
 	@echo 'Test targets:'
-	@echo '  test                - Run all tests that do not require docker'
-	@echo '                        images (unit + e2e + blackbox)'
+	@echo '  test                - Run unit and integration tests'
+	@echo '  test-full           - Run unit, integration and system tests'
 	@echo '  unit-test           - Run unit tests'
-	@echo '  e2e-test            - Run end-to-end tests'
-	@echo '  blackbox-test       - Run blackbox tests'
-	@echo '  docker-test         - Run tests requiring docker containers'
+	@echo '  integration-test    - Run integration tests'
+	@echo '  system-test         - Run system tests'
 	@echo '  coverage            - Generate cobertura test coverage reports'
 	@echo '                        (runs all tests)'
 	@echo '  html-coverage       - Generate cobertura html reports'
@@ -51,19 +50,23 @@ help:
 
 .PHONY: test
 test: node_modules
-	$(MOCHA) $(MOCHA_PARAMS) test/e2e test/blackbox test/unit
+	$(MOCHA) $(MOCHA_PARAMS) test/*/unit* test/*/integration*
+
+.PHONY: test-full
+test-full: node_modules
+	$(MOCHA) $(MOCHA_PARAMS) test
 
 .PHONY: unit-test
 unit-test: node_modules
-	$(MOCHA) $(MOCHA_PARAMS) test/unit
+	$(MOCHA) $(MOCHA_PARAMS) test/*/unit*
 
-.PHONY: e2e-test
-e2e-test: node_modules
-	$(MOCHA) $(MOCHA_PARAMS) test/e2e
+.PHONY: integration-test
+integration-test: node_modules
+	$(MOCHA) $(MOCHA_PARAMS) test/*/integration*
 
-.PHONY: blackbox-test
-blackbox-test: node_modules
-	$(MOCHA) $(MOCHA_PARAMS) test/blackbox
+.PHONY: system-test
+system-test: node_modules
+	$(MOCHA) $(MOCHA_PARAMS) test/system
 
 .PHONY: log-delayed
 log-delayed: node_modules

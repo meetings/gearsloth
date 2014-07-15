@@ -5,9 +5,8 @@ var gearman = require('gearman-coffee')
   , sinon = require('sinon')
   , sinonChai = require('sinon-chai')
   , expect = chai.expect
-  , fs = require('fs')
   , async = require('async')
-  , spawn = require('../lib/spawn');
+  , spawn = require('../../lib/test-helpers/spawn');
 
 chai.should();
 chai.use(sinonChai);

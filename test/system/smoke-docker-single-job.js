@@ -6,7 +6,7 @@ var async = require('async')
   , docker = new Docker({socketPath: '/var/run/docker.sock'})
   , net = require('net')
   , fs = require('fs')
-  , containers = require('./containers')
+  , containers = require('../../lib/test-helpers/containers')
   , merge = require('../../lib/merge');
 
 chai.should();

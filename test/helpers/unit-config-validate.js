@@ -1,7 +1,7 @@
 var assert = require('assert');
 var util = require('util');
 var validate = require('../../lib/config/validate');
-var shouldThrow = require('./should-throw');
+var shouldThrow = require('../../lib/test-helpers/failing-module.js');
 
 suite('validate', function() {
   suite('bool()', function() {

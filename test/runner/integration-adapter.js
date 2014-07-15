@@ -8,7 +8,7 @@ var gearman = require('gearman-coffee')
   , sqlite = require('../../lib/adapters/sqlite')
   , fs = require('fs')
   , async = require('async')
-  , spawn = require('../lib/spawn');
+  , spawn = require('../../lib/test-helpers/spawn');
 
 chai.should();
 chai.use(sinonChai);

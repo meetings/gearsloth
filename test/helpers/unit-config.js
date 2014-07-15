@@ -5,8 +5,8 @@ var chai = require('chai');
 var expect = chai.expect;
 
 var nop = function() {};
-var ok_json = './test/unit/ok.json';
-var crap_json = './test/unit/crap.json';
+var ok_json = './test/helpers/test-data/config-good.json';
+var crap_json = './test/helpers/test-data/config-bad.json';
 
 function args(argv) {
   return ['node', 'gearslothd.js'].concat(argv);
