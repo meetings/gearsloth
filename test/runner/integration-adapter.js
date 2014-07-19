@@ -38,7 +38,6 @@ suite('(e2e) runner', function() {
 
     setup(function(done) {
       async.series([
-        adapter_helper.test_pre_setup,
         _.partial( spawn.gearmand, port ),
         function(callback) {
           running_runner = new Runner( _.extend( {}, config ) );
@@ -56,10 +55,6 @@ suite('(e2e) runner', function() {
         spawn.teardown,
         _.partial( adapter_helper.test_teardown, running_runner._dbconn ),
       ], done );
-    });
-
-    suiteTeardown(function(done){
-      adapter_helper.test_suite_teardown( running_runner._dbconn, done );
     });
 
     test('should fetch a due task from db and pass it on to default controller with id and eject_function', function(done) {

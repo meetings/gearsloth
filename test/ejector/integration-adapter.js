@@ -30,7 +30,6 @@ suite('(e2e) ejector', function() {
 
     setup(function(done) {
       async.series([
-        adapter_helper.test_pre_setup,
         _.partial( spawn.gearmand, port ),
         function(callback) {
           ejector = new Ejector( {
@@ -51,10 +50,6 @@ suite('(e2e) ejector', function() {
         spawn.teardown,
         _.partial( adapter_helper.test_teardown, ejector._dbconn )
         ], done );
-    });
-
-    suiteTeardown(function(done){
-      adapter_helper.test_suite_teardown( ejector._dbconn, done );
     });
 
     test('should remove inserted job', function( done ) {

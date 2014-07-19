@@ -30,7 +30,6 @@ suite('(e2e) injector', function() {
 
     setup(function(done) {
       async.series([
-        adapter_helper.test_pre_setup,
         _.partial( spawn.gearmand, port ),
         function(callback) {
           injector = new Injector( {
@@ -50,10 +49,6 @@ suite('(e2e) injector', function() {
         spawn.teardown,
         _.partial( adapter_helper.test_teardown, injector._dbconn )
         ], done );
-    });
-
-    suiteTeardown(function(done){
-      adapter_helper.test_suite_teardown( injector._dbconn, done );
     });
 
     test('should insert job with "at" as is', function( done ) {
