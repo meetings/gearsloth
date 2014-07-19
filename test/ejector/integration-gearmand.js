@@ -1,11 +1,12 @@
-var gearman = require('gearman-coffee')
-  , Ejector = require('../../lib/daemon/ejector').Ejector
-  , child_process = require('child_process')
-  , chai = require('chai')
-  , sinon = require('sinon')
-  , sinonChai = require('sinon-chai')
-  , async = require('async')
-  , spawn = require('../../lib/test-helpers/spawn');
+var gearman = require('gearman-coffee');
+var Ejector = require('../../lib/daemon/ejector').Ejector;
+var child_process = require('child_process');
+var chai = require('chai');
+var sinon = require('sinon');
+var sinonChai = require('sinon-chai');
+var async = require('async');
+var _ = require('underscore');
+var spawn = require('../../lib/test-helpers/spawn');
 
 chai.should();
 chai.use(sinonChai);
@@ -15,10 +16,10 @@ suite('(e2e) ejector', function() {
   this.timeout(5000);
 
   var port = 54730;
-  var gearmand;
-  var adapter = { getDomains : function( cb ) { cb( null, [ 'test', 'test2' ] ) } };
+  var adapter = {
+    getDomains : function( cb ) { cb( null, [ 'test', 'test2' ] ) }
+  };
   var client;
-  var e;
   var conf = {
       dbconn: adapter,
       servers: [{
@@ -30,25 +31,19 @@ suite('(e2e) ejector', function() {
 
   setup(function(done) {
     async.series([
-      function(callback) {
-        gearmand = spawn.gearmand(port, function(){
-          callback();
-        });
-      },
+      _.partial( spawn.gearmand, port ),
       function(callback) {
         client = new gearman.Client({
           port: port
         });
         client.on('connect', function() {
-          ejector_in_use = new Ejector(conf)
-          .on('connect', function() {
+          ejector_in_use = new Ejector( _.extend( {}, conf ) );
+          ejector_in_use.on('connect', function() {
             callback();
           });
         });
       }
-      ], function( error, results ){
-        done();
-      });
+      ], done );
   });
 
   teardown(function(done) {
@@ -59,20 +54,9 @@ suite('(e2e) ejector', function() {
         });
         client.disconnect();
       },
-      function (callback) {
-        ejector_in_use.on('disconnect', function() {
-          callback();
-        });
-        ejector_in_use.disconnect(0, function(){});
-      },
-      function(callback) {
-        spawn.killall([gearmand], function() {
-          callback();
-        });
-      }
-      ], function(){
-        done();
-      })
+      _.bind( ejector_in_use.disconnect, ejector_in_use ),
+      spawn.teardown,
+      ], done );
   });
 
   test('should delete task from database and send complete message to client', function(done) {

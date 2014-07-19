@@ -1,15 +1,14 @@
-var gearman = require('gearman-coffee')
-  , Injector = require('../../lib/daemon/injector').Injector
-  , child_process = require('child_process')
-  , chai = require('chai')
-  , sinon = require('sinon')
-  , sinonChai = require('sinon-chai')
-  , expect = chai.expect
-  , sqlite = require('../../lib/adapters/sqlite')
-  , fs = require('fs')
-  , async = require('async')
-  , spawn = require('../../lib/test-helpers/spawn')
-  , Client = require('gearman-coffee').Client;
+var gearman = require('gearman-coffee');
+var Injector = require('../../lib/daemon/injector').Injector;
+var child_process = require('child_process');
+var chai = require('chai');
+var sinon = require('sinon');
+var sinonChai = require('sinon-chai');
+var expect = chai.expect;
+var _ = require('underscore');
+var async = require('async');
+var spawn = require('../../lib/test-helpers/spawn');
+var Client = require('gearman-coffee').Client;
 
 chai.should();
 chai.use(sinonChai);
@@ -64,11 +63,7 @@ suite('(e2e) injector', function() {
 
     setup(function(done) {
       async.series([
-        function(callback) {
-          gearmand = spawn.gearmand(port, function(){
-            callback();
-          });
-        },
+        _.partial( spawn.gearmand, port ),
         function(callback) {
           adapter.saveTask = sinon.stub().yields(null, 1);
           injector_in_use = new Injector(conf)
@@ -93,11 +88,9 @@ suite('(e2e) injector', function() {
           injector_in_use.on('disconnect', function() {
             callback();
           });
-          injector_in_use.disconnect(0, function(){});
+          injector_in_use.disconnect();
         },
-        function (callback) {
-          spawn.killall([gearmand], callback);
-        }
+        spawn.teardown,
         ], function () {
           done();
       });
@@ -208,11 +201,7 @@ suite('using a stubbed adapter that "fails",', function(){
 
   setup(function(done) {
     async.series([
-      function(callback) {
-        gearmand = spawn.gearmand(port, function(){
-          callback();
-        });
-      },
+        _.partial( spawn.gearmand, port ),
       function(callback) {
         adapter.saveTask = sinon.stub().yields(adapter_error, null);
         injector_in_use = new Injector(conf)
@@ -234,12 +223,9 @@ suite('using a stubbed adapter that "fails",', function(){
         client.disconnect();
       },
       function (callback) {
-        injector_in_use.disconnect(0, function(){});
-        callback();
+        injector_in_use.disconnect( callback );
       },
-      function (callback) {
-        spawn.killall([gearmand], callback);
-      }
+      spawn.teardown,
       ], function () {
         done();
     });

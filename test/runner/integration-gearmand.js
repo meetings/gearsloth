@@ -1,17 +1,23 @@
-var gearman = require('gearman-coffee')
-  , runner = require('../../lib/daemon/runner')
-  , child_process = require('child_process')
-  , chai = require('chai')
-  , sinon = require('sinon')
-  , sinonChai = require('sinon-chai')
-  , expect = chai.expect
-  , async = require('async')
-  , spawn = require('../../lib/test-helpers/spawn');
+var lib = require( '../../lib/helpers/lib_require' );
+
+var _ = require('underscore');
+var async = require('async');
+var gearman = require('gearman-coffee');
+var log = lib.require('log');
+
+var spawn = lib.require('test-helpers/spawn');
+var adapter_helper = lib.require('test-helpers/adapter-helper');
+var worker_helper = lib.require('test-helpers/worker-helper');
+var Runner = lib.require('daemon/runner').Runner;
+
+var chai = require('chai');
+var sinon = require('sinon');
+var sinonChai = require('sinon-chai');
+var expect = chai.expect;
 
 chai.should();
 chai.use(sinonChai);
-
-require('../../lib/log').setOutput();
+log.setOutput();
 
 suite('(e2e) runner', function() {
 
@@ -30,7 +36,6 @@ suite('(e2e) runner', function() {
             port: port
           }]
         };
-    var port;
     var runner_in_use;
 
     var new_task1 = {
@@ -63,14 +68,8 @@ suite('(e2e) runner', function() {
 
     setup(function(done) {
       async.series([
-        function(callback) {
-          gearmand = spawn.gearmand(port, function(){
-            callback();
-          });
-        }
-        ], function() {
-          done();
-        });
+        _.partial( spawn.gearmand, port ),
+        ], done );
     });
 
     teardown(function(done) {
@@ -81,20 +80,9 @@ suite('(e2e) runner', function() {
             callback();
           });
         },
-        function (callback) {
-          runner_in_use.on('disconnect', function(){
-            callback();
-          });
-          runner_in_use.disconnect();
-        },
-        function (callback) {
-          spawn.killall([gearmand], function(){
-            callback();
-          });
-        }
-        ], function () {
-          done();
-        });
+        _.bind( runner_in_use.disconnect, runner_in_use ),
+        spawn.teardown
+        ], done );
     });
 
     test('should run task with no retry count set', function(done) {
@@ -110,7 +98,7 @@ suite('(e2e) runner', function() {
       adapter.listenTask = sinon.stub().yields(null, sample_task1, 'test', {} );
       adapter.updateListenedTask = sinon.spy( function( task, db_state, callback ) { callback( null, task ); } );
       adapter.disableListenedTask = sinon.spy( function( task, db_state, callback ) { callback( null, task ); } );
-      runner_in_use = runner(conf);
+      runner_in_use = new Runner(conf);
     });
 
     test('should run and disable task when runner_retry_count is 0', function(done) {
@@ -127,7 +115,7 @@ suite('(e2e) runner', function() {
       adapter.listenTask = sinon.stub().yields(null, expiring_task1, 'test', {} );
       adapter.updateListenedTask = sinon.spy( function( task, db_state, callback ) { callback( null, task ); } );
       adapter.disableListenedTask = sinon.spy( function( task, db_state, callback ) { callback( null, task ); } );
-      runner_in_use = runner(conf);
+      runner_in_use = new Runner(conf);
     });
 
     test('should run and not disable task when runner_retry_count has time to live', function(done) {
@@ -142,7 +130,7 @@ suite('(e2e) runner', function() {
       adapter.listenTask = sinon.stub().yields(null, non_expiring_task1, 'test', {} );
       adapter.updateListenedTask = sinon.spy( function( task, db_state, callback ) { callback( null, task ); } );
       adapter.disableListenedTask = sinon.spy( function( task, db_state, callback ) { callback( null, task ); } );
-      runner_in_use = runner(conf);
+      runner_in_use = new Runner(conf);
     });
   });
 });

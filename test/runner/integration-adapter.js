@@ -1,203 +1,160 @@
-var gearman = require('gearman-coffee')
-  , Runner = require('../../lib/daemon/runner').Runner
-  , child_process = require('child_process')
-  , chai = require('chai')
-  , sinon = require('sinon')
-  , sinonChai = require('sinon-chai')
-  , expect = chai.expect
-  , sqlite = require('../../lib/adapters/sqlite')
-  , fs = require('fs')
-  , async = require('async')
-  , spawn = require('../../lib/test-helpers/spawn');
+var lib = require( '../../lib/helpers/lib_require' );
+
+var _ = require('underscore');
+var async = require('async');
+var gearman = require('gearman-coffee');
+var log = lib.require('log');
+
+var spawn = lib.require('test-helpers/spawn');
+var adapter_helper = lib.require('test-helpers/adapter-helper');
+var worker_helper = lib.require('test-helpers/worker-helper');
+var Runner = lib.require('daemon/runner').Runner;
+
+var chai = require('chai');
+var sinon = require('sinon');
+var sinonChai = require('sinon-chai');
+var expect = chai.expect;
 
 chai.should();
 chai.use(sinonChai);
+log.setOutput();
 
-require('../../lib/log').setOutput();
+// Depends on _dbconn and _default_controller being present in a runner object
 
 suite('(e2e) runner', function() {
 
-  suite('using a real adapter with conf,', function() {
+  suite('using a real adapter', function() {
 
-    this.timeout(4000);
+    this.timeout(5000);
 
     var port = 54730;
-    var gearmand;
-    var adapter = {};
-    var worker;
-    var e;
-    var port;
     var running_runner;
 
     var config = {
-      dbopt: {
-        poll_timeout : 0,
-        db_name: '/tmp/DelayedTasks.sqlite'
-      },
-      servers: [{
-        host: 'localhost',
-        port: port
-      }]
+      db : adapter_helper.return_current_adapter_module(),
+      dbopt: adapter_helper.return_normal_dbopt(),
+      servers: [ { host: 'localhost', port: port }]
     };
-
-    var new_task = {
-        controller: 'test',
-        func_name: 'lyg',
-        runner_retry_count: 2
-    }
-
-    var non_expiring_task = {
-        id : 1,
-        controller: 'test',
-        func_name: 'leg',
-        runner_retry_count: 2
-    }
-
-    var expiring_task = {
-        id : 1,
-        controller: 'test',
-        func_name: 'lag',
-        runner_retry_count: 1
-    }
-
-    var sample_task = {
-        id: 666,
-        controller: 'test',
-        func_name: 'log',
-        mikko: 'jussi',
-        jeebo: 'jussi'
-    }
 
     setup(function(done) {
       async.series([
+        adapter_helper.test_pre_setup,
+        _.partial( spawn.gearmand, port ),
         function(callback) {
-          sqlite.initialize(config, function(err, dbconn) {
-            if (err) {
-              console.log(err, dbconn);
-              done(err);
-            }
-            config.dbconn = dbconn;
-            callback();
-          });
-        },
-        function(callback) {
-          gearmand = spawn.gearmand(port, function(){
-            callback();
-          });
-        },
-        function(callback) {
-          sinon.spy(config.dbconn, 'disableTask');
-          sinon.spy(config.dbconn, 'updateTask');
-          sinon.spy(config.dbconn, 'listenTask');
-          callback();
-        },
-        function(callback) {
-          running_runner = new Runner(config);
+          running_runner = new Runner( _.extend( {}, config ) );
           running_runner.on('connect', function(){
             callback();
           });
         }
-        ], function() {
-          done();
-        });
+      ], done );
     });
 
     teardown(function(done) {
       async.series([
-        function (callback) {
-          worker.socket.on('close', function() {
-            callback();
-          });
-          worker.disconnect();
-        },
-        function (callback) {
-          running_runner.on('disconnect', function() {
-            callback();
-          });
-          running_runner.disconnect();
-        },
-        function (callback) {
-          spawn.killall([gearmand], function() {
-            callback();
-          });
-        },
-        function(callback) {
-          setTimeout(function() {
-            fs.unlink('/tmp/DelayedTasks.sqlite', function(err) {
-              if (err) console.log('Error removing temps:', err);
-              callback();
-            });
-          }, 500);
-        }
-        ], function () {
-          done();
-        });
+        worker_helper.teardown,
+        running_runner.disconnect.bind( running_runner ),
+        spawn.teardown,
+        _.partial( adapter_helper.test_teardown, running_runner._dbconn ),
+      ], done );
     });
 
     suiteTeardown(function(done){
-      async.series([
-        function(callback) {
-          fs.unlink('/tmp/DelayedTasks.sqlite', function() {
-            callback();
-          });
-        },
-        function(callback) {
-          fs.unlink('/tmp/DelayedTasks.sqlite-journal', function() {
-            callback();
-          });
-        }
-        ], function() {
+      adapter_helper.test_suite_teardown( running_runner._dbconn, done );
+    });
+
+    test('should fetch a due task from db and pass it on to default controller with id and eject_function', function(done) {
+      var task = {
+        func_name : 'default-controller-test'
+      };
+
+      worker_helper.register_worker_to_port_with_json_payload( running_runner._default_controller, port, function( data ) {
+        expect( data ).to.have.property('id');
+        expect( data ).to.have.property('eject_function');
+        expect( data ).to.have.property('func_name', task.func_name );
+        done();
+      } );
+
+      running_runner._dbconn.saveTask( task, function(err, id){});
+    });
+
+    test('should fetch a due task from db and pass it on to custom controller', function(done) {
+      var task = {
+        func_name : 'custom-controller-test',
+        controller: 'test-controller',
+      };
+
+      worker_helper.register_worker_to_port_with_json_payload( 'test-controller', port, function( data ) {
+        expect( data ).to.have.property('id');
+        expect( data ).to.have.property('func_name', task.func_name );
+        done();
+      } );
+
+      running_runner._dbconn.saveTask( task, function(err, id){});
+    });
+
+    test('should fetch a future task from db only after specified time', function(done) {
+      // NOTE toString() automatically rounds down to last second so put no less than 2000 ms here.
+      var at = new Date( new Date().getTime() + 2000 ).toString();
+      var task = {
+        func_name : 'delayed-run-test',
+        at : at,
+      };
+
+      worker_helper.register_worker_to_port_with_json_payload( running_runner._default_controller, port, function( data ) {
+        expect( data ).to.have.property('func_name', task.func_name );
+        expect( new Date().getTime() ).to.be.within( new Date(at).getTime(), new Date(at).getTime() + 2000 );
+        done();
+      } );
+
+      running_runner._dbconn.saveTask( task, function(err, id){});
+    });
+
+    test('should disable task before sending if runner_retry_count is 0', function(done) {
+      var task = {
+        func_name : 'retry-count-disable-test',
+        runner_retry_count : 0,
+      };
+
+      worker_helper.register_worker_to_port_with_json_payload( running_runner._default_controller, port, function( data ) {
+        expect( data ).to.have.property('func_name', task.func_name );
+        adapter_helper.gather_all_jobs( running_runner._dbconn, function( error, jobs ) {
+          expect( jobs ).to.have.length( 0 );
           done();
-        });
-    });
+        } );
+      } );
 
-    test('should fetch a task from db and pass it on', function(done) {
-      worker = new gearman.Worker('test', function(payload, worker) {
-          var json = JSON.parse(payload.toString());
-          expect(json).to.have.property('id');
-          expect(json).to.have.property('func_name', sample_task.func_name);
-          done();
-        }, { port:port
-      });
-      config.dbconn.saveTask(sample_task, function(err, id){});
-    });
+      running_runner._dbconn.saveTask( task, function(err, id){});
+    } );
 
-    test('should disable task when runner_retry_count reaches 0', function(done) {
-      var expected_id;
-      worker = new gearman.Worker('test', function(payload, worker) {
-        var json = JSON.parse(payload.toString());
-        config.dbconn.disableTask.should.have.been.calledOnce;
-        var disabled_task = config.dbconn.disableTask.firstCall.args[0];
-        disabled_task.id.should.equal(expected_id);
+    test('should decrease runner_retry_count before sending if it is more than 0', function(done) {
+      var task = {
+        func_name : 'retry-count-decrease-test',
+        runner_retry_count : 1,
+      };
+
+      worker_helper.register_worker_to_port_with_json_payload( running_runner._default_controller, port, function( data ) {
+        expect( data ).to.have.property('func_name', task.func_name );
+        expect( data ).to.have.property( 'runner_retry_count' );
+        expect( parseInt( data.runner_retry_count ) ).to.equal( 0 );
         done();
-      }, { port:port
-      });
-      config.dbconn.saveTask(expiring_task, function(err, id){
-        expected_id = id;
-      });
-    });
+      } );
 
-    test('should not disableTaskble task when runner_retry_count has time to live', function(done) {
-      worker = new gearman.Worker('test', function(payload, worker) {
-        var json = JSON.parse(payload.toString());
-        json.at = new Date(json.at);
-        json.first_run = new Date(json.first_run);
-        config.dbconn.disableTask.should.not.have.been.called;
-        done();
-      }, { port:port
-      });
-      config.dbconn.saveTask(non_expiring_task, function(err, id){});
-    });
+      running_runner._dbconn.saveTask( task, function(err, id){});
+    } );
 
-    test('should call updateTask when a task is recieved', function(done) {
-      worker = new gearman.Worker('test', function(payload, worker) {
-        var json = JSON.parse(payload.toString());
-        json.at = new Date(json.at);
-        config.dbconn.updateTask.should.have.been.calledOnce;
+    test('should pass arbitrary extra params to controller', function(done) {
+      var task = {
+        func_name : 'default-controller-test',
+        random_parameter : 'random_value',
+      };
+
+      worker_helper.register_worker_to_port_with_json_payload( running_runner._default_controller, port, function( data ) {
+        expect( data ).to.have.property('func_name', task.func_name );
+        expect( data ).to.have.property('random_parameter', task.random_parameter );
         done();
-      }, { port:port
-      });
-      config.dbconn.saveTask(sample_task, function(err, id){});
+      } );
+
+      running_runner._dbconn.saveTask( task, function(err, id){});
     });
   });
 });
