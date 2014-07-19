@@ -1,3 +1,5 @@
+var lib = require( '../../lib/helpers/lib_require' );
+
 var gearman = require('gearman-coffee');
 var Injector = require('../../lib/daemon/injector').Injector;
 var child_process = require('child_process');
@@ -9,6 +11,7 @@ var _ = require('underscore');
 var async = require('async');
 var spawn = require('../../lib/test-helpers/spawn');
 var Client = require('gearman-coffee').Client;
+var client_helper = lib.require('test-helpers/client-helper');
 
 chai.should();
 chai.use(sinonChai);
@@ -20,46 +23,12 @@ suite('(e2e) injector', function() {
     this.timeout(5000);
 
     var port = 54730;
-    var gearmand;
     var adapter = {};
-    var client;
-    var e;
-    var conf = { dbconn: adapter,
-          servers: [{
-            host: 'localhost',
-            port: port
-          }]
-        };
+    var conf = {
+      dbconn: adapter,
+      servers: [{ host: 'localhost', port: port }]
+    };
     var injector_in_use;
-
-    var new_task = {
-        controller: 'test',
-        func_name: 'log',
-        runner_retry_count: 2
-    }
-
-    var invalid_at_task = {
-        at: "ölihnoiö",
-        id : 2,
-        controller: 'test',
-        func_name: 'log',
-        runner_retry_count: 2
-    }
-
-    var invalid_after_task = {
-        after: "öoosaf",
-        id : 2,
-        controller: 'test',
-        func_name: 'log',
-        runner_retry_count: 1
-    }
-
-    var no_func_name_task = {
-        id: 666,
-        controller: 'test',
-        mikko: 'jussi',
-        jeebo: 'jussi'
-    }
 
     setup(function(done) {
       async.series([
@@ -71,55 +40,50 @@ suite('(e2e) injector', function() {
             callback();
           });
         }
-        ], function() {
-          done();
-        });
+        ], done );
     });
 
     teardown(function(done) {
       async.series([
-        function (callback) {
-          client.socket.on('close', function() {
-            callback();
-          });
-          client.disconnect();
-        },
-        function (callback) {
-          injector_in_use.on('disconnect', function() {
-            callback();
-          });
-          injector_in_use.disconnect();
-        },
+        client_helper.teardown,
+        _.bind( injector_in_use.disconnect, injector_in_use ),
         spawn.teardown,
-        ], function () {
-          done();
-      });
-    });
-
-    test('should call saveTask on adapter on new task', function(done) {
-      client = new Client({port:port});
-      client.submitJob('submitJobDelayed', JSON.stringify(new_task))
-      .on('complete', function() {
-        expect(adapter.saveTask).to.have.been.calledOnce;
-        done();
-      });
+        ], done );
     });
 
     test('should call saveTask with the task to be saved', function(done){
-      client = new Client({port:port});
-      client.submitJob('submitJobDelayed', JSON.stringify(new_task))
-      .on('complete', function(){
-        expect(adapter.saveTask).to.have.been.calledWith(new_task);
-        done();
-      });
+      var task = {
+        at : new Date().toString(),
+        func_name: 'log',
+      };
+
+      client_helper.submit_delayed_job_to_port_and_wait_for_completion( task, port, function( error ) {
+        expect(adapter.saveTask).to.have.been.calledWith( task );
+        done( error );
+      } );
+    });
+
+    test('should call dateless saveTask with task that has "at"', function(done){
+      var task = {
+        func_name: 'log',
+      };
+
+      client_helper.submit_delayed_job_to_port_and_wait_for_completion( task, port, function( error ) {
+        expect(adapter.saveTask).to.have.been.calledWith( sinon.match.has( 'at' ) );
+        done( error );
+      } );
     });
 
     test('should return error on invalid date', function(done) {
-      client = new Client({port:port});
-      client.submitJob('submitJobDelayed', JSON.stringify(invalid_at_task))
+      var task = {
+        at: "ölihnoiö",
+        func_name: 'log',
+      };
+
+      client_helper.submit_delayed_job_to_port_and_return_job( task, port )
       .on('warning', function(handle, error){
         expect(adapter.saveTask).not.have.been.called;
-        expect(error).to.equal("injector: invalid date format.");
+        expect(error).to.equal("injector: Task did not pass validity check ( invalid \"at\" date format: Invalid Date )");
       })
       .on('fail', function(){
         done();
@@ -127,113 +91,82 @@ suite('(e2e) injector', function() {
     })
 
     test('should return error on invalid after parameter', function(done){
-      client = new Client({port:port});
-      client.submitJob('submitJobDelayed', JSON.stringify(invalid_after_task))
-      .on('warning', function(handle, error){
-        expect(adapter.saveTask).not.to.have.been.called;
-        expect(error).to.equal("injector: invalid 'after' format.");
-      })
-      .on('fail', function(){
-        done();
-      });
-    });
-
-    test('should return error on missing func_name intask', function(done){
-      client = new Client({port:port});
-      client.submitJob('submitJobDelayed', JSON.stringify(no_func_name_task))
-      .on('warning', function(handle, error){
-        expect(adapter.saveTask).not.to.have.been.called;
-        expect(error).to.equal("injector: no function name (func_name) defined in task.");
-      })
-      .on('fail', function(){
-        done();
-      });
-    });
-
-  });
-
-suite('using a stubbed adapter that "fails",', function(){
-  this.timeout(5000);
-
-  var port = 54730;
-  var gearmand;
-  var adapter = {};
-  var client;
-  var e;
-  var conf = { dbconn: adapter,
-        servers: [{ host: 'localhost',
-                    port: port }]
+      var task = {
+        after: "öoosaf",
+        func_name: 'log',
       };
-  var port;
-  var injector_in_use;
 
-  var new_task = {
-      controller: 'test',
-      func_name: 'log',
-      runner_retry_count: 2
-  }
-
-  var non_expiring_task1 = {
-      id : 2,
-      controller: 'test',
-      func_name: 'log',
-      runner_retry_count: 2
-  }
-
-  var expiring_task1 = {
-      id : 2,
-      controller: 'test',
-      func_name: 'log',
-      runner_retry_count: 1
-  }
-
-  var sample_task1 = {
-      id: 666,
-      controller: 'test',
-      func_name: 'log',
-      mikko: 'jussi',
-      jeebo: 'jussi'
-  }
-
-  var adapter_error = {
-    message : "not working on purpose"
-  };
-
-  setup(function(done) {
-    async.series([
-        _.partial( spawn.gearmand, port ),
-      function(callback) {
-        adapter.saveTask = sinon.stub().yields(adapter_error, null);
-        injector_in_use = new Injector(conf)
-        .on('connect', function() {
-          callback();
-        });
-      }
-      ], function() {
+      client_helper.submit_delayed_job_to_port_and_return_job( task, port )
+      .on('warning', function(handle, error){
+        expect(adapter.saveTask).not.to.have.been.called;
+        expect(error).to.equal("injector: Task did not pass validity check ( invalid \"after\" format (isNaN) )");
+      })
+      .on('fail', function(){
         done();
       });
-  });
-
-  teardown(function(done) {
-    async.series([
-      function (callback) {
-        client.on('disconnect', function() {
-          callback();
-        });
-        client.disconnect();
-      },
-      function (callback) {
-        injector_in_use.disconnect( callback );
-      },
-      spawn.teardown,
-      ], function () {
-        done();
     });
+
+    test('should return error on missing func_name in task', function(done){
+      var task = {
+        payload : "random"
+      };
+
+      client_helper.submit_delayed_job_to_port_and_return_job( task, port )
+      .on('warning', function(handle, error){
+        expect(adapter.saveTask).not.to.have.been.called;
+        expect(error).to.equal("injector: Task did not pass validity check ( missing func_name )");
+      })
+      .on('fail', function(){
+        done();
+      });
+    });
+
   });
 
-  test('should call saveTask on adapter on new task but pass error message in warning', function(done) {
-      client = new Client({port:port});
-      client.submitJob('submitJobDelayed', JSON.stringify(new_task))
+  suite('using a stubbed adapter that "fails",', function(){
+    this.timeout(5000);
+
+    var port = 54730;
+    var adapter = {};
+    var injector_in_use;
+
+    var task = {
+      at : new Date().toString(),
+      func_name: 'log',
+    };
+
+    var adapter_error = {
+      message : "not working on purpose"
+    };
+
+    setup(function(done) {
+      async.series([
+        _.partial( spawn.gearmand, port ),
+        function(callback) {
+          adapter = {
+            saveTask : sinon.stub().yields(adapter_error, null)
+          };
+          injector_in_use = new Injector( {
+            dbconn: adapter,
+            servers: [{ host: 'localhost', port: port }]
+          } )
+          .on('connect', function() {
+            callback();
+          });
+        }
+      ], done );
+    });
+
+    teardown(function(done) {
+      async.series([
+        client_helper.teardown,
+        injector_in_use.disconnect.bind( injector_in_use ),
+        spawn.teardown,
+      ], done );
+    });
+
+    test('should call saveTask on adapter on new task but pass error message in warning', function(done) {
+      client_helper.submit_delayed_job_to_port_and_return_job( task, port )
       .on('warning', function(handle, error) {
         expect(error).to.equal(adapter_error.message);
       })
@@ -243,17 +176,16 @@ suite('using a stubbed adapter that "fails",', function(){
       });
     });
 
-  test('should call saveTask and pass an error in warning event', function(done){
-    client = new Client({port:port});
-    client.submitJob('submitJobDelayed', JSON.stringify(new_task))
-    .on('warning', function(handle, error){
-      expect(error).to.equal(adapter_error.message);
-    })
-    .on('fail', function(handle, error){
-      expect(adapter.saveTask).to.have.been.calledWith(new_task);
-      done();
+    test('should call saveTask and pass an error in warning event', function(done){
+      client_helper.submit_delayed_job_to_port_and_return_job( task, port )
+      .on('warning', function(handle, error){
+        expect(error).to.equal(adapter_error.message);
+      })
+      .on('fail', function(handle, error){
+        expect(adapter.saveTask).to.have.been.calledWith(task);
+        done();
+      });
     });
   });
-});
 
 });

@@ -46,6 +46,7 @@ suite('(e2e) injector', function() {
     teardown(function(done) {
       async.series([
         injector.disconnect.bind( injector ),
+        client_helper.teardown,
         spawn.teardown,
         _.partial( adapter_helper.test_teardown, injector._dbconn )
         ], done );
@@ -61,7 +62,7 @@ suite('(e2e) injector', function() {
         function( jobs, callback ) {
           expect( jobs ).to.have.length( 1 );
           expect( jobs[0] ).to.have.property('at' );
-          expect( new Date( jobs[0].at ).getTime() ).to.equal( at_date.getTime() );
+          expect( jobs[0].at ).to.equal( at_date.toString() );
           callback();
         }
       ], done )

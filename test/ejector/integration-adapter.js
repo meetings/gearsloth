@@ -47,6 +47,7 @@ suite('(e2e) ejector', function() {
     teardown(function(done) {
       async.series([
         ejector.disconnect.bind( ejector ),
+        client_helper.teardown,
         spawn.teardown,
         _.partial( adapter_helper.test_teardown, ejector._dbconn )
         ], done );

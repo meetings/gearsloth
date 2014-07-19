@@ -69,7 +69,7 @@ suite('(e2e) runner', function() {
         done();
       } );
 
-      running_runner._dbconn.saveTask( task, function(err, id){});
+      adapter_helper.inject_job( running_runner._dbconn, task );
     });
 
     test('should fetch a due task from db and pass it on to custom controller', function(done) {
@@ -84,7 +84,7 @@ suite('(e2e) runner', function() {
         done();
       } );
 
-      running_runner._dbconn.saveTask( task, function(err, id){});
+      adapter_helper.inject_job( running_runner._dbconn, task );
     });
 
     test('should fetch a future task from db only after specified time', function(done) {
@@ -101,7 +101,7 @@ suite('(e2e) runner', function() {
         done();
       } );
 
-      running_runner._dbconn.saveTask( task, function(err, id){});
+      adapter_helper.inject_job( running_runner._dbconn, task );
     });
 
     test('should disable task before sending if runner_retry_count is 0', function(done) {
@@ -118,7 +118,7 @@ suite('(e2e) runner', function() {
         } );
       } );
 
-      running_runner._dbconn.saveTask( task, function(err, id){});
+      adapter_helper.inject_job( running_runner._dbconn, task );
     } );
 
     test('should decrease runner_retry_count before sending if it is more than 0', function(done) {
@@ -134,7 +134,7 @@ suite('(e2e) runner', function() {
         done();
       } );
 
-      running_runner._dbconn.saveTask( task, function(err, id){});
+      adapter_helper.inject_job( running_runner._dbconn, task );
     } );
 
     test('should pass arbitrary extra params to controller', function(done) {
@@ -149,7 +149,7 @@ suite('(e2e) runner', function() {
         done();
       } );
 
-      running_runner._dbconn.saveTask( task, function(err, id){});
+      adapter_helper.inject_job( running_runner._dbconn, task );
     });
   });
 });
