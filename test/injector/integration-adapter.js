@@ -62,7 +62,7 @@ suite('(e2e) injector', function() {
 
       async.waterfall( [
         client_helper.async_submit_delayed_job_to_port_and_wait_for_completion( job, port ),
-        adapter_helper.async_gather_all_jobs( injector._dbconn ),
+        adapter_helper.async_gather_enabled_job_list( injector._dbconn ),
         function( jobs, callback ) {
           expect( jobs ).to.have.length( 1 );
           expect( jobs[0] ).to.have.property('at' );

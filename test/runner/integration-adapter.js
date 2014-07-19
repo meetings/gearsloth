@@ -117,7 +117,7 @@ suite('(e2e) runner', function() {
 
       worker_helper.register_worker_to_port_with_json_payload( running_runner._default_controller, port, function( data ) {
         expect( data ).to.have.property('func_name', task.func_name );
-        adapter_helper.gather_all_jobs( running_runner._dbconn, function( error, jobs ) {
+        adapter_helper.gather_enabled_job_list( running_runner._dbconn, function( error, jobs ) {
           expect( jobs ).to.have.length( 0 );
           done();
         } );
