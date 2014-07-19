@@ -50,7 +50,7 @@ help:
 
 .PHONY: test
 test: node_modules
-	$(MOCHA) $(MOCHA_PARAMS) test/*/unit* test/*/integration*
+	$(MOCHA) $(MOCHA_PARAMS) test/*/integration* test/*/unit*
 
 .PHONY: test-full
 test-full: node_modules
