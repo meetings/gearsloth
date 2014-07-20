@@ -36,6 +36,7 @@ suite('(e2e) injector', function() {
 
     setup(function(done) {
       async.series([
+        adapter_helper.async_teardown( conf ),
         spawn.async_gearmand( port ),
         function(callback) {
           injector = new Injector( conf );

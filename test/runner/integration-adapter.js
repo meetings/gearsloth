@@ -38,9 +38,10 @@ suite('(e2e) runner', function() {
 
     setup(function(done) {
       async.series([
+        adapter_helper.async_teardown( conf ),
         spawn.async_gearmand( port ),
         function(callback) {
-          running_runner = new Runner( conf);
+          running_runner = new Runner( conf );
           running_runner.on('connect', function(){
             callback();
           });

@@ -36,6 +36,7 @@ suite('(e2e) ejector', function() {
 
     setup(function(done) {
       async.series([
+        adapter_helper.async_teardown( conf ),
         spawn.async_gearmand( port ),
         function(callback) {
           ejector = new Ejector( conf );
