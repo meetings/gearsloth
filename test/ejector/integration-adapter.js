@@ -28,15 +28,17 @@ suite('(e2e) ejector', function() {
     var port = 54730;
     var ejector;
 
+    var conf =  {
+      db : adapter_helper.return_current_adapter_module(),
+      dbopt: adapter_helper.return_normal_dbopt(),
+      servers: [ { host : 'localhost', port : port } ]
+    };
+
     setup(function(done) {
       async.series([
-        _.partial( spawn.gearmand, port ),
+        spawn.async_gearmand( port ),
         function(callback) {
-          ejector = new Ejector( {
-            db : adapter_helper.return_current_adapter_module(),
-            dbopt: adapter_helper.return_normal_dbopt(),
-            servers: [ { host : 'localhost', port : port } ]
-          } );
+          ejector = new Ejector( conf );
           ejector.on( 'connect', function() {
             callback();
           } );
@@ -49,7 +51,7 @@ suite('(e2e) ejector', function() {
         ejector.disconnect.bind( ejector ),
         client_helper.teardown,
         spawn.teardown,
-        _.partial( adapter_helper.test_teardown, ejector._dbconn )
+        adapter_helper.async_teardown( conf )
         ], done );
     });
 

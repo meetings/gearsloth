@@ -30,7 +30,7 @@ suite('(e2e) runner', function() {
     var port = 54730;
     var running_runner;
 
-    var config = {
+    var conf = {
       db : adapter_helper.return_current_adapter_module(),
       dbopt: adapter_helper.return_normal_dbopt(),
       servers: [ { host: 'localhost', port: port }]
@@ -38,9 +38,9 @@ suite('(e2e) runner', function() {
 
     setup(function(done) {
       async.series([
-        _.partial( spawn.gearmand, port ),
+        spawn.async_gearmand( port ),
         function(callback) {
-          running_runner = new Runner( _.extend( {}, config ) );
+          running_runner = new Runner( conf);
           running_runner.on('connect', function(){
             callback();
           });
@@ -53,7 +53,7 @@ suite('(e2e) runner', function() {
         worker_helper.teardown,
         running_runner.disconnect.bind( running_runner ),
         spawn.teardown,
-        _.partial( adapter_helper.test_teardown, running_runner._dbconn ),
+        adapter_helper.async_teardown( conf )
       ], done );
     });
 

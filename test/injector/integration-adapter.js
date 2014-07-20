@@ -28,15 +28,17 @@ suite('(e2e) injector', function() {
     var port = 54730;
     var injector;
 
+    var conf = {
+      db : adapter_helper.return_current_adapter_module(),
+      dbopt: adapter_helper.return_normal_dbopt(),
+      servers: [ { host : 'localhost', port : port } ]
+    };
+
     setup(function(done) {
       async.series([
-        _.partial( spawn.gearmand, port ),
+        spawn.async_gearmand( port ),
         function(callback) {
-          injector = new Injector( {
-            db : adapter_helper.return_current_adapter_module(),
-            dbopt: adapter_helper.return_normal_dbopt(),
-            servers: [ { host : 'localhost', port : port } ]
-          } );
+          injector = new Injector( conf );
           injector.on( 'connect', function() {
             callback();
           } );
@@ -48,7 +50,7 @@ suite('(e2e) injector', function() {
         injector.disconnect.bind( injector ),
         client_helper.teardown,
         spawn.teardown,
-        _.partial( adapter_helper.test_teardown, injector._dbconn )
+        adapter_helper.async_teardown( conf )
         ], done );
     });
 
