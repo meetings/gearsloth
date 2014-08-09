@@ -30,7 +30,125 @@
 
 ## Overview
 
-Gearsloth is a system that enables delayed tasks and persistent storage schemes with [Gearman][gear] job server. The Gearsloth stack consists of four components: *injector*, *runner*, *controller* and *ejector*. Gearsloth supports a database backend architecture which abstracts persisting delayed tasks to a database. Gearsloth is written in Node.js.
+Gearsloth stores requests to execute a [Gearman][gear] function after a given time. It can also be used as a fault-tolerant replacement for normal Gearman background jobs.
+
+## Example
+
+Because who would not want to reverse a kitteh in a Gearman worker after 10 seconds and discard the result?
+
+    GearmanClient.submitJob(
+        "gearsloth_inject",
+        JSON.stringify( {
+            "func_name" : "reverse",
+            "payload" : "kitteh",
+            "after" : 10
+        } ),
+        function( err, result ) {
+            if ( ! err ) {
+                console.log( 'Gearsloth has promised to submit "kitteh" for function "reverse" after 10 seconds' );
+            }
+        }
+    );
+
+There might also be an error through! Depending on the error you might know that the function will not be executed or that there is really no way to know if it will or not.
+
+With any error you should probably just retry the inject until it returns a success. Be sure to make your functions safe to be executed more than once as distributed computing easily introduces many failure situations where code gets executed multiple times. If you are really worried about this, you might want to look into getting yourself a lock server.
+
+If an error did not occur, you now have a promise! The promise is as strong as your system is, so make sure your systems administrator picks the right configuration for your use case. If you are the mighty BOFH or just want to know more about the promises, head to the administrator documentation.
+
+Just want more examples on how to use Gearsloth? Head to the user documentation for more!
+
+## Installation for development
+
+The easiest way is to just install from npm:
+
+    # npm install gearsloth -g
+
+After which you can start it up in the development mode:
+
+    # gearslothd
+
+By default it connects to a single server at localhost:4730 but more options and deployment instructions can be found at the administrator documentation.
+
+## Why a separate system for delayed background jobs?
+
+Underneath it all is probably more of a philosophical stance. Some people believe that you can achieve a better system by constructing it from a set of small, simple, well tested, transparent, resilient and highly available services instead of bundling all functionality within a single program.
+
+Gearsloth aims to be a service like this. It has two primary purposes:
+
+ 1. Give well defined promises of job execution.
+ 2. Allow treating the Gearman servers as generic and "stateless" components.
+
+Also because different business needs require different types of promises of job execution, Gearsloth is architectured towards the following goals:
+
+ 1. Allow strong data persistence checks before giving promises
+ 2. Allow retrying jobs differently in various error situations
+ 3. Allow achieving higher availability by adding redundancy
+ 4. Allow handling higher loads through horizontal scaling
+ 5. Allow recovering quickly from crashes by separating concerns
+
+Sometimes however, you just want to get your system up and running, so Gearsloth does that out of the box.
+
+If you are interested in delving deeper, head on to the contributor documentation where we get to the details of the architecture, the interfaces and of course also how you can help make Gearsloth even better :)
+
+## Acknowledgements
+
+The initial version of Gearsloth was developed as a student project at the University of Helsinki Computer Science department.
+
+A special thank you for the following parties, without whom this would have never happened:
+
+ * dormando for the inspiration and the ideas that we got from reading the Garivini code.
+ * Meetin.gs Ltd for acting as a customer for the student project, some infrastructure for testing, and beer.
+ * LiveJournal for introducing Gearman among other open source tools to the world.
+
+## License
+
+See the file `LICENSE` for details. (It is MIT)
+
+# User documentation notes
+
+
+## Task format specification
+
+Task is to be a JavaScript JSON object with the following format:
+
+```
+var task = {
+           func_name: name of the gearman function to be executed,
+    func_name_base64: binary name of the target gearman function in base64 encoding (optional, overrides func_name),
+                  at: time of execution (optional),
+               after: seconds after which this task is to be executed (optional),
+          controller: name of the controller function that is to handle execution of the task (optional),
+             payload: payload that is passed to the target function (optional),
+      payload_base64: binary payload in base64 encoding that is passed to the target fucntion (optional, overrides payload),
+runner_retry_timeout: the number of seconds after which one of the registered runners for this tasks func_name
+                      (the database adapter picks one for each retry) will pick up the task again
+                      in case the first runner was unable to pass the
+                      task on for execution (to a worker). After a runner picks up the task this field
+                      is updated instantly in the database. This field is optional,
+  runner_retry_count: the number of times a runner is to retry handling the task if
+                      the previous runner was unable to pass the task on for execution (to a worker),
+                      each time the database adapter passes this task to a runner, this field
+                      is decreased by one (the database is then updated instantly). This field is optional.
+         retry_count: number of times the task is retried in default controller (optional, only used in default controller)
+}
+```
+
+### Description of fields
+
+The only required field for task is `func_name`.
+
+* `func_name`: is to be any string that corresponds to a Gearman function that is registered in the Gearman Job server. The function must be registered in the Gearman Job server at the moment of execution, it is not required earlier. Needless to say, if the function does not exist at execution time it will not be run and the task will likely fail to execute, depending on controllers and settings of the runner at the time of execution.
+* `at`: if defined this is any string which is understood by the JavaScript `Date` API. `at` specifies the date and time at which the task is to be executed.
+* `after`: if defined it supersedes the `at`. This is any string that is parseable into an integer as representative of *seconds* after which the task is to be executed.
+* `controller`: if defined this is any string that corresponds to a Gearman function that has been written to handle the execution of tasks. If omitted a default behavior is adopted at the `runner` level.
+* `runner_retry_timeout`: if defined this is any string that is parseable into an integer. See above for a more detailed description.
+* `runner_retry_count`: if defined this is any string that is parseable into an integer. See above for a more detailed description.
+* `payload`: if defined this can be anything that can be sanely converted into a string. It may also be a JSON object in itself. `payload` will be passed on to the `func_name` function as given or to the `controller` if defined for more processing.
+
+# Administrator documentation notes
+
+The Gearsloth stack consists of four components: *injector*, *runner*, *controller* and *ejector*. Gearsloth supports a database backend architecture which abstracts persisting delayed tasks to a database. Gearsloth is written in Node.js.
 
 ![Example of Gearsloth setup](examples/architecture-graph.png "Example of Gearsloth setup")
 
@@ -53,6 +171,84 @@ There is a rudimentry support for putting Gearsloth in a Debian package. Instruc
     $ dpkg-buildpackage -b -uc
 
 3. Distribute and install the package by means suitable to your infrastructure.
+
+
+## Configuration
+
+By default gearslothd expects to find a JSON configuration file from [specified locations](#configuration-file-location). Following command line options are accepted **and they override any configuration file options**:
+
+    $ ./bin/gearslothd [options] hostname[:port]
+
+* `-i, --injector`: Run the daemon as injector.
+* `-r, --runner`: Run the daemon as runner.
+* `-c, --controller`: Run the daemon as default controller.
+* `-e, --ejector`: Run the daemon as ejector.
+* `--controllername`: Specify the controller module by name. This can also be specified in the configuration file. If the input contains forward slashes, the module is looked up in relation to your current directory. The logic for handling this option can be found in *lib/config/index.js*.
+* `--db`: Specify the database module by name. Can also be specified in the config file. If the input contains forward slashes, the module is looked up in relation to your current dir.
+* `--verbose`: Specify logging level; You can use the --verbose or -v flag multiple times for the following effects:
+  * None (default): notice -> std.out | errors -> std.err
+  * Once (`-v`): notice, info -> std.out | errors -> std.err
+  * Twice (`-vv`): notice, info, debug -> std.out | errors -> std.err
+| You can also configure this parameter with and integer (0 for one flag, 1 for two flags) in configuration file. The logic for handling the flag can be found in *lib/log.js*.
+* `-f, --file=FILENAME`: Define the path to configuration file. See [this](#configuration-file-location) for details.
+* `--conf=JSON`: Provide a JSON formatted configuration object on the command line. Please, do take care of escaping the JSON data properly.
+* `--db=NAME`: Database adapter to be used by the daemon. Default is to use `sqlite` adapter.
+* `--dbopt=JSON`: Provide a JSON formatted freeform configuration object for the database adapter.
+* `--servers=JSON`: Provide a JSON formatted Gearman job server list.
+
+By default the daemon runs in all modes.
+
+### Configuration object formats
+
+The configuration file consists of a single JSON object. The following fields
+are interpreted:
+
+* `.injector {Boolean}`: If true, run as injector.
+* `.runner {Boolean}`: If true, run as runner.
+* `.controller {Boolean}`: If true, run as default controller.
+* `.ejector {Boolean}`: If true, run as ejector.
+* `.db {String}`: Database adapter name.
+* `.dbopt {Object}`: A freeform object that may be interpreted by the database
+  adapter.
+* `.servers {[Object]}`: A list of gearman servers that are connected to. The
+  servers may contain fields `.host` and `.port`. If only one the fields is
+  specified, a default value is used. The default gearman server is
+  `localhost:4730`.
+* `.controllername {String}:` Controller module name. See above for a more detailed description.
+* `.verbose {Integer}`: Desired logging detail level. See above for a more detailed description.
+
+### Configuration file location
+
+Gearsloth daemon will look for a configuration file named `gearsloth.json` in the following locations in the following order:
+
+1. Current working directory
+2. `$HOME/.gearsloth`
+3. `/etc/gearsloth`
+4. Gearsloth project directory
+
+See *lib/config/defaults.js* for details.
+
+### Example configuration
+
+#### `gearsloth.json`
+
+    {
+      "db": "sqlite",
+      "servers": [{ "host": "127.0.0.1" }]
+    }
+
+#### Command line
+
+    $ ./bin/gearslothd -ire --dbopt='{"db_name": "in-memory"}'
+
+Runs a daemon in *injector*, *runner* and *ejector* modes using an in-memory SQLite database and connecting to a single Gearman job server running on `127.0.0.1:4730`.
+
+### More example configurations
+
+See `examples` directory for additional example configurations.
+
+
+# Contributor documentation notes
 
 ## Components
 
@@ -152,118 +348,6 @@ The Gearsloth system will likely fail if it is setup to use separate databases w
 
 As with the other components the ejectors use multiple instances of workers from the gearman-coffee package, again one per job server, for communication to multiple job servers.
 
-## Configuration
-
-By default gearslothd expects to find a JSON configuration file from [specified locations](#configuration-file-location). Following command line options are accepted **and they override any configuration file options**:
-
-    $ ./bin/gearslothd [options] hostname[:port]
-
-* `-i, --injector`: Run the daemon as injector.
-* `-r, --runner`: Run the daemon as runner.
-* `-c, --controller`: Run the daemon as default controller.
-* `-e, --ejector`: Run the daemon as ejector.
-* `--controllername`: Specify the controller module by name. This can also be specified in the configuration file. If the input contains forward slashes, the module is looked up in relation to your current directory. The logic for handling this option can be found in *lib/config/index.js*.
-* `--db`: Specify the database module by name. Can also be specified in the config file. If the input contains forward slashes, the module is looked up in relation to your current dir.
-* `--verbose`: Specify logging level; You can use the --verbose or -v flag multiple times for the following effects:
-  * None (default): notice -> std.out | errors -> std.err
-  * Once (`-v`): notice, info -> std.out | errors -> std.err
-  * Twice (`-vv`): notice, info, debug -> std.out | errors -> std.err
-| You can also configure this parameter with and integer (0 for one flag, 1 for two flags) in configuration file. The logic for handling the flag can be found in *lib/log.js*.
-* `-f, --file=FILENAME`: Define the path to configuration file. See [this](#configuration-file-location) for details.
-* `--conf=JSON`: Provide a JSON formatted configuration object on the command line. Please, do take care of escaping the JSON data properly.
-* `--db=NAME`: Database adapter to be used by the daemon. Default is to use `sqlite` adapter.
-* `--dbopt=JSON`: Provide a JSON formatted freeform configuration object for the database adapter.
-* `--servers=JSON`: Provide a JSON formatted Gearman job server list.
-
-By default the daemon runs in all modes.
-
-### Configuration object formats
-
-The configuration file consists of a single JSON object. The following fields
-are interpreted:
-
-* `.injector {Boolean}`: If true, run as injector.
-* `.runner {Boolean}`: If true, run as runner.
-* `.controller {Boolean}`: If true, run as default controller.
-* `.ejector {Boolean}`: If true, run as ejector.
-* `.db {String}`: Database adapter name.
-* `.dbopt {Object}`: A freeform object that may be interpreted by the database
-  adapter.
-* `.servers {[Object]}`: A list of gearman servers that are connected to. The
-  servers may contain fields `.host` and `.port`. If only one the fields is
-  specified, a default value is used. The default gearman server is
-  `localhost:4730`.
-* `.controllername {String}:` Controller module name. See above for a more detailed description.
-* `.verbose {Integer}`: Desired logging detail level. See above for a more detailed description.
-
-### Configuration file location
-
-Gearsloth daemon will look for a configuration file named `gearsloth.json` in the following locations in the following order:
-
-1. Current working directory
-2. `$HOME/.gearsloth`
-3. `/etc/gearsloth`
-4. Gearsloth project directory
-
-See *lib/config/defaults.js* for details.
-
-### Example configuration
-
-#### `gearsloth.json`
-
-    {
-      "db": "sqlite",
-      "servers": [{ "host": "127.0.0.1" }]
-    }
-
-#### Command line
-
-    $ ./bin/gearslothd -ire --dbopt='{"db_name": "in-memory"}'
-
-Runs a daemon in *injector*, *runner* and *ejector* modes using an in-memory SQLite database and connecting to a single Gearman job server running on `127.0.0.1:4730`.
-
-### More example configurations
-
-See `examples` directory for additional example configurations.
-
-
-## Task format specification
-
-Task is to be a JavaScript JSON object with the following format:
-
-```
-var task = {
-           func_name: name of the gearman function to be executed,
-    func_name_base64: binary name of the target gearman function in base64 encoding (optional, overrides func_name),
-                  at: time of execution (optional),
-               after: seconds after which this task is to be executed (optional),
-          controller: name of the controller function that is to handle execution of the task (optional),
-             payload: payload that is passed to the target function (optional),
-      payload_base64: binary payload in base64 encoding that is passed to the target fucntion (optional, overrides payload),
-runner_retry_timeout: the number of seconds after which one of the registered runners for this tasks func_name
-                      (the database adapter picks one for each retry) will pick up the task again
-                      in case the first runner was unable to pass the
-                      task on for execution (to a worker). After a runner picks up the task this field
-                      is updated instantly in the database. This field is optional,
-  runner_retry_count: the number of times a runner is to retry handling the task if
-                      the previous runner was unable to pass the task on for execution (to a worker),
-                      each time the database adapter passes this task to a runner, this field
-                      is decreased by one (the database is then updated instantly). This field is optional.
-         retry_count: number of times the task is retried in default controller (optional, only used in default controller)
-}
-```
-
-### Description of fields
-
-The only required field for task is `func_name`.
-
-* `func_name`: is to be any string that corresponds to a Gearman function that is registered in the Gearman Job server. The function must be registered in the Gearman Job server at the moment of execution, it is not required earlier. Needless to say, if the function does not exist at execution time it will not be run and the task will likely fail to execute, depending on controllers and settings of the runner at the time of execution.
-* `at`: if defined this is any string which is understood by the JavaScript `Date` API. `at` specifies the date and time at which the task is to be executed.
-* `after`: if defined it supersedes the `at`. This is any string that is parseable into an integer as representative of *seconds* after which the task is to be executed.
-* `controller`: if defined this is any string that corresponds to a Gearman function that has been written to handle the execution of tasks. If omitted a default behavior is adopted at the `runner` level.
-* `runner_retry_timeout`: if defined this is any string that is parseable into an integer. See above for a more detailed description.
-* `runner_retry_count`: if defined this is any string that is parseable into an integer. See above for a more detailed description.
-* `payload`: if defined this can be anything that can be sanely converted into a string. It may also be a JSON object in itself. `payload` will be passed on to the `func_name` function as given or to the `controller` if defined for more processing.
 
 ### Internal
 * `id`: Set by the database to identify database/table/task. Form may be chosen freely.
@@ -372,6 +456,3 @@ Gearsloth has tests that simulate a production-like environment implemented with
     sloth:~$ cd gearsloth
     sloth:~/gearsloth$ make docker-test
 
-## License
-
-See the file `LICENSE` for details.
