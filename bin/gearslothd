@@ -10,9 +10,7 @@ try {
   }
   daemon.initialize(conf);
 }
-catch ( err )
+catch (err) {
   console.error('gearslothd:', err.message);
   process.exit(1);
 }
-
-
