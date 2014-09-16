@@ -149,7 +149,7 @@ suite("multiserver-client", function() {
       expect(m).to.have.property('submitJob');
     });
   });
-  
+
   suite("when disconnect is called", function() {
     setup(function() {
       ClientStub = sandbox.spy(gearman, 'Client');

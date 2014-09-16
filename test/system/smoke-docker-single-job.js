@@ -42,28 +42,28 @@ suite('docker-example', function() {
               containers.gearslothd(
                 merge(gearslothd_config, {injector:true})
                 , true, function() {
-                  callback(); 
+                  callback();
                 });
             },
             function(callback) {
               containers.gearslothd(
                 merge(gearslothd_config, {runner:true})
                 , true, function() {
-                  callback(); 
+                  callback();
                 });
             },
             function(callback) {
               containers.gearslothd(
                 merge(gearslothd_config, {ejector:true})
                 , true, function() {
-                  callback(); 
+                  callback();
                 });
             },
             function(callback) {
               containers.gearslothd(
                 merge(gearslothd_config, {controller:true})
                 , true, function() {
-                  callback(); 
+                  callback();
                 });
             }
         ], callback);

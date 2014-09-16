@@ -8,7 +8,7 @@ suite('sqlite-adapter', function() {
 
   var worker = 'log';
   var payload = new Buffer(10);
-  
+
   var test_config = {
     dbopt:{
       db_name:':memory:',
@@ -16,7 +16,7 @@ suite('sqlite-adapter', function() {
       poll_timeout:0
     }
   };
-  
+
   var test_config_with_file = {
     dbopt:{
       db_name:'/tmp/test-database.sqlite',
@@ -24,27 +24,27 @@ suite('sqlite-adapter', function() {
       poll_timeout:1000
     }
   };
-  
+
  var test_json = {
     at: new Date(),
     func_name: worker,
     payload: "jassoo",
     strategy:'default'
   };
-  
+
  var test_json_unset_delivery = {
     func_name: worker,
     payload: "unset delivery",
     strategy:'default'
   };
-  
+
   var test_json_with_unset_at = {
     after: 0,
     func_name: worker,
     payload: "jassoo",
     strategy:null
   };
-  
+
   var test_json_with_strategy_options = {
     at: new Date(),
     func_name: worker,
@@ -112,7 +112,7 @@ suite('sqlite-adapter', function() {
       }
       adapter.initialize(test_config, testScript);
     });
-    
+
     test('should save current timestamp as execution time when after and at unset', function(done) {
       var items = 2;
 
@@ -180,7 +180,7 @@ suite('sqlite-adapter', function() {
             fs.open('/temp/test-database.sqlite', 'r', function(err) {
               fs.unlink('/temp/test-database.sqlite', function() {});
             });
-          } 
+          }
         });
 
         dbconn.saveTask(test_json_unset_delivery, function(err, id) {});
@@ -190,7 +190,7 @@ suite('sqlite-adapter', function() {
     });
 
   });
-  
+
   suite('listenTask()', function() {
     test('should return correct strategy when set', function(done) {
       function testScript(err, dbconn) {
@@ -208,7 +208,7 @@ suite('sqlite-adapter', function() {
       }
       adapter.initialize(test_config, testScript);
     });
-    
+
     test('should return correct at when unset', function(done) {
       var now = new Date();
       var utc = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
@@ -230,7 +230,7 @@ suite('sqlite-adapter', function() {
       }
       adapter.initialize(test_config, testScript);
     });
-    
+
     test('should return correct strategy and strategy options when set', function(done) {
       function testScript(err, dbconn) {
         var stop = dbconn.listenTask(function (err, task) {
@@ -243,7 +243,7 @@ suite('sqlite-adapter', function() {
           }
           done();
         });
-        
+
         dbconn.saveTask(test_json_with_strategy_options, function() {});
       }
       adapter.initialize(test_config, testScript);
@@ -278,7 +278,7 @@ suite('sqlite-adapter', function() {
       adapter.initialize(test_config, testScript);
     });
   });
-  
+
   suite('updateTask()', function() {
     var roundTrip = 2;
     test('should update task correctly', function(done) {
@@ -306,7 +306,7 @@ suite('sqlite-adapter', function() {
       adapter.initialize(test_config, testScript);
     });
   });
-  
+
   suite('completeTask()', function() {
     test('should delete task correctly', function(done) {
       function testScript(err, dbconn) {
@@ -334,7 +334,7 @@ suite('sqlite-adapter', function() {
         }
       });
     });
-  });  
-  
+  });
+
 });
 

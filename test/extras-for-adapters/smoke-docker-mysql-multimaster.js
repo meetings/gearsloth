@@ -46,7 +46,7 @@ suite('mysql-multimaster (docker)', function() {
             rows.should.have.length(2);
             cb(err);
           });
-        }]  
+        }]
       }, done);
     });
 
@@ -67,7 +67,7 @@ suite('mysql-multimaster (docker)', function() {
     });
   });
 
-  suite('with new container for every test', function() {  
+  suite('with new container for every test', function() {
 
     setup(function(done) {
       this.timeout(10000);
@@ -89,7 +89,7 @@ suite('mysql-multimaster (docker)', function() {
         after: 100,
         func_name: 'sprölts'
       };
-      
+
       test('should save task correctly', function(done) {
         adapter.saveTask(task, function(err, inserted_id) {
           if(err)

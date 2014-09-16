@@ -66,28 +66,28 @@ suite('(docker) two gearmand servers', function() {
             containers.gearslothd(
               merge(gearslothd_config, {injector:true})
               , true, function() {
-               callback(); 
+               callback();
               });
           },
           function(callback) {
             containers.gearslothd(
               merge(gearslothd_config, {runner:true})
               , true, function() {
-               callback(); 
+               callback();
               });
           },
           function(callback) {
             containers.gearslothd(
               merge(gearslothd_config, {ejector:true})
               , true, function() {
-                callback(); 
+                callback();
               });
           },
           function(callback) {
             containers.gearslothd(
                 merge(gearslothd_config, {controller:true})
                 , true, function() {
-                callback(); 
+                callback();
               });
           }], function() { callback() });
       }],
@@ -109,7 +109,7 @@ suite('(docker) two gearmand servers', function() {
       setTimeout(done, 100);
       worker.complete();
     }, {port:gearmand0_port})
-    
+
     client.submitJob('submitJobDelayed', JSON.stringify({
       func_name:'test1',
       payload:sent_payload,

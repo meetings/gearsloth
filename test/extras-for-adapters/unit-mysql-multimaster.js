@@ -11,7 +11,7 @@ chai.should();
 chai.use(sinonchai);
 
 suite('MySQL Multimaster adapter', function() {
-  
+
   var config;
   var init_config;
   var sandbox = sinon.sandbox.create();
@@ -62,7 +62,7 @@ suite('MySQL Multimaster adapter', function() {
   suite('initialize', function() {
 
     test('should create adapter', function(done) {
-      var successful_example_connect = { 
+      var successful_example_connect = {
         fieldCount: 0,
         affectedRows: 0,
         insertId: 0,
@@ -70,7 +70,7 @@ suite('MySQL Multimaster adapter', function() {
         warningCount: 0,
         message: '',
         protocol41: true,
-        changedRows: 0 
+        changedRows: 0
       };
 
       mysql_conn_master.query.yields(null);
@@ -86,11 +86,11 @@ suite('MySQL Multimaster adapter', function() {
     });
 
     test('passes error correctly', function(done) {
-      var error = new Error({ 
+      var error = new Error({
         code: 'ER_ACCESS_DENIED_ERROR',
         errno: 1045,
         sqlState: '28000',
-        fatal: true 
+        fatal: true
       });
 
       mysql_pool.getConnection.withArgs('SLAVE').yields(error);
@@ -201,7 +201,7 @@ suite('MySQL Multimaster adapter', function() {
         func_name: 'ebin',
       };
       var expected_id = 3548796;
-      var insert_response = { 
+      var insert_response = {
         fieldCount: 0,
         affectedRows: 1,
         insertId: expected_id,
@@ -375,7 +375,7 @@ suite('MySQL Multimaster adapter', function() {
   suite.skip("connected", function() {
     var mysql_conn, adapter, error;
 
-    var successful_example_connect = { 
+    var successful_example_connect = {
       fieldCount: 0,
       affectedRows: 0,
       insertId: 0,
@@ -383,7 +383,7 @@ suite('MySQL Multimaster adapter', function() {
       warningCount: 0,
       message: '',
       protocol41: true,
-      changedRows: 0 
+      changedRows: 0
     };
 
     setup(function() {
@@ -443,7 +443,7 @@ suite('MySQL Multimaster adapter', function() {
         code: 'PROTOCOL_CONNECTION_LOST'
       });
     });
-    
+
   });
 
   suite('updateTask', function() {

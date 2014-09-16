@@ -213,7 +213,7 @@ suite('Docker load test', function() {
               client.on('connect', function() {
                 callback();
               });
-            }, 
+            },
             function(callback) {
               callback_outer();
               callback();
@@ -290,7 +290,7 @@ suite('Docker load test', function() {
       }
       worker.complete();
     };
-    
+
   });
 
   suite('Docker test: load test with two components', function(){
@@ -513,7 +513,7 @@ suite('Docker load test', function() {
               client.on('connect', function() {
                 callback();
               });
-            }, 
+            },
             function(callback) {
               callback_outer();
               callback();
@@ -771,7 +771,7 @@ suite('Docker load test', function() {
               client.on('connect', function() {
                 callback();
               });
-            }, 
+            },
             function(callback) {
               callback_outer();
               callback();

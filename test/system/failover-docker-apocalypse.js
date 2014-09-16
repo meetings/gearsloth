@@ -82,7 +82,7 @@ suite('(docker) on apocalypse', function() {
     var work_handler = function() {};
     var client = new gearman.Client({host:gearmand0_host});
 
-    
+
     client.submitJob('submitJobDelayed', JSON.stringify(sent_payload))
     .on('complete', function() {
       setTimeout(function() {
@@ -126,7 +126,7 @@ function startGearslothStack(gearslothd_config, container_array, callback) {
         merge(gearslothd_config, {injector:true})
         , true, function(container) {
          container_array.push(container);
-         callback(); 
+         callback();
         });
     },
     function(callback) {
@@ -134,7 +134,7 @@ function startGearslothStack(gearslothd_config, container_array, callback) {
         merge(gearslothd_config, {runner:true})
         , true, function(container) {
          container_array.push(container);
-         callback(); 
+         callback();
         });
     },
     function(callback) {
@@ -142,7 +142,7 @@ function startGearslothStack(gearslothd_config, container_array, callback) {
         merge(gearslothd_config, {ejector:true})
         , true, function(container) {
           container_array.push(container);
-          callback(); 
+          callback();
         });
     },
     function(callback) {
@@ -150,7 +150,7 @@ function startGearslothStack(gearslothd_config, container_array, callback) {
           merge(gearslothd_config, {controller:true})
           , true, function(container) {
           container_array.push(container);
-          callback(); 
+          callback();
         });
     }], function() { callback(container_array) });
 }

@@ -151,7 +151,7 @@ suite('Docker test: killing injectors', function(){
             client.on('connect', function() {
               callback();
             });
-          }, 
+          },
           function(callback) {
             callback_outer();
             callback();
@@ -169,7 +169,7 @@ suite('Docker test: killing injectors', function(){
           function(callback) {
             client.submitJob('submitJobDelayed', JSON.stringify(simple_task));
             callback();
-          },  
+          },
           function(callback) {
             callback_outer();
             callback();
@@ -203,7 +203,7 @@ test('two of two, then bring one up, immediate task is executed', function(done)
             client.on('connect', function() {
               callback();
             });
-          }, 
+          },
           function(callback) {
             callback_outer();
             callback();
@@ -228,7 +228,7 @@ test('two of two, then bring one up, immediate task is executed', function(done)
           function(callback) {
             client.submitJob('submitJobDelayed', JSON.stringify(simple_task));
             callback();
-          },  
+          },
           function(callback) {
             callback_outer();
             callback();

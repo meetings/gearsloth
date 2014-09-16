@@ -79,40 +79,40 @@ suite('blackbox: on-time with sqlite :memory: "after" parameter ', function() {
       },
       function(callback) {
         gearmand = spawn.gearmand(port, function(){
-          
+
           callback();
         });
       },
       function(callback) {
         runner = new Runner(conf);
         runner.on('connect', function(){
-          
+
           callback();
         });
       },
       function(callback) {
         injector = new Injector(conf);
         injector.on('connect', function() {
-          
+
           callback();
         });
       },
       function(callback) {
         ejector = new Ejector(conf);
         ejector.on('connect', function() {
-          
+
           callback();
         });
       },
       function(callback) {
         controller = new Retry(conf);
         controller.on('connect', function(){
-          
+
           callback();
         });
       }
       ], function() {
-        
+
         done();
       });
   });

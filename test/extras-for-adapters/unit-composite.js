@@ -78,7 +78,7 @@ suite('composite-adapter', function() {
       var dbconn;
       setup(function() {
         initSandbox();
-        
+
         composite.initialize(
           config,
           function(e,dbconn_local) { dbconn = dbconn_local },
@@ -127,7 +127,7 @@ suite('composite-adapter', function() {
     teardown(function() {
       sandbox.restore();
     });
-    
+
     test('registers callback to all db adapters', function() {
       var listentask_callback = sandbox.spy();
       dbconn.listenTask(listentask_callback);
@@ -149,7 +149,7 @@ suite('composite-adapter', function() {
     teardown(function() {
       sandbox.restore();
     });
-    
+
     test('calls updateTask() of correct adapter', function() {
       var callback = sandbox.spy();
       var task = {id:{db_id:2}};
@@ -172,7 +172,7 @@ suite('composite-adapter', function() {
     teardown(function() {
       sandbox.restore();
     });
-    
+
     test('calls completeTask() of correct adapter', function() {
       var callback = sandbox.spy();
       var task = {id:{db_id:2}};
@@ -195,7 +195,7 @@ suite('composite-adapter', function() {
     teardown(function() {
       sandbox.restore();
     });
-    
+
     test('calls disableTask() of correct adapter', function() {
       var callback = sandbox.spy();
       var task = {id:{db_id:2}};
@@ -230,7 +230,7 @@ suite('composite-adapter', function() {
         function(e,dbconn_local) { dbconn = dbconn_local },
         config_helper);
     });
-  
+
     test('returns a database', function() {
       var picked_db = dbconn._pickDb();
       expect(picked_db).to.be.ok;

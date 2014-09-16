@@ -64,7 +64,7 @@ suite('gearsloth', function() {
       }).to.throw(Error);
     })
   });
-  
+
   suite('decodeTask()', function() {
 
     // invalid tests(s)
