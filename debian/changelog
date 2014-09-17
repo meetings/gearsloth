@@ -1,3 +1,9 @@
+gearsloth (0.3.6-1) unstable; urgency=low
+
+  * New release after fixes
+
+ -- Tuomas Starck <tuomas@meetin.gs>  Wed, 17 Sep 2014 08:29:29 +0000
+
 gearsloth (0.3.5-1) unstable; urgency=low
 
   * Another test build for fs-adapter
