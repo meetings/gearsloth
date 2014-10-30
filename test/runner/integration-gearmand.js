@@ -41,11 +41,13 @@ suite('(e2e) runner', function() {
     var new_task1 = {
         controller: 'test',
         func_name: 'log',
+        at : new Date().toISOString(),
         runner_retry_count: 2
     }
 
     var non_expiring_task1 = {
         id : 2,
+        at : new Date().toISOString(),
         controller: 'test',
         func_name: 'log',
         runner_retry_count: 1
@@ -53,6 +55,7 @@ suite('(e2e) runner', function() {
 
     var expiring_task1 = {
         id : 2,
+        at : new Date().toISOString(),
         controller: 'test',
         func_name: 'log',
         runner_retry_count: 0
@@ -60,6 +63,7 @@ suite('(e2e) runner', function() {
 
     var sample_task1 = {
         id: 666,
+        at : new Date().toISOString(),
         controller: 'test',
         func_name: 'log',
         mikko: 'jussi',
@@ -85,12 +89,12 @@ suite('(e2e) runner', function() {
         ], done );
     });
 
-    test('should run task with no retry count set', function(done) {
+    test('should reschedule and run task when no runner_retry_count set', function(done) {
       worker = new gearman.Worker('test', function(payload, worker) {
         var json = JSON.parse(payload.toString());
         expect(json).to.have.property('id', sample_task1.id);
         expect(json).to.have.property('func_name', sample_task1.func_name);
-        adapter.updateListenedTask.should.not.have.been.called;
+        adapter.updateListenedTask.should.have.been.called;
         adapter.disableListenedTask.should.not.have.been.called;
         done();
       }, { port:port
