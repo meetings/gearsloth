@@ -1,3 +1,10 @@
+gearsloth (0.4.0-1) unstable; urgency=low
+
+  * Many fixes for fs-adapter
+  * A little bit less horrible logging
+
+ -- Tuomas Starck <tuomas@meetin.gs>  Fri, 31 Oct 2014 15:25:35 +0000
+
 gearsloth (0.3.6-1) unstable; urgency=low
 
   * New release after fixes
