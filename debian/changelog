@@ -1,3 +1,34 @@
+gearsloth (0.4.1-1) unstable; urgency=low
+
+  * Show complete payload in debug log
+
+ -- Tuomas Starck <tuomas@meetin.gs>  Tue, 11 Nov 2014 17:10:17 +0200
+
+gearsloth (0.4.0-1) unstable; urgency=low
+
+  * Many fixes for fs-adapter
+  * A little bit less horrible logging
+
+ -- Tuomas Starck <tuomas@meetin.gs>  Fri, 31 Oct 2014 15:25:35 +0000
+
+gearsloth (0.3.6-1) unstable; urgency=low
+
+  * New release after fixes
+
+ -- Tuomas Starck <tuomas@meetin.gs>  Wed, 17 Sep 2014 08:29:29 +0000
+
+gearsloth (0.3.5-1) unstable; urgency=low
+
+  * Another test build for fs-adapter
+
+ -- Tuomas Starck <tuomas@meetin.gs>  Tue, 16 Sep 2014 06:07:08 +0000
+
+gearsloth (0.3.3-1) unstable; urgency=low
+
+  * Test build for fs-adapter deployment
+
+ -- Tuomas Starck <tuomas@meetin.gs>  Fri, 12 Sep 2014 13:18:15 +0000
+
 gearsloth (0.2.4-1) unstable; urgency=low
 
   * Example configurations

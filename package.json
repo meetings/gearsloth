@@ -1,6 +1,6 @@
 {
   "name": "gearsloth",
-  "version": "0.3.0",
+  "version": "0.4.1",
   "description": "Delayed task workers and persistent storage schemes for Gearman",
   "main": "./lib/gearsloth",
   "repository": {

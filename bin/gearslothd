@@ -2,21 +2,15 @@
 
 var config = require('../lib/config');
 var daemon = require('../lib/daemon');
-var log = require('../lib/log');
 
 try {
   var conf = config.initialize(process.argv);
   if (!conf) {
     process.exit(0);
   }
-  conf = config.resolveController(conf);
-  config.initializeDb(conf, function(err, conf) {
-    if (err)
-      throw new Error('Error initializing database adapter:', err.message);
-    daemon.initialize(conf);
-  });
-} catch (err) {
+  daemon.initialize(conf);
+}
+catch (err) {
   console.error('gearslothd:', err.message);
   process.exit(1);
 }
-

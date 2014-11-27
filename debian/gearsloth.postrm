@@ -1,9 +1,12 @@
 #!/bin/sh -e
 
+FS_ADAPTER_DIR=/usr/lib/gearsloth/fs-adapter
+
 case $1 in
     purge)
         rm -f /etc/gearsloth/gearsloth.json
         rmdir --ignore-fail-on-non-empty /etc/gearsloth
+        rmdir --ignore-fail-on-non-empty $FS_ADAPTER_DIR
         deluser --quiet gearsloth >/dev/null 2>&1 || true
     ;;
 esac
