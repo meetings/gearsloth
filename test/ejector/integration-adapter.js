@@ -1,5 +1,6 @@
-var lib = require( '../../lib/helpers/lib_require' );
+var lib = require('../../lib/helpers/lib_require');
 
+var util = require('util');
 var _ = require('underscore');
 var async = require('async');
 var gearman = require('gearman-coffee');
@@ -36,47 +37,45 @@ suite('(e2e) ejector', function() {
 
     setup(function(done) {
       async.series([
-        adapter_helper.async_teardown( conf ),
-        spawn.async_gearmand( port ),
+        adapter_helper.async_teardown(conf),
+        spawn.async_gearmand(port),
         function(callback) {
-          ejector = new Ejector( conf );
-          ejector.on( 'connect', function() {
+          ejector = new Ejector(conf);
+          ejector.on('connect', function() {
             callback();
-          } );
+          });
         },
-      ], done );
+      ], done);
     });
 
     teardown(function(done) {
       async.series([
-        ejector.disconnect.bind( ejector ),
+        ejector.disconnect.bind(ejector),
         client_helper.teardown,
         spawn.teardown,
-        adapter_helper.async_teardown( conf )
-        ], done );
+        adapter_helper.async_teardown(conf)
+      ], done);
     });
 
-    test('should remove inserted job', function( done ) {
+    test('should remove inserted job', function(done) {
       var task = { func_name : 'test' };
 
-      async.waterfall( [
-        adapter_helper.async_inject_job_and_wait_for_completion( ejector._dbconn, task ),
-        adapter_helper.async_gather_enabled_job_meta_list( ejector._dbconn ),
-        function( meta_jobs, callback ) {
-          expect( meta_jobs ).to.have.length( 1 );
+      async.waterfall([
+        adapter_helper.async_inject_job_and_wait_for_completion(ejector._dbconn, task),
+        adapter_helper.async_gather_enabled_job_meta_list(ejector._dbconn),
+        function(meta_jobs, callback) {
+          expect(meta_jobs).to.have.length(1);
           var meta_job = meta_jobs[0];
-          expect( meta_job.job ).to.have.property( 'func_name', task.func_name );
-          callback( null, 'gearsloth_eject-' + meta_job.domain, meta_job.job, port );
+          expect(meta_job.job).to.have.property('func_name', task.func_name);
+          callback(null, 'gearsloth_eject-' + meta_job.domain, meta_job.job, port);
         },
         client_helper.submit_func_with_json_payload_to_port_and_wait_for_completion,
-        adapter_helper.async_gather_enabled_job_list( ejector._dbconn ),
-        function( jobs, callback ) {
-          expect( jobs ).to.have.length( 0 );
+        adapter_helper.async_gather_enabled_job_list(ejector._dbconn),
+        function(jobs, callback) {
+          expect(jobs).to.have.length(0);
           callback();
-        },
-      ], done )
+        }
+      ], done)
     });
   });
 });
-
-

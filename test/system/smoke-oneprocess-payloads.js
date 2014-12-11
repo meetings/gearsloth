@@ -19,7 +19,7 @@ suite('single gearslothd in default mode:', function() {
     db: 'sqlite',
     dbopt: {
       poll_timeout: 0,
-      db_name: ':memory:'
+      db_file: ':memory:'
     },
     servers: [{
       host: 'localhost',

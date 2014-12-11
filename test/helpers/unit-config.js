@@ -9,7 +9,7 @@ var ok_json = './test/helpers/test-data/config-good.json';
 var crap_json = './test/helpers/test-data/config-bad.json';
 
 function args(argv) {
-  return ['node', 'gearslothd.js'].concat(argv);
+  return ['node', 'bin/gearslothd'].concat(argv);
 }
 
 suite('config', function() {
@@ -118,7 +118,7 @@ suite('config', function() {
 
     // illegal configuration options
     testThrow('should throw when no servers are given',
-      []);
+      ['']);
     testThrow('should throw on crap json conf after short opt',
       [ '-f', crap_json ]);
     testThrow('should throw on crap json conf after long opt',

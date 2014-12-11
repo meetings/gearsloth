@@ -1,4 +1,4 @@
-var lib = require( '../../lib/helpers/lib_require' );
+var lib = require('../../lib/helpers/lib_require');
 
 var _ = require('underscore');
 var async = require('async');
@@ -36,41 +36,39 @@ suite('(e2e) injector', function() {
 
     setup(function(done) {
       async.series([
-        adapter_helper.async_teardown( conf ),
-        spawn.async_gearmand( port ),
+        adapter_helper.async_teardown(conf),
+        spawn.async_gearmand(port),
         function(callback) {
-          injector = new Injector( conf );
-          injector.on( 'connect', function() {
+          injector = new Injector(conf);
+          injector.on('connect', function() {
             callback();
-          } );
-        } ], done );
+          });
+        } ], done);
     });
 
     teardown(function(done) {
       async.series([
-        injector.disconnect.bind( injector ),
+        injector.disconnect.bind(injector),
         client_helper.teardown,
         spawn.teardown,
-        adapter_helper.async_teardown( conf )
-        ], done );
+        adapter_helper.async_teardown(conf)
+        ], done);
     });
 
-    test('should insert job with "at" as is', function( done ) {
-      var at_date = new Date( 1000000000000 );
+    test('should insert job with "at" as is', function(done) {
+      var at_date = new Date(1000000000000);
       var job = { at : at_date.toString(), func_name : 'test' };
 
-      async.waterfall( [
-        client_helper.async_submit_delayed_job_to_port_and_wait_for_completion( job, port ),
-        adapter_helper.async_gather_enabled_job_list( injector._dbconn ),
-        function( jobs, callback ) {
-          expect( jobs ).to.have.length( 1 );
-          expect( jobs[0] ).to.have.property('at' );
-          expect( jobs[0].at ).to.equal( at_date.toString() );
+      async.waterfall([
+        client_helper.async_submit_delayed_job_to_port_and_wait_for_completion(job, port),
+        adapter_helper.async_gather_enabled_job_list(injector._dbconn),
+        function(jobs, callback) {
+          expect(jobs).to.have.length(1);
+          expect(jobs[0]).to.have.property('at');
+          expect(jobs[0].at).to.equal(at_date.toString());
           callback();
         }
-      ], done )
+      ], done)
     });
   });
 });
-
-
