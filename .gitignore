@@ -16,15 +16,13 @@ lib-cov
 # Coverage directory used by tools like istanbul
 coverage
 
-# Grunt intermediate storage (http://gruntjs.com/creating-plugins#storing-task-files)
+# Grunt intermediate storage
 .grunt
 
-# Compiled binary addons (http://nodejs.org/api/addons.html)
+# Compiled binary addons
 build/Release
 
-# Dependency directory
-# Commenting this out is preferred by some people, see
-# https://npmjs.org/doc/faq.html#Should-I-check-my-node_modules-folder-into-git
+# Dependencies directory
 node_modules
 
 # Docker markers
@@ -43,5 +41,8 @@ node_modules
 # Test environment
 .vagrant
 
-#random killscript
+# Custom configuration for virtualbox
+virt/vagrant/user.rb
+
+# Random killscript
 killall*

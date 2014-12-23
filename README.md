@@ -456,3 +456,15 @@ Gearsloth has tests that simulate a production-like environment implemented with
     sloth:~$ cd gearsloth
     sloth:~/gearsloth$ make docker-test
 
+### Configuring virtualized environment
+
+File `virt/vagrant/user.rb` may be used to override default virtual machine configration. Here is an example configration:
+
+    module User
+      def self.memory
+        2048
+      end
+      def self.cpus
+        2
+      end
+    end

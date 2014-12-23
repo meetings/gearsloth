@@ -1,6 +1,18 @@
 # Vagrantfile for Gearsloth test environment
 # vi: set sw=2 ts=2 sts=2 ft=ruby :
-require_relative 'virt/vagrant/host.rb'
+
+begin
+  require './virt/vagrant/user.rb'
+rescue LoadError
+  module User
+    def self.memory
+      1024
+    end
+    def self.cpus
+      1
+    end
+  end
+end
 
 VAGRANTFILE_API_VERSION = "2"
 
@@ -8,7 +20,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   ### Machine settings
   #
   config.vm.hostname = "sloth"
-  config.vm.box      = "sloth-2014-06-06"
+  config.vm.box      = "2014-12-24"
   config.vm.box_url  = "https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box"
 
   ### Provisioning
@@ -21,8 +33,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   ### Virtalbox configuration
   #
   config.vm.provider :virtualbox do |virtualbox|
-    virtualbox.name   = "sloth-test-env"
-    virtualbox.memory = (Host.total_memory || 2048) / 2
-    virtualbox.cpus   = Host.processor_count || 2
+    virtualbox.name   = "gearsloth-test-env"
+    virtualbox.memory = User.memory
+    virtualbox.cpus   = User.cpus
   end
 end
