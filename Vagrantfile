@@ -2,7 +2,7 @@
 # vi: set sw=2 ts=2 sts=2 ft=ruby :
 
 begin
-  require './virt/vagrant/user.rb'
+  require './user.rb'
 rescue LoadError
   module User
     def self.memory
@@ -27,6 +27,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   #
   config.vm.provision :shell, path: "virt/vagrant/stdintty.sh"
   config.vm.provision :shell, path: "virt/vagrant/apt.sh"
+  config.vm.provision :shell, path: "virt/vagrant/dpkg.sh"
   config.vm.provision :shell, path: "virt/vagrant/docker.sh"
   config.vm.provision :shell, path: "virt/vagrant/make.sh", privileged: false
 

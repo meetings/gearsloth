@@ -41,8 +41,10 @@ node_modules
 # Test environment
 .vagrant
 
-# Custom configuration for virtualbox
-virt/vagrant/user.rb
+# Custom configuration for virtual environment
+enable.dpkg
+enable.docker
+user.rb
 
 # Random killscript
 killall*

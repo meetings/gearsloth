@@ -3,7 +3,14 @@
 
 DIR=$HOME/gearsloth
 
-mkdir -p $DIR
-git clone /vagrant gearsloth
+git clone /vagrant $DIR
 
-cd $DIR && sg docker -c 'make all 2> /tmp/make.log'
+if [ ! -e /vagrant/enable.docker ]; then
+  echo
+  echo To build Docker containers, touch enable.docker
+  echo in project root.
+  echo
+  exit 0
+fi
+
+cd $DIR && sudo sg docker -c 'make all 2> /tmp/make.log'
