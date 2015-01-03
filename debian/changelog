@@ -1,3 +1,9 @@
+gearsloth (0.4.2-1) unstable; urgency=low
+
+  * Switch production to sqlite adapter
+
+ -- Tuomas Starck <tuomas@meetin.gs>  Sat, 03 Jan 2015 18:16:14 +0200
+
 gearsloth (0.4.1-1) unstable; urgency=low
 
   * Show complete payload in debug log

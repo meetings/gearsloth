@@ -1,19 +1,14 @@
 #!/bin/sh -e
 
 USERNAME=gearsloth
-FS_ADAPTER_DIR=/usr/lib/gearsloth/fs-adapter
+DIR=/var/lib/gearsloth
 
 if [ "$1" != "configure" ]; then
-    exit 0
+  exit 0
 fi
 
 if ! getent passwd $USERNAME >/dev/null; then
-    adduser --system --no-create-home $USERNAME
-fi
-
-if [ ! -d $FS_ADAPTER_DIR ]; then
-    mkdir -p $FS_ADAPTER_DIR
-    chown $USERNAME:root $FS_ADAPTER_DIR
+  adduser --system --home $DIR $USERNAME
 fi
 
 exit 0

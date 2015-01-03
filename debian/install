@@ -1,10 +1,10 @@
-package.json                 usr/lib/nodejs/gearsloth
+examples/gearsloth.json.example etc/gearsloth
 
-bin                          usr/lib/nodejs/gearsloth
-lib                          usr/lib/nodejs/gearsloth
+package.json                    usr/lib/nodejs/gearsloth
+bin                             usr/lib/nodejs/gearsloth
+lib                             usr/lib/nodejs/gearsloth
 
-node_modules/async           usr/lib/nodejs/gearsloth/node_modules
-node_modules/underscore      usr/lib/nodejs/gearsloth/node_modules
-node_modules/gearman-coffee  usr/lib/nodejs/gearsloth/node_modules
-
-examples/simple-sqlite.json           etc/gearsloth
+node_modules/async              usr/lib/nodejs/gearsloth/node_modules
+node_modules/underscore         usr/lib/nodejs/gearsloth/node_modules
+node_modules/gearman-coffee     usr/lib/nodejs/gearsloth/node_modules
+node_modules/sqlite3            usr/lib/nodejs/gearsloth/node_modules

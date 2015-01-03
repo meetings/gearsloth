@@ -16,10 +16,10 @@
   "db": "sqlite",
 
   "dbopt": {
+    "domain":          "$HOSTNAME",
     "table_name":      "DelayedTasks",
-    "db_name":         "DelayedTasks.sqlite",
-    "pre_poll":        "0",
-    "poll_timeout":    "1000",
+    "database_file":   "/var/lib/gearsloth/tasks.sqlite",
+    "poll_interval":   "333",
     "default_timeout": "1000"
   },
 

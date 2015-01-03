@@ -6,11 +6,12 @@
 #
 GEARSLOTH_ENABLED=no
 
-# Optional filesystem adapter base directory.
-# This is useful only if fs adapter is used.
-#
-#GEARSLOTH_FS_DIR="/usr/lib/gearsloth/fs-adapter"
-
 # Optional command line arguments passed to gearslothd.
 #
 #GEARSLOTH_ARGS=""
+
+# Uncommenting and setting FS_ADAPTER_DIR will clear
+# old lock files when Gearsloth is initiated. This
+# is only useful if fs adapter is used.
+#
+#FS_ADAPTER_DIR="/var/lib/gearsloth"
