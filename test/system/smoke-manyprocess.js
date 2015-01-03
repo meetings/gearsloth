@@ -26,7 +26,7 @@ suite('blackbox: separate gearslothd processes', function() {
       db: 'sqlite',
       dbopt: {
         poll_timeout: 100,
-        db_file: '/tmp/delayed-tasks.sqlite'
+        database_file: '/tmp/delayed-tasks.sqlite'
       },
       servers: [{
         host: 'localhost',
@@ -150,7 +150,7 @@ suite('blackbox: separate gearslothd processes', function() {
       db: 'sqlite',
       dbopt: {
         poll_timeout: 100,
-        db_file: '/tmp/delayed-tasks.sqlite'
+        database_file: '/tmp/delayed-tasks.sqlite'
       },
       servers: [
       { host: 'localhost',

@@ -13,7 +13,7 @@ suite('sqlite-adapter', function() {
 
   var test_config = {
     dbopt:{
-      db_file:':memory:',
+      database_file:':memory:',
       table_name:"sloth",
       poll_timeout:0
     }
@@ -21,7 +21,7 @@ suite('sqlite-adapter', function() {
 
   var test_config_with_file = {
     dbopt:{
-      db_file:'/tmp/test-database.sqlite',
+      database_file:'/tmp/test-database.sqlite',
       table_name:"sloth",
       poll_timeout:1000
     }
