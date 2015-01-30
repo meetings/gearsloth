@@ -13,17 +13,17 @@ suite('sqlite-adapter', function() {
 
   var test_config = {
     dbopt:{
-      database_file:':memory:',
-      table_name:"sloth",
-      poll_timeout:0
+      database_file: ':memory:',
+      table_name: "sloth",
+      poll_timeout: 0
     }
   };
 
   var test_config_with_file = {
-    dbopt:{
-      database_file:'/tmp/test-database.sqlite',
-      table_name:"sloth",
-      poll_timeout:1000
+    dbopt: {
+      database_file: '/tmp/test-database.sqlite',
+      table_name: "sloth",
+      poll_timeout: 1000
     }
   };
 
@@ -37,24 +37,24 @@ suite('sqlite-adapter', function() {
  var test_json_unset_delivery = {
     func_name: worker,
     payload: "unset delivery",
-    strategy:'default'
+    strategy: 'default'
   };
 
   var test_json_with_unset_at = {
     after: 0,
     func_name: worker,
     payload: "jassoo",
-    strategy:null
+    strategy: null
   };
 
   var test_json_with_strategy_options = {
     at: new Date(),
     func_name: worker,
     payload: "jassoo",
-    strategy:'specialized',
+    strategy: 'specialized',
     strategy_options: {
-      retry:true,
-      times:3
+      retry: true,
+      times: 3
     }
   };
 
@@ -130,8 +130,8 @@ suite('sqlite-adapter', function() {
             var now = new Date();
             var utc = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
 
-            expect(task.at.substring(0, 18))
-              .to.equal(utc.toISOString().substring(0, 18));
+            expect(task.at.substring(0, 17))
+              .to.equal(utc.toISOString().substring(0, 17));
             expect(task.func_name).to.equal(test_json_unset_delivery.func_name);
             expect(task.payload).to.deep.equal(test_json_unset_delivery.payload);
             expect(task.strategy).to.equal(test_json_unset_delivery.strategy);
@@ -149,7 +149,7 @@ suite('sqlite-adapter', function() {
       adapter.initialize(test_config, testScript);
     });
 
-    test('should behave correctly with no cofiguration', function(done) {
+    test('should behave correctly with no configuration', function(done) {
       var items = 2;
 
       function testScript(err, dbconn) {
@@ -167,8 +167,8 @@ suite('sqlite-adapter', function() {
             var now = new Date();
             var utc = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
 
-            expect(task.at.substring(0, 18))
-              .to.equal(utc.toISOString().substring(0, 18));
+            expect(task.at.substring(0, 17))
+              .to.equal(utc.toISOString().substring(0, 17));
             expect(task.func_name).to.equal(test_json_unset_delivery.func_name);
             expect(task.payload).to.deep.equal(test_json_unset_delivery.payload);
             expect(task.strategy).to.equal(test_json_unset_delivery.strategy);
@@ -216,8 +216,9 @@ suite('sqlite-adapter', function() {
           stop();
           try {
             expect(task.strategy).to.equal(null);
-            expect(task.at.substring(0, 18))
-              .to.equal(utc.toISOString().substring(0, 18));
+            expect(task).to.have.property('at');
+            expect(task.at.substring(0, 17))
+              .to.equal(utc.toISOString().substring(0, 17));
           } catch(err) {
             return done(err);
           }

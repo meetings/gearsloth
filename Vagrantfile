@@ -20,7 +20,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   ### Machine settings
   #
   config.vm.hostname = "sloth"
-  config.vm.box      = "2014-12-24"
+  config.vm.box      = "trusty-2015-01-01"
   config.vm.box_url  = "https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box"
 
   ### Provisioning

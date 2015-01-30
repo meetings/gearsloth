@@ -19,8 +19,7 @@
     "domain":          "$HOSTNAME",
     "table_name":      "DelayedTasks",
     "database_file":   "/var/lib/gearsloth/tasks.sqlite",
-    "poll_interval":   "333",
-    "default_timeout": "1000"
+    "poll_interval":   "333"
   },
 
   "servers": [{

@@ -53,7 +53,6 @@ log('client1:', msg1);
 client.submitJob('submitJobDelayed', JSON.stringify(task1)).
 on('complete', client_called);
 
-
 // a hackish way to keep track of succesful calls
 
 var wi = 1;
@@ -67,4 +66,3 @@ function client_called() {
   if (!--ci)
     client.disconnect();
 }
-

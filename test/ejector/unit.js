@@ -2,7 +2,7 @@ var chai = require("chai");
 var expect = chai.expect;
 var sinon = require('sinon');
 chai.use(require('sinon-chai'));
-require('../../lib/log').setOutput();
+require('../../lib/log').mute();
 
 var EventEmitter = require('events').EventEmitter;
 
@@ -62,13 +62,11 @@ suite('Ejector', function() {
       expect(workerStub.complete).to.have.been.calledOnce;
     });
     test('should call worker.error() with error on failure', function() {
-      var db_error = new Error('Error: vagina not accessible');
+      var db_error = new Error('error: not accessible');
       adapterStub.completeTask.yields(db_error);
       e.eject.call(e, sampleTask, workerStub);
-
       expect(workerStub.error).to.have.been.calledOnce;
-      expect(workerStub.error).to.have.been
-      .calledWith(db_error.message);
+      expect(workerStub.error).to.have.been.calledWith(db_error.message);
     });
 
   });

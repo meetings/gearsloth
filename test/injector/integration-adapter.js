@@ -3,7 +3,7 @@ var lib = require('../../lib/helpers/lib_require');
 var _ = require('underscore');
 var async = require('async');
 var gearman = require('gearman-coffee');
-var log = lib.require('log');
+var log = lib.require('log').mute();
 
 var spawn = lib.require('test-helpers/spawn');
 var adapter_helper = lib.require('test-helpers/adapter-helper');
@@ -17,7 +17,6 @@ var expect = chai.expect;
 
 chai.should();
 chai.use(sinonChai);
-log.setOutput();
 
 suite('(e2e) injector', function() {
 
