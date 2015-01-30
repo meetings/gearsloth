@@ -1,5 +1,5 @@
-var merge = exports.merge = require('./merge');
-var component = require('./component');
+var component = require('./lib/component');
+var merge = exports.merge = require('./lib/merge');
 
 exports.Component = component.Component;
 
@@ -9,13 +9,12 @@ exports.Component = component.Component;
  * @param {Object} task
  * @return {String}
  */
-
 exports.encodeTask = function(task) {
-
   // check func_name
   // base64 encoded fields are *not* checked for validity
-  if (encodeBinaryField('func_name', task))
+  if (encodeBinaryField('func_name', task)) {
     throw new Error('Task should contain field "func_name"');
+  }
 
   // check payload
   // base64 encoded fields are *not* checked for validity
@@ -33,14 +32,13 @@ exports.encodeTask = function(task) {
  * @param {String|Buffer} task
  * @return {Object}
  */
-
 exports.decodeTask = function(task) {
-
   // parse as utf8 if passed a string
   // encoding errors are *not* checked
   if (task instanceof Buffer) {
     task = task.toString();
-  } else if (typeof task !== 'string') {
+  }
+  else if (typeof task !== 'string') {
     throw new Error('Invalid task parameter');
   }
 
@@ -68,25 +66,27 @@ exports.decodeTask = function(task) {
   return ret;
 }
 
-// private
-
 function encodeBinaryField(field, obj) {
   var bfield = field + '_base64';
   if (bfield in obj) {
-    if (typeof obj[bfield] !== 'string')
+    if (typeof obj[bfield] !== 'string') {
       throw new Error('Field "' + bfield + '" should be string');
-  } else if (field in obj) {
+    }
+  }
+  else if (field in obj) {
     if (obj[field] instanceof Buffer) {
       obj[bfield] = obj[field].toString('base64');
       delete obj[field];
     }
-  } else {
+  }
+  else {
     return true;
   }
 }
 
 function decodeBinaryField(field, obj) {
   var bfield = field + '_base64';
-  if (typeof obj[bfield] === 'string')
+  if (typeof obj[bfield] === 'string') {
     obj[field] = new Buffer(obj[bfield], 'base64');
+  }
 }

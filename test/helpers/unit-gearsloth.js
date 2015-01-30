@@ -1,7 +1,7 @@
 var util = require('util');
-var assert = require('assert');
 var chai = require('chai');
-var gearsloth = require('../../lib/gearsloth');
+var assert = require('assert');
+var gearsloth = require('../../index');
 
 var expect = chai.expect;
 
