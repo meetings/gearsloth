@@ -1,7 +1,7 @@
 var async = require('async');
 var chai = require('chai');
 var expect = chai.expect;
-var gearman = require('gearman-coffee');
+var gearman = require('gearman-node');
 var Docker = require('dockerode');
 var docker = new Docker({socketPath: '/var/run/docker.sock'});
 var net = require('net');

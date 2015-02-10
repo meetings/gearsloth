@@ -5,7 +5,7 @@ var child_process = require('child_process');
 var sinon = require('sinon');
 var sinonChai = require('sinon-chai');
 var spawn = require('../lib/spawn');
-var gearman = require('gearman-coffee');
+var gearman = require('gearman-node');
 var fs = require('fs');
 var MultiserverWorker = require('../../lib/gearman/multiserver-worker')
   .MultiserverWorker;

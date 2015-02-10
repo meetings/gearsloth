@@ -1,4 +1,4 @@
-var gearman = require('gearman-coffee');
+var gearman = require('gearman-node');
 var Ejector = require('../../lib/daemon/ejector').Ejector;
 var child_process = require('child_process');
 var chai = require('chai');

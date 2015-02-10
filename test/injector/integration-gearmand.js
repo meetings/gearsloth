@@ -1,6 +1,6 @@
 var lib = require( '../../lib/helpers/lib_require' );
 
-var gearman = require('gearman-coffee');
+var gearman = require('gearman-node');
 var Injector = require('../../lib/daemon/injector').Injector;
 var child_process = require('child_process');
 var chai = require('chai');
@@ -10,7 +10,7 @@ var expect = chai.expect;
 var _ = require('underscore');
 var async = require('async');
 var spawn = require('../../lib/test-helpers/spawn');
-var Client = require('gearman-coffee').Client;
+var Client = require('gearman-node').Client;
 var client_helper = lib.require('test-helpers/client-helper');
 
 chai.should();

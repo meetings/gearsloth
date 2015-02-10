@@ -3,7 +3,7 @@ var lib = require('../../lib/helpers/lib_require');
 var util = require('util');
 var _ = require('underscore');
 var async = require('async');
-var gearman = require('gearman-coffee');
+var gearman = require('gearman-node');
 var log = lib.require('log').mute();
 
 var spawn = lib.require('test-helpers/spawn');

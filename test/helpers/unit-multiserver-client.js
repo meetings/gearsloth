@@ -4,7 +4,7 @@ var expect = chai.expect;
 chai.use(require('sinon-chai'));
 var EventEmitter = require('events').EventEmitter;
 var MultiserverClient = require('../../lib/gearman').MultiserverClient;
-var gearman = require("gearman-coffee");
+var gearman = require("gearman-node");
 
 
 var dummy_func = function() {};
