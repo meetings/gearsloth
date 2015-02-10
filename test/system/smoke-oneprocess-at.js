@@ -55,7 +55,7 @@ suite('blackbox: at on-time with "at" parameter', function() {
     var task = {
       func_name: 'test',
       payload: '{ "ok" : "1" }',
-      at : at.toISOString(),
+      at: at.toISOString(),
     };
 
     worker_helper.register_worker_to_port_with_json_payload( 'test', port, function( data, worker ) {
@@ -74,8 +74,8 @@ suite('blackbox: at on-time with "at" parameter', function() {
     var task = {
       func_name: 'test',
       payload: '{ "ok" : "2" }',
-      at : at.toISOString(),
-      after : 1
+      at: at.toISOString(),
+      after: 1
     };
 
     worker_helper.register_worker_to_port_with_json_payload( 'test', port, function( data ) {

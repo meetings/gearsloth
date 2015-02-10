@@ -195,7 +195,7 @@ suite('blackbox: on-time with sqlite :memory: "after" parameter ', function() {
   test('task is recieved on time, regardless of future "at" field', function(done){
     this.timeout(4000);
     var time_in_future = new Date();
-    time_in_future.setSeconds(time_in_future.getSeconds() +10000 );
+    time_in_future.setSeconds(time_in_future.getSeconds() + 10000);
     conflict_task.at = time_in_future.toISOString();
     client = new gearman.Client({port:port});
     worker = new gearman.Worker('test', function(payload, worker) {

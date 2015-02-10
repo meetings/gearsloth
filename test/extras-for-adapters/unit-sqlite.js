@@ -10,6 +10,8 @@ suite('sqlite-adapter', function() {
 
   var worker = 'log';
   var payload = new Buffer(10);
+  var accepted_task_delay = 3333;
+  /// ^ must be greater than adapters poll_interval
 
   var test_config = {
     dbopt:{
@@ -129,9 +131,9 @@ suite('sqlite-adapter', function() {
 
             var now = new Date();
             var utc = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
+            var diff = new Date(task.at) - utc;
 
-            expect(task.at.substring(0, 17))
-              .to.equal(utc.toISOString().substring(0, 17));
+            expect(diff).to.be.at.most(accepted_task_delay);
             expect(task.func_name).to.equal(test_json_unset_delivery.func_name);
             expect(task.payload).to.deep.equal(test_json_unset_delivery.payload);
             expect(task.strategy).to.equal(test_json_unset_delivery.strategy);
@@ -166,9 +168,9 @@ suite('sqlite-adapter', function() {
 
             var now = new Date();
             var utc = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
+            var diff = new Date(task.at) - utc;
 
-            expect(task.at.substring(0, 17))
-              .to.equal(utc.toISOString().substring(0, 17));
+            expect(diff).to.be.at.most(accepted_task_delay);
             expect(task.func_name).to.equal(test_json_unset_delivery.func_name);
             expect(task.payload).to.deep.equal(test_json_unset_delivery.payload);
             expect(task.strategy).to.equal(test_json_unset_delivery.strategy);
@@ -217,8 +219,9 @@ suite('sqlite-adapter', function() {
           try {
             expect(task.strategy).to.equal(null);
             expect(task).to.have.property('at');
-            expect(task.at.substring(0, 17))
-              .to.equal(utc.toISOString().substring(0, 17));
+
+            var diff = new Date(task.at) - utc;
+            expect(diff).to.be.at.most(accepted_task_delay);
           } catch(err) {
             return done(err);
           }
