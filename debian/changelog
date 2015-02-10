@@ -1,3 +1,10 @@
+gearsloth (0.5.0-1) unstable; urgency=low
+
+  * Massive set of fixes for robustness
+  * Updated to gearman-node
+
+ -- Tuomas Starck <tuomas@meetin.gs>  Tue, 10 Feb 2015 13:25:50 +0200
+
 gearsloth (0.4.2-1) unstable; urgency=low
 
   * Switch production to sqlite adapter

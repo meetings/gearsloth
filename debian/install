@@ -6,5 +6,5 @@ lib                             usr/lib/nodejs/gearsloth
 
 node_modules/async              usr/lib/nodejs/gearsloth/node_modules
 node_modules/underscore         usr/lib/nodejs/gearsloth/node_modules
-node_modules/gearman-coffee     usr/lib/nodejs/gearsloth/node_modules
+node_modules/gearman-node       usr/lib/nodejs/gearsloth/node_modules
 node_modules/sqlite3            usr/lib/nodejs/gearsloth/node_modules
