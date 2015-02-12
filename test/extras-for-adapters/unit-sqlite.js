@@ -285,7 +285,7 @@ suite('sqlite-adapter', function() {
     test('should update task correctly', function(done) {
       this.timeout(5000);
       function testScript(err, dbconn) {
-        var stop = dbconn.listenTask(function(err, task) {
+        var stop = dbconn.listenTask(function(err, task, domain, state) {
           --roundTrip;
           if (roundTrip === 0){
             stop();
@@ -296,10 +296,11 @@ suite('sqlite-adapter', function() {
               return done(err);
             }
             done();
-          } else {
-            task.func_name = "lolleros";
+          }
+          else {
             task.after = 1;
-            dbconn.updateTask(task, function(){});
+            task.func_name = "lolleros";
+            dbconn.updateTask(task, state, function(){});
           }
         });
         dbconn.saveTask(test_json, function(){});

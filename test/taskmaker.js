@@ -1,7 +1,12 @@
 #!/usr/bin/nodejs
 
-/* $ npm install gearman-node
- * $ nodejs stresstest.js <nro> <interval> <delay>
+/* Taskmaker lets you generate and feed tasks into Gearsloth system.
+ * Useful for stress testing. Number of generated tasks, interval
+ * between feeding tasks and task delays are configurable.
+ *
+ * Usage:
+ *  $ npm install gearman-node
+ *  $ nodejs stresstest.js <nro> <interval> <delay>
  */
 
 var util = require('util')
