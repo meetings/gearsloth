@@ -1,6 +1,6 @@
 {
   "name": "gearsloth",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Delayed task workers and persistent storage schemes for Gearman",
   "repository": {
     "type": "git",
