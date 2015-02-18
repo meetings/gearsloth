@@ -1,4 +1,5 @@
-# Gearsloth
+
+## Gearsloth
 
 [gear]:  http://gearman.org
 [deb]:   https://wiki.debian.org/Packaging
@@ -7,11 +8,13 @@
 [sqnpm]: https://www.npmjs.org/package/sqlite3
 [dock]:  http://www.docker.com
 [vagr]:  http://www.vagrantup.com
+[uni]:   http://www.cs.helsinki.fi
 
-
-## Contents
+### Contents
 
  * [Overview](#overview)
+ * [Example](#example)
+
  * [Installation](#installation)
  * [Components](#components)
    - [Injector](#injector)
@@ -27,38 +30,41 @@
    - [Code conventions](#code-conventions)
  * [License](#license)
 
+### Overview
 
-## Overview
+Gearsloth stores requests to execute a [Gearman][gear] function at or after a given time. It can also be used as a fault-tolerant replacement for normal Gearman background jobs.
 
-Gearsloth stores requests to execute a [Gearman][gear] function after a given time. It can also be used as a fault-tolerant replacement for normal Gearman background jobs.
+### Example
 
-## Example
+Because who wouldn't want a reverse kitten with Gearman!
 
-Because who would not want to reverse a kitteh in a Gearman worker after 10 seconds and discard the result?
-
-    GearmanClient.submitJob(
-        "gearsloth_inject",
-        JSON.stringify( {
-            "func_name" : "reverse",
-            "payload" : "kitteh",
-            "after" : 10
-        } ),
-        function( err, result ) {
-            if ( ! err ) {
-                console.log( 'Gearsloth has promised to submit "kitteh" for function "reverse" after 10 seconds' );
-            }
-        }
-    );
+```js
+GearmanClient.submitJob(
+  "gearsloth_inject",
+  JSON.stringify({
+    "func_name": "reverse",
+    "payload": "kitten",
+    "after": 10
+  }),
+  function(err, result) {
+    if (!err) {
+      /* Gearsloth has promised to submit "kitten"
+       * for function "reverse" after 10 seconds.
+       */
+    }
+  }
+);
+```
 
 There might also be an error through! Depending on the error you might know that the function will not be executed or that there is really no way to know if it will or not.
 
 With any error you should probably just retry the inject until it returns a success. Be sure to make your functions safe to be executed more than once as distributed computing easily introduces many failure situations where code gets executed multiple times. If you are really worried about this, you might want to look into getting yourself a lock server.
 
-If an error did not occur, you now have a promise! The promise is as strong as your system is, so make sure your systems administrator picks the right configuration for your use case. If you are the mighty BOFH or just want to know more about the promises, head to the administrator documentation.
+If an error did not occur, you now have a promise! The promise is as strong as your system is, so make sure your systems administrator picks the right configuration for your use case. If you just want to know more, head to the [administrator documentation](#administrator-documentation).
 
-Just want more examples on how to use Gearsloth? Head to the user documentation for more!
+Just want more examples on how to use Gearsloth? Head to the [user documentation](#user-documentation) for more!
 
-## Installation for development
+### Installation for development
 
 The easiest way is to just install from npm:
 
@@ -68,49 +74,48 @@ After which you can start it up in the development mode:
 
     # gearslothd
 
-By default it connects to a single server at localhost:4730 but more options and deployment instructions can be found at the administrator documentation.
+By default it connects to a single server at `localhost:4730` but more options and deployment instructions can be found at the administrator documentation.
 
-## Why a separate system for delayed background jobs?
+### Why a separate system for delayed background jobs?
 
 Underneath it all is probably more of a philosophical stance. Some people believe that you can achieve a better system by constructing it from a set of small, simple, well tested, transparent, resilient and highly available services instead of bundling all functionality within a single program.
 
 Gearsloth aims to be a service like this. It has two primary purposes:
 
  1. Give well defined promises of job execution.
- 2. Allow treating the Gearman servers as generic and "stateless" components.
+ 2. Allow treating the Gearman servers as generic and stateless components.
 
 Also because different business needs require different types of promises of job execution, Gearsloth is architectured towards the following goals:
 
- 1. Allow strong data persistence checks before giving promises
- 2. Allow retrying jobs differently in various error situations
- 3. Allow achieving higher availability by adding redundancy
- 4. Allow handling higher loads through horizontal scaling
- 5. Allow recovering quickly from crashes by separating concerns
+ 1. Allow strong data persistence checks before giving promises.
+ 2. Allow retrying jobs differently in various error situations.
+ 3. Allow achieving higher availability by adding redundancy.
+ 4. Allow handling higher loads through horizontal scaling.
+ 5. Allow recovering quickly from crashes by separating concerns.
 
 Sometimes however, you just want to get your system up and running, so Gearsloth does that out of the box.
 
-If you are interested in delving deeper, head on to the contributor documentation where we get to the details of the architecture, the interfaces and of course also how you can help make Gearsloth even better :)
+If you are interested in delving deeper, head on to the contributor documentation where we get to the details of the architecture, the interfaces, and of course also, how you can help make Gearsloth even better!
 
-## Acknowledgements
+### Acknowledgements
 
-The initial version of Gearsloth was developed as a student project at the University of Helsinki Computer Science department.
+The initial version of Gearsloth was developed as a student project at the [University of Helsinki Computer Science department][uni].
 
 A special thank you for the following parties, without whom this would have never happened:
 
- * dormando for the inspiration and the ideas that we got from reading the Garivini code.
- * Meetin.gs Ltd for acting as a customer for the student project, some infrastructure for testing, and beer.
- * LiveJournal for introducing Gearman among other open source tools to the world.
+ + *dormando* for the inspiration and the ideas that we got from reading the Garivini code.
+ + *Meetin.gs Ltd* for acting as a customer for the student project, and providing some infrastructure and beer.
+ + *LiveJournal* for introducing Gearman, among other open source tools, to the world.
 
-## License
+### License
 
-See the file `LICENSE` for details. (It is MIT)
+See the file `LICENSE` for details. (It's MIT.)
 
-# User documentation notes
+### User documentation
 
+#### Task format specification
 
-## Task format specification
-
-Task is to be a JavaScript JSON object with the following format:
+Task must be a JSON object with the following format:
 
 ```
 var task = {
@@ -134,7 +139,7 @@ runner_retry_timeout: the number of seconds after which one of the registered ru
 }
 ```
 
-### Description of fields
+#### Description of fields
 
 The only required field for task is `func_name`.
 
@@ -146,34 +151,35 @@ The only required field for task is `func_name`.
 * `runner_retry_count`: if defined this is any string that is parseable into an integer. See above for a more detailed description.
 * `payload`: if defined this can be anything that can be sanely converted into a string. It may also be a JSON object in itself. `payload` will be passed on to the `func_name` function as given or to the `controller` if defined for more processing.
 
-# Administrator documentation notes
+### Administrator documentation
 
-The Gearsloth stack consists of four components: *injector*, *runner*, *controller* and *ejector*. Gearsloth supports a database backend architecture which abstracts persisting delayed tasks to a database. Gearsloth is written in Node.js.
+Gearsloth stack consists of four components: *injector*, *runner*, *controller* and *ejector*. Database backend architecture abstracts saving persisting delayed tasks. Gearsloth is written in Node.js.
 
 ![Example of Gearsloth setup](examples/architecture-graph.png "Example of Gearsloth setup")
 
-Gearsloth is setup between Gearman job server and database backend. Any Gearsloth component may have multiple instances running and may be connected to multiple job servers and databases. For production environments, where robustness and resiliency is required, having at least two of each component is highly recommended.
+Gearsloth lives between Gearman job server and database backend. Any Gearsloth component may have multiple instances running and may be connected to multiple job servers and databases. For production environments, where robustness and resiliency is required, having at least two of each component is highly recommended.
 
-## Installation
+#### Installation
 
-### npm
+##### npm
 
     # npm install gearsloth -g
 
-### deb
+##### deb
 
-There is a rudimentry support for putting Gearsloth in a Debian package. Instructions to build a Debian package are beyond the scope of this documentation and taking a look at [Debian wiki][deb] is recommended. Following is only an approximation of the process:
+Building Gearsloth into a Debian package is easy if you have Vagrant and Virtualbox available. Suitable `Vagrantfile` is provided.
 
-1. Install all the software and required dependencies for the build host.
+```sh
+$ touch enable.dpkg  # enable build host provisioning
+$ vagrant up
+  (will take a while...)
+$ vagrant ssh
 
-2. Create the package.
+sloth:~$ cd gearsloth
+sloth:~/gearsloth$ dpkg-buildpackage -b -uc
+```
 
-    $ dpkg-buildpackage -b -uc
-
-3. Distribute and install the package by means suitable to your infrastructure.
-
-
-## Configuration
+#### Configuration
 
 By default gearslothd expects to find a JSON configuration file from [specified locations](#configuration-file-location). Following command line options are accepted **and they override any configuration file options**:
 
@@ -186,8 +192,8 @@ By default gearslothd expects to find a JSON configuration file from [specified 
 * `--controllername`: Specify the controller module by name. This can also be specified in the configuration file. If the input contains forward slashes, the module is looked up in relation to your current directory. The logic for handling this option can be found in *lib/config/index.js*.
 * `--db`: Specify the database module by name. Can also be specified in the config file. If the input contains forward slashes, the module is looked up in relation to your current dir.
 * `--verbose`: Specify logging level; You can use the --verbose or -v flag multiple times for the following effects:
-  * None (default): notice -> std.out | errors -> std.err
-  * Once (`-v`): notice, info -> std.out | errors -> std.err
+  * None (default): errors and notices
+  * Once (`-v`): also info levelprevious notice, info -> std.out | errors -> std.err
   * Twice (`-vv`): notice, info, debug -> std.out | errors -> std.err
 | You can also configure this parameter with and integer (0 for one flag, 1 for two flags) in configuration file. The logic for handling the flag can be found in *lib/log.js*.
 * `-f, --file=FILENAME`: Define the path to configuration file. See [this](#configuration-file-location) for details.
@@ -360,44 +366,45 @@ After a job is done, a controller should send the task object to the ejector in 
 
 ## Database adapters
 
-Currently, there are two database backend adapters.
-
-Well, ok, there is a third adapter named `composite`, but it is likely to be deprecated soon, so it is not documented at all.
+Currently, there is only one database adapter, which can be expected to work reasonably well.
 
 ### SQLite
 
 This adapter requires the [sqlite3][sqnpm] package, which can be installed with *npm*:
-```
-$ npm install sqlite3
-```
+
+    $ npm install sqlite3
 
 #### Configuration
 
-The sqlite-adapter configuration takes in a JSON object that describes the following properties of the database:
+The `sqlite` adapter takes in a JSON object that describes the following properties of the database:
 
-* `dbopt.table_name`: The name of the table into which the tasks are to be saved. If unset a default value of *DelayedTasks* is used.
-* `dbopt.db_name`: The filename which is used for the database. An absolute path to the database should be used. If unset, a default value of *DelayedTasks.sqlite* is used. The `sqlite3` option `:memory:` for use with in-memory database *DOES NOT* work with this system and should not be used.
-* `dbopt.poll_timeout`: A time value in milliseconds which the adaters database polling function is to timeout before the next query. If unset a default value of *1000* milliseconds is used.
-* `dbopt.pre_poll`: A time value in seconds that is subtracted from the expiry time of the task to accomplish retrieving tasks before they expire. If unset, a default value of *0* seconds is used.
-* `dbopt.default_timeout`: A time value in seconds that the execution of the task is to be timed out right after selection for execution. If unset, the adapter will default to *1000* seconds.
-* `dbopt.domain`: A string to be set to identify the domain in which the adapter is running. If unset the computer name `os.hostname()` from the core module `os` is used.
+* `dbopt.domain`: A string to be set to identify the domain in which the adapter is running. If unset, *hostname* is used as a default value.
+* `dbopt.table_name`: The name of the table into which the tasks are to be saved. If unset, the default value is `DelayedTasks`.
+* `dbopt.database_file`: The filename, which is used for the database. An absolute path should be provided. If unset, default value is `gearsloth.sqlite`. Also, special value `:memory:` is accepted, and it will create an in-memory database.
+* `dbopt.poll_interval`: A time value in milliseconds, which defines adapters database polling interval. Default value is `999`.
 
-The initialization may also be called without any configuration to adopt all default configurations, for example:
+#### Example
+
+```json
+{
+  "db": "sqlite",
+  "dbopt": {
+    "database_file": "/tmp/tasks.sqlite",
+    "poll_interval": "333"
+  }
+}
 ```
-var adapter = require('../../lib/adapters/sqlite');
-adapter.initialize(null, someScriptToExecute);
-```
 
-#### Notes
+The initialization may also be called without any configuration to adopt default configuration values, for example:
 
-None of the functions implemented in the adapter provide rollback, so it is important that they are used correctly. At the moment the database calls are **not sanitized**, all effort will be made to make this happen.
+    var adapter = require('../../lib/adapters/sqlite');
+    adapter.initialize(null, callback);
 
 ### Mysql
 
-This adapter requires the [mysql][mynpm] package, which can be installed with *npm*:
-```
-$ npm install mysql
-```
+**This adapter probably will not work.** Package [mysql][mynpm] is required and it can be installed with *npm*:
+
+    $ npm install mysql
 
 #### Caveat
 
