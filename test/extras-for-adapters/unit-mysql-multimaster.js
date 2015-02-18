@@ -229,8 +229,6 @@ suite('MySQL Multimaster adapter', function() {
       })
     });
 
-    test('with some task, should call callback with error if slave not updated');
-
   });
 
   suite('completeTask', function() {
@@ -372,7 +370,8 @@ suite('MySQL Multimaster adapter', function() {
     });
   });
 
-  suite.skip("connected", function() {
+  /* FIXME
+  suite("connected", function() {
     var mysql_conn, adapter, error;
 
     var successful_example_connect = {
@@ -392,17 +391,17 @@ suite('MySQL Multimaster adapter', function() {
       adapter = new MySQLMultimaster.MySQLMultimaster(config);
     });
 
-    test("should be false before connecting", function() {
+    test("should be false before connecting", function(done) {
       adapter.connected.should.be.false;
     });
 
-    test("should be true after connecting", function() {
+    test("should be true after connecting", function(done) {
       MySQLMultimaster.initialize(init_config, function(err, adapter1) {
         adapter1.connected.should.be.true;
       });
     });
 
-    test("should be false when connection is lost", function() {
+    test("should be false when connection is lost", function(done) {
       var ad;
       MySQLMultimaster.initialize(init_config, function(err, adapter1) {
         ad = adapter1;
@@ -414,7 +413,7 @@ suite('MySQL Multimaster adapter', function() {
       ad.connected.should.be.false;
     });
 
-    test("should be true after reconnecting", function() {
+    test("should be true after reconnecting", function(done) {
       mysql_conn.emit('error', {
         code: 'PROTOCOL_CONNECTION_LOST'
       });
@@ -422,7 +421,9 @@ suite('MySQL Multimaster adapter', function() {
     });
 
   });
+  */
 
+  /* FIXME
   suite.skip("reconnecting", function() {
     setup(function() {
       mysql_conn = new EventEmitter();
@@ -435,16 +436,10 @@ suite('MySQL Multimaster adapter', function() {
     });
 
     test("should be done when connection is lost", function(done) {
-      this.timeout(500);
-      mysql.createConnection.returns({
-        connect:function() { done() }
-      });
-      mysql_conn.emit('error', {
-        code: 'PROTOCOL_CONNECTION_LOST'
-      });
     });
 
   });
+  */
 
   suite('updateTask', function() {
     var adapter;
