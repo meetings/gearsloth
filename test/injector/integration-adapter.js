@@ -55,8 +55,8 @@ suite('(e2e) injector', function() {
     });
 
     test('should insert job with "at" as is', function(done) {
-      var at_date = new Date(1000000000000);
-      var job = { at : at_date.toString(), func_name : 'test' };
+      var date = new Date(1000000000000);
+      var job = { at: date.toString(), func_name : 'test' };
 
       async.waterfall([
         client_helper.async_submit_delayed_job_to_port_and_wait_for_completion(job, port),
@@ -64,7 +64,7 @@ suite('(e2e) injector', function() {
         function(jobs, callback) {
           expect(jobs).to.have.length(1);
           expect(jobs[0]).to.have.property('at');
-          expect(jobs[0].at).to.equal(at_date.toString());
+          expect(jobs[0].at).to.equal(date.toISOString());
           callback();
         }
       ], done)

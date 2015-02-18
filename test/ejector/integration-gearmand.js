@@ -63,7 +63,7 @@ suite('(e2e) ejector', function() {
     adapter.completeTask = sinon.stub().callsArgWith(1, null, 1);
 
     var ejectorArgument = { id: "666" };
-    client.submitJob('gearsloth_eject-test', JSON.stringify(ejectorArgument))
+    client.submitJob('gearsloth_eject_test', JSON.stringify(ejectorArgument))
       .on('complete', function() {
         adapter.completeTask.should.have.been.calledWith(ejectorArgument);
         done();
@@ -74,7 +74,7 @@ suite('(e2e) ejector', function() {
     adapter.completeTask = sinon.stub().callsArgWith(1, null, 1);
 
     var ejectorArgument = { id: "666" };
-    client.submitJob('gearsloth_eject-test2', JSON.stringify(ejectorArgument))
+    client.submitJob('gearsloth_eject_test2', JSON.stringify(ejectorArgument))
       .on('complete', function() {
         adapter.completeTask.should.have.been.calledWith(ejectorArgument);
         done();
@@ -85,7 +85,7 @@ suite('(e2e) ejector', function() {
     adapter.completeTask = sinon.stub().callsArgWith(1, "error");
 
     var ejectorArgument = { id: "666" };
-    client.submitJob('gearsloth_eject-test', JSON.stringify(ejectorArgument))
+    client.submitJob('gearsloth_eject_test', JSON.stringify(ejectorArgument))
       .on('fail', function() {
         adapter.completeTask.should.have.been.calledWith(ejectorArgument);
         done();

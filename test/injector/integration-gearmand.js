@@ -1,4 +1,4 @@
-var lib = require( '../../lib/helpers/lib_require' );
+var lib = require('../../lib/helpers/lib_require');
 
 var gearman = require('gearman-node');
 var Injector = require('../../lib/daemon/injector').Injector;
@@ -32,7 +32,7 @@ suite('(e2e) injector', function() {
 
     setup(function(done) {
       async.series([
-        _.partial( spawn.gearmand, port ),
+        _.partial(spawn.gearmand, port),
         function(callback) {
           adapter.saveTask = sinon.stub().yields(null, 1);
           injector_in_use = new Injector(conf)
@@ -40,27 +40,27 @@ suite('(e2e) injector', function() {
             callback();
           });
         }
-        ], done );
+        ], done);
     });
 
     teardown(function(done) {
       async.series([
         client_helper.teardown,
-        _.bind( injector_in_use.disconnect, injector_in_use ),
+        _.bind(injector_in_use.disconnect, injector_in_use),
         spawn.teardown,
-        ], done );
+        ], done);
     });
 
     test('should call saveTask with the task to be saved', function(done){
       var task = {
-        at : new Date().toString(),
+        at: new Date(),
         func_name: 'log',
       };
 
-      client_helper.submit_delayed_job_to_port_and_wait_for_completion( task, port, function( error ) {
-        expect(adapter.saveTask).to.have.been.calledWith( task );
-        done( error );
-      } );
+      client_helper.submit_delayed_job_to_port_and_wait_for_completion(task, port, function(error) {
+        expect(adapter.saveTask).to.have.been.calledWith(task);
+        done(error);
+      });
     });
 
     test('should call dateless saveTask with task that has "at"', function(done){
@@ -68,10 +68,10 @@ suite('(e2e) injector', function() {
         func_name: 'log',
       };
 
-      client_helper.submit_delayed_job_to_port_and_wait_for_completion( task, port, function( error ) {
-        expect(adapter.saveTask).to.have.been.calledWith( sinon.match.has( 'at' ) );
-        done( error );
-      } );
+      client_helper.submit_delayed_job_to_port_and_wait_for_completion(task, port, function(error) {
+        expect(adapter.saveTask).to.have.been.calledWith(sinon.match.has('at'));
+        done(error);
+      });
     });
 
     test('should return error on invalid date', function(done) {
@@ -80,10 +80,10 @@ suite('(e2e) injector', function() {
         func_name: 'log',
       };
 
-      client_helper.submit_delayed_job_to_port_and_return_job( task, port )
+      client_helper.submit_delayed_job_to_port_and_return_job(task, port)
       .on('warning', function(handle, error){
         expect(adapter.saveTask).not.have.been.called;
-        expect(error).to.equal("injector: Task did not pass validity check ( invalid \"at\" date format: Invalid Date )");
+        expect(error).to.equal('could not parse date from "at" property');
       })
       .on('fail', function(){
         done();
@@ -96,10 +96,10 @@ suite('(e2e) injector', function() {
         func_name: 'log',
       };
 
-      client_helper.submit_delayed_job_to_port_and_return_job( task, port )
+      client_helper.submit_delayed_job_to_port_and_return_job(task, port)
       .on('warning', function(handle, error){
         expect(adapter.saveTask).not.to.have.been.called;
-        expect(error).to.equal("injector: Task did not pass validity check ( invalid \"after\" format (isNaN) )");
+        expect(error).to.equal('could not parse integer from "after" property');
       })
       .on('fail', function(){
         done();
@@ -108,13 +108,13 @@ suite('(e2e) injector', function() {
 
     test('should return error on missing func_name in task', function(done){
       var task = {
-        payload : "random"
+        payload: "random"
       };
 
-      client_helper.submit_delayed_job_to_port_and_return_job( task, port )
+      client_helper.submit_delayed_job_to_port_and_return_job(task, port)
       .on('warning', function(handle, error){
         expect(adapter.saveTask).not.to.have.been.called;
-        expect(error).to.equal("injector: Task did not pass validity check ( missing func_name )");
+        expect(error).to.equal('task must have "func_name" property');
       })
       .on('fail', function(){
         done();
@@ -131,42 +131,42 @@ suite('(e2e) injector', function() {
     var injector_in_use;
 
     var task = {
-      at : new Date().toString(),
+      at: new Date(),
       func_name: 'log',
     };
 
     var adapter_error = {
-      message : "not working on purpose"
+      message: "not working on purpose"
     };
 
     setup(function(done) {
       async.series([
-        _.partial( spawn.gearmand, port ),
+        _.partial(spawn.gearmand, port),
         function(callback) {
           adapter = {
-            saveTask : sinon.stub().yields(adapter_error, null)
+            saveTask: sinon.stub().yields(adapter_error, null)
           };
-          injector_in_use = new Injector( {
+          injector_in_use = new Injector({
             dbconn: adapter,
             servers: [{ host: 'localhost', port: port }]
-          } )
+          })
           .on('connect', function() {
             callback();
           });
         }
-      ], done );
+      ], done);
     });
 
     teardown(function(done) {
       async.series([
         client_helper.teardown,
-        injector_in_use.disconnect.bind( injector_in_use ),
+        injector_in_use.disconnect.bind(injector_in_use),
         spawn.teardown,
-      ], done );
+      ], done);
     });
 
     test('should call saveTask on adapter on new task but pass error message in warning', function(done) {
-      client_helper.submit_delayed_job_to_port_and_return_job( task, port )
+      client_helper.submit_delayed_job_to_port_and_return_job(task, port)
       .on('warning', function(handle, error) {
         expect(error).to.equal(adapter_error.message);
       })
@@ -177,7 +177,7 @@ suite('(e2e) injector', function() {
     });
 
     test('should call saveTask and pass an error in warning event', function(done){
-      client_helper.submit_delayed_job_to_port_and_return_job( task, port )
+      client_helper.submit_delayed_job_to_port_and_return_job(task, port)
       .on('warning', function(handle, error){
         expect(error).to.equal(adapter_error.message);
       })

@@ -66,7 +66,7 @@ suite('(e2e) ejector', function() {
           expect(meta_jobs).to.have.length(1);
           var meta_job = meta_jobs[0];
           expect(meta_job.job).to.have.property('func_name', task.func_name);
-          callback(null, 'gearsloth_eject-' + meta_job.domain, meta_job.job, port);
+          callback(null, 'gearsloth_eject_' + meta_job.domain, meta_job.job, port);
         },
         client_helper.submit_func_with_json_payload_to_port_and_wait_for_completion,
         adapter_helper.async_gather_enabled_job_list(ejector._dbconn),
