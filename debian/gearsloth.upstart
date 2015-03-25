@@ -37,3 +37,10 @@ script
 
   exec /usr/bin/gearslothd $GEARSLOTH_ARGS
 end script
+
+post-stop script
+  echo . >> /var/log/upstart/debug_gearsloth.log
+  env >> /var/log/upstart/debug_gearsloth.log
+  sleep 9
+  echo done >> /var/log/upstart/debug_gearsloth.log
+end script
