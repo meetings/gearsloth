@@ -3,6 +3,22 @@
 var config = require('../lib/config');
 var daemon = require('../lib/daemon');
 
+process.on('SIGHUP', function() {
+  console.log('gearslothd: SIGHUP caught');
+});
+process.on('SIGINT', function() {
+  console.log('gearslothd: SIGINT caught, quitting');
+  process.exit(0);
+});
+process.on('SIGQUIT', function() {
+  console.log('gearslothd: SIGQUIT caught, quitting');
+  process.exit(0);
+});
+process.on('SIGTERM', function() {
+  console.log('gearslothd: SIGTERM caught, quitting');
+  process.exit(0);
+});
+
 try {
   var conf = config.initialize(process.argv);
   if (!conf) {
