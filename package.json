@@ -9,6 +9,9 @@
   "bin": {
     "gearslothd": "./bin/gearslothd"
   },
+  "scripts": {
+    "test": "./script/test"
+  },
   "bugs": {
     "url": "https://github.com/meetings/gearsloth/issues"
   },

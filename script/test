@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+BASEDIR=$(echo "$(cd "$(dirname "$0")" && pwd)" | sed -E 's/\/script($|\/.*)//')
+
+cd $BASEDIR
+./node_modules/.bin/mocha --recursive --ui tdd --reporter dot test/*/integration*
