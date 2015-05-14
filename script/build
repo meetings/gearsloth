@@ -3,4 +3,5 @@ BASEDIR=$(echo "$(cd "$(dirname "$0")" && pwd)" | sed -E 's/(.*)\/script($|\/.*)
 
 cd $BASEDIR
 
-script/test-integration
+script/build-local
+script/build-docker

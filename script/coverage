@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+BASEDIR=$(echo "$(cd "$(dirname "$0")" && pwd)" | sed -E 's/(.*)\/script($|\/.*)/\1/')
+
+cd $BASEDIR
+
+script/build
+
+./node_modules/.bin/istanbul cover --report cobertura ./node_modules/.bin/_mocha -- --recursive --ui tdd --reporter dot test/*/integration*
+./node_modules/.bin/istanbul report html

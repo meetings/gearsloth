@@ -3,4 +3,6 @@ BASEDIR=$(echo "$(cd "$(dirname "$0")" && pwd)" | sed -E 's/(.*)\/script($|\/.*)
 
 cd $BASEDIR
 
-script/test-integration
+rm -rf node_modules
+rm -rf coverage
+rm -rf virt/docker

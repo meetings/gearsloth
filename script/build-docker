@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+BASEDIR=$(echo "$(cd "$(dirname "$0")" && pwd)" | sed -E 's/(.*)\/script($|\/.*)/\1/')
+
+cd $BASEDIR
+
+docker build -t meetings/gearslothd virt/gearslothd
+docker build -t meetings/gearmand virt/gearmand
+docker build -t meetings/mysql virt/mysql

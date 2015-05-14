@@ -3,4 +3,6 @@ BASEDIR=$(echo "$(cd "$(dirname "$0")" && pwd)" | sed -E 's/(.*)\/script($|\/.*)
 
 cd $BASEDIR
 
-script/test-integration
+#script/build-local
+
+./node_modules/.bin/mocha --recursive --ui tdd --reporter dot test/*/integration*
