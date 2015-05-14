@@ -14,12 +14,9 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends
     npm
 
 RUN mkdir /gearsloth
-ADD ./package.json /gearsloth/
-ADD ./Makefile /gearsloth/
-ADD ./bin /gearsloth/bin
-ADD ./lib /gearsloth/lib
+ADD ./src /gearsloth
 RUN cd /gearsloth && \
-    make build 2> /tmp/make.log
+    script/build-production 2> /tmp/build.log
 RUN echo '{ "db": "sqlite", "dbopt": { "db_name": "/var/lib/gearsloth/gearsloth.sqlite" } }' > /gearsloth/gearsloth.json
 RUN ln -sf /gearsloth/bin/gearslothd /usr/local/bin/gearslothd
 
