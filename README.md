@@ -437,13 +437,15 @@ The following guidelines should be followed for adapters:
 
 ## Development
 
-We use `make`. To see all available make targets, type
-
-    $ make help
-
-### Running tests
+### Running basic integration tests
 
     $ npm test
+
+These test require a local installation of the gearman job server:
+
+    $ apt-get install gearman-job-server
+
+At some point we are looking into using a node.js implementation of the server for tests
 
 ### Running tests in virtualized environment
 
@@ -451,10 +453,7 @@ Gearsloth has tests that simulate a production-like environment implemented with
 
     $ vagrant up
       (will take a while...)
-    $ vagrant ssh
-
-    sloth:~$ cd gearsloth
-    sloth:~/gearsloth$ make docker-test
+    $ vagrant ssh -c 'cd gearsloth; script/test-system'
 
 ### Configuring virtualized environment
 
