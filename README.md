@@ -443,9 +443,9 @@ The following guidelines should be followed for adapters:
 
 These test require a local installation of the gearman job server:
 
-    $ apt-get install gearman-job-server
+    $ apt-get install gearman
 
-At some point we are looking into using a node.js implementation of the server for tests
+Installing the gearman server on your local machine is a bit of a pain though. There are plans to use a pure node.js gearman server implementation for the tests (abraxas) but for now you are probably better off just using the virutalized environment described in the following section.
 
 ### Running tests in virtualized environment
 
@@ -454,6 +454,16 @@ Gearsloth has tests that simulate a production-like environment implemented with
     $ vagrant up
       (will take a while...)
     $ vagrant ssh -c 'cd gearsloth; script/test-system'
+
+While developing you probably want to run the integration tests directly from the mounted source directory:
+
+    $ vagrant ssh
+    sloth:~$ cd /vagrant
+    sloth:/vagrant$ script/test-system
+
+If you had already installed the node_modules on your host system, you probably want to clear them first so the virtual environment can install it's own:
+
+    sloth:/vagrant$ rm -rf node_modules
 
 ### Configuring virtualized environment
 
